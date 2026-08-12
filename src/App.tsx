@@ -3,17 +3,22 @@ import reactLogo from "./assets/react.svg";
 import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
 
-function App() {
+export const App = () => {
   const [greetMsg, setGreetMsg] = useState("");
   const [name, setName] = useState("");
+  const [int, setInt] = useState(0);
 
   async function greet() {
     // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
     setGreetMsg(await invoke("greet", { name }));
   }
 
+  const incr = async () => {
+    setInt(await invoke("incr", { int }));
+  };
+
   return (
-    <main className="container">
+    <div className="container">
       <h1>Welcome to Tauri + React</h1>
 
       <div className="row">
@@ -29,6 +34,11 @@ function App() {
       </div>
       <p>Click on the Tauri, Vite, and React logos to learn more.</p>
 
+      <div className="bg-red-900">
+        {int}
+        <button onClick={incr}>Incr</button>
+      </div>
+
       <form
         className="row"
         onSubmit={(e) => {
@@ -39,13 +49,11 @@ function App() {
         <input
           id="greet-input"
           onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
+          placeholder="Enter a a"
         />
         <button type="submit">Greet</button>
       </form>
       <p>{greetMsg}</p>
-    </main>
+    </div>
   );
-}
-
-export default App;
+};
