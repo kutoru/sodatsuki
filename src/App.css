@@ -1,9 +1,5 @@
 @import "tailwindcss";
 
-.glow {
-  --tw-shadow-color: color-mix(in oklab, var(--color-rose-600) /* oklch(58.6% 0.253 17.585) */ var(--tw-shadow-alpha), transparent);
-
-  box-shadow:
-    /* 0 0 2px 0 rgb(255 255 255 / 0.25), */
-    0 0 10px 2px var(--tw-shadow-color, rgb(255 0 0));
+.shadow-even {
+  box-shadow: 0 0 5px 0px rgb(0 0 0);
 }

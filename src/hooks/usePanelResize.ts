@@ -29,11 +29,15 @@ export const usePanelResize = () => {
     let leftDown = false;
     let rightDown = false;
 
-    const onLeftDown = () => {
-      leftDown = true;
+    const onLeftDown = (e: MouseEvent) => {
+      if (e.button === 0) {
+        leftDown = true;
+      }
     };
-    const onRightDown = () => {
-      rightDown = true;
+    const onRightDown = (e: MouseEvent) => {
+      if (e.button === 0) {
+        rightDown = true;
+      }
     };
 
     const onMouseUp = () => {
