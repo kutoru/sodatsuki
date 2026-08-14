@@ -10,7 +10,10 @@ pub fn run() {
             anki_connect_port: 8765,
             anki_custom_port: 8766,
         }))
-        .invoke_handler(tauri::generate_handler![anki::anki_fetch_status])
+        .invoke_handler(tauri::generate_handler![
+            anki::anki_fetch_status,
+            anki::anki_fetch_deck,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -4,6 +4,12 @@ import { useBackgroundPattern } from "../hooks/useBackgroundPattern";
 import { usePanelResize } from "../hooks/usePanelResize";
 import { invoke } from "@tauri-apps/api/core";
 import { Status } from "../types";
+import { Button } from "./Button";
+
+const handleError = (callback?: () => void) => (reason: any) => {
+  console.warn("Error:", reason);
+  callback?.();
+};
 
 export const App = () => {
   const { leftPanel, middlePanel, rightPanel, leftResize, rightResize } =
@@ -26,22 +32,47 @@ export const App = () => {
     decks: [],
   });
 
-  const [count, setCount] = useState(0);
+  const loadAnki = () => {
+    setAnki({ status: Status.Loading, mediaPath: null, decks: [] });
 
-  const reload = async () => {
-    setAnki(await invoke("anki_fetch_status"));
+    invoke<any>("anki_fetch_status")
+      .then(setAnki)
+      .catch(
+        handleError(() =>
+          setAnki({ status: Status.Offline, mediaPath: null, decks: [] })
+        )
+      );
+  };
+
+  const loadDeck = (deck: string) => {
+    invoke<any>("anki_fetch_deck", {
+      deck,
+      startTimestamp: 1761359213907,
+      endTimestamp: 1761467640296,
+    })
+      .then((v) => console.log(v))
+      .catch(handleError());
   };
 
   return (
     <div className="flex flex-row h-dvh pattern" style={bgStyle}>
       <div
         ref={leftPanel}
-        className="flex-1 bg-white/5 backdrop-blur-[2px] shadow-even"
+        className="flex-1 bg-white/5 backdrop-blur-[2px] shadow-even overflow-auto scrollbar-thin"
       >
         cards/anki
-        {JSON.stringify(anki)}
         <br />
-        <button onClick={reload}>reload</button>
+        <Button onClick={loadAnki}>reload</Button>
+        {anki.status}
+        <br />
+        <div className="wrap-anywhere">path: {anki.mediaPath || "-"}</div>
+        <div className="flex flex-col">
+          {anki.decks.map((deck) => (
+            <Button key={deck} onClick={() => loadDeck(deck)}>
+              {deck}
+            </Button>
+          ))}
+        </div>
       </div>
 
       <div
