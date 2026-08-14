@@ -1,6 +1,9 @@
+import { useState } from "react";
 import "../App.css";
 import { useBackgroundPattern } from "../hooks/useBackgroundPattern";
 import { usePanelResize } from "../hooks/usePanelResize";
+import { invoke } from "@tauri-apps/api/core";
+import { Status } from "../types";
 
 export const App = () => {
   const { leftPanel, middlePanel, rightPanel, leftResize, rightResize } =
@@ -13,13 +16,32 @@ export const App = () => {
     tileSize: "1.25rem",
   });
 
+  const [anki, setAnki] = useState<{
+    status: Status;
+    mediaPath: string | null;
+    decks: string[];
+  }>({
+    status: Status.Offline,
+    mediaPath: null,
+    decks: [],
+  });
+
+  const [count, setCount] = useState(0);
+
+  const reload = async () => {
+    setAnki(await invoke("anki_fetch_status"));
+  };
+
   return (
     <div className="flex flex-row h-dvh pattern" style={bgStyle}>
       <div
         ref={leftPanel}
-        className="flex-1 bg-white/10 backdrop-blur-[2px] shadow-even"
+        className="flex-1 bg-white/5 backdrop-blur-[2px] shadow-even"
       >
         cards/anki
+        {JSON.stringify(anki)}
+        <br />
+        <button onClick={reload}>reload</button>
       </div>
 
       <div
@@ -31,7 +53,7 @@ export const App = () => {
         <div className="aspect-video flex-none shadow-even">
           <video className="size-full" controls />
         </div>
-        <div className="bg-white/10 flex-1 backdrop-blur-[2px] shadow-even">
+        <div className="bg-white/5 flex-1 backdrop-blur-[2px] shadow-even">
           controls/info
         </div>
       </div>
@@ -43,7 +65,7 @@ export const App = () => {
 
       <div
         ref={rightPanel}
-        className="flex-1 bg-white/10 backdrop-blur-[2px] shadow-even"
+        className="flex-1 bg-white/5 backdrop-blur-[2px] shadow-even"
       >
         field editor
       </div>
