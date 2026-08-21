@@ -1,10 +1,11 @@
 import { useState } from "react";
 import "../App.css";
-import { useBackgroundPattern } from "../hooks/useBackgroundPattern";
+import { useBgLines } from "../hooks/useBgLines";
 import { usePanelResize } from "../hooks/usePanelResize";
 import { invoke } from "@tauri-apps/api/core";
 import { Status } from "../types";
 import { Button } from "./Button";
+import { useBgNoise } from "../hooks/useBgNoise";
 
 const handleError = (callback?: () => void) => (reason: any) => {
   console.warn("Error:", reason);
@@ -15,12 +16,21 @@ export const App = () => {
   const { leftPanel, middlePanel, rightPanel, leftResize, rightResize } =
     usePanelResize();
 
-  const bgStyle = useBackgroundPattern({
-    color: "ffffff05",
+  const bgLines = useBgLines({
+    color: "ffffff50",
     size: 20,
     width: 2,
     tileSize: "1.25rem",
   });
+
+  const bgNoise = useBgNoise({
+    frequency: 0.6,
+    size: 256,
+    opacity: 1,
+    tileSize: "256px",
+  });
+
+  const blurFilter = "blur(2px)";
 
   const [anki, setAnki] = useState<{
     status: Status;
@@ -55,10 +65,20 @@ export const App = () => {
   };
 
   return (
-    <div className="flex flex-row h-dvh pattern" style={bgStyle}>
+    <div className="flex flex-row h-dvh">
+      <div
+        className="size-full fixed -z-10 mix-blend-overlay"
+        style={bgLines}
+      />
+      <div
+        className="size-full fixed -z-10 mix-blend-overlay"
+        style={bgNoise}
+      />
+
       <div
         ref={leftPanel}
-        className="flex-1 bg-white/5 backdrop-blur-[2px] shadow-even overflow-auto scrollbar-thin"
+        className="flex-1 bg-white/5 shadow-even overflow-auto scrollbar-thin"
+        style={{ backdropFilter: blurFilter }}
       >
         cards/anki
         <br />
@@ -84,7 +104,10 @@ export const App = () => {
         <div className="aspect-video flex-none shadow-even">
           <video className="size-full" controls />
         </div>
-        <div className="bg-white/5 flex-1 backdrop-blur-[2px] shadow-even">
+        <div
+          className="bg-white/5 flex-1 shadow-even"
+          style={{ backdropFilter: blurFilter }}
+        >
           controls/info
         </div>
       </div>
@@ -96,7 +119,8 @@ export const App = () => {
 
       <div
         ref={rightPanel}
-        className="flex-1 bg-white/5 backdrop-blur-[2px] shadow-even"
+        className="flex-1 bg-white/5 shadow-even"
+        style={{ backdropFilter: blurFilter }}
       >
         field editor
       </div>

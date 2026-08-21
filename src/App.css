@@ -1,6 +1,12 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: FiraSans;
+  src: url('FiraSans-Regular.woff2');
+}
+
 html {
+  font-family: FiraSans;
   color-scheme: dark;
 }
 
