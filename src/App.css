@@ -22,3 +22,18 @@ html {
 .drop-shadow-even {
   filter: drop-shadow(0 0 5px var(--tw-drop-shadow-color));
 }
+
+.slim-scrollbar::-webkit-scrollbar {
+  width: 0.25rem;
+}
+
+.slim-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 0.25rem;
+  margin: 0.5rem 0 0.5rem 0;
+}
+
+.slim-scrollbar::-webkit-scrollbar-thumb {
+  background: #ffffff19;
+  border-radius: 0.25rem;
+}

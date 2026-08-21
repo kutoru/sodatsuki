@@ -2,7 +2,14 @@ import { Ref, useEffect, useState } from "react";
 import { Status } from "../types";
 import { invoke } from "@tauri-apps/api/core";
 import { handleError } from "../utils";
-import { BookMarkedIcon, ChevronRightIcon, RefreshCcwIcon } from "lucide-react";
+import {
+  BookMarkedIcon,
+  ChevronRightIcon,
+  ClockArrowRightIcon,
+  LogInIcon,
+  RefreshCcwIcon,
+  SquareArrowRightExitIcon,
+} from "lucide-react";
 
 type AnkiState = {
   status: Status;
@@ -52,7 +59,8 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
     invoke<any>("anki_fetch_deck", {
       deck,
       startTimestamp: 1761359213907,
-      endTimestamp: 1761467640296,
+      endTimestamp: 1761364177359,
+      // endTimestamp: 1761467640296,
     })
       .then(setDeck)
       .catch(handleError())
@@ -74,13 +82,13 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
     <>
       <div
         ref={leftPanel}
-        className="flex-1 bg-white/3 shadow-even shadow-black overflow-auto scrollbar-thin"
+        className="flex-1 bg-white/3 shadow-even shadow-black flex flex-col scrollbar-thin"
         style={blurFilter}
       >
         <div className="flex flex-row items-center">
           <div
             className={
-              "rounded-full size-2 m-4 flex-none transition drop-shadow-even " +
+              "rounded-full size-3 m-3.5 flex-none transition drop-shadow-even " +
               ((anki.status === Status.Offline &&
                 "bg-rose-500 drop-shadow-rose-500") ||
                 (anki.status === Status.Online &&
@@ -101,7 +109,7 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
           </button>
         </div>
 
-        <div className="bg-white/10 h-1 mx-2 rounded-full shadow-sm" />
+        <div className="bg-white/10 h-1 mx-2 rounded-full shadow-sm flex-none" />
 
         <div className="flex flex-row items-center">
           <div className="size-10 p-2 flex-none">
@@ -124,6 +132,69 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
               }
             />
           </button>
+        </div>
+
+        <div
+          className={
+            "shadow-even shadow-black rounded-full mx-2 text-center mb-2 " +
+            (deck?.totalNotes === undefined
+              ? "bg-rose-950/50"
+              : "bg-emerald-950/50")
+          }
+        >
+          <div className="drop-shadow-even drop-shadow-black">
+            {deck?.notes.length ?? 0} / {deck?.totalNotes ?? 0}
+          </div>
+        </div>
+
+        <div className="bg-white/10 h-1 mx-2 rounded-full shadow-sm flex-none" />
+
+        <div className="flex flex-col p-2 overflow-auto gap-2 slim-scrollbar">
+          {deck?.notes.map((note) => (
+            <div
+              key={note.id}
+              className="shadow-even shadow-black/25 rounded-md overflow-hidden flex-none bg-white/5"
+            >
+              <div className="flex gap-1 px-1">
+                {[
+                  "Meaning",
+                  "Image_URI",
+                  "Sentence",
+                  "Sentence Audio",
+                  "Reading",
+                  "Audio",
+                ].map((field) => (
+                  <div
+                    key={note.id + field}
+                    className={
+                      "h-2 rounded-b-xs flex-1 drop-shadow-even cursor-pointer transition-all hover:-mb-2 hover:h-4 " +
+                      (!!note.fields[field]
+                        ? "bg-emerald-500/50 drop-shadow-emerald-500/50 active:bg-emerald-500/25"
+                        : "bg-rose-500/50 drop-shadow-rose-500/50 active:bg-rose-500/25")
+                    }
+                  />
+                ))}
+              </div>
+
+              <div className="flex flex-row">
+                <div className="ps-2 py-2 whitespace-nowrap flex-1">
+                  {note.fields.Expression}
+                </div>
+
+                <button className="cursor-pointer h-10 w-9 ps-2.5 py-2.5 pe-1.25 flex-none">
+                  <LogInIcon className="size-full rotate-180" />
+                </button>
+
+                <button className="cursor-pointer h-10 w-8 ps-1.25 py-2.5 pe-1.25 flex-none">
+                  <ClockArrowRightIcon className="size-full" />
+                </button>
+
+                <button className="cursor-pointer h-10 w-9 ps-1.25 py-2.5 pe-2.5 flex-none">
+                  <SquareArrowRightExitIcon className="size-full" />
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
