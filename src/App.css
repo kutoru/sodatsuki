@@ -5,11 +5,20 @@
   src: url('FiraSans-Regular.woff2');
 }
 
+@font-face {
+  font-family: ZenKakuGothicAntique;
+  src: url('ZenKakuGothicAntique-Regular.ttf');
+}
+
 html {
-  font-family: FiraSans;
+  font-family: FiraSans, ZenKakuGothicAntique;
   color-scheme: dark;
 }
 
 .shadow-even {
   box-shadow: 0 0 5px 0px rgb(0 0 0);
+}
+
+.drop-shadow-even {
+  filter: drop-shadow(0 0 5px var(--tw-drop-shadow-color));
 }
