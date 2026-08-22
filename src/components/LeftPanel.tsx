@@ -1,15 +1,20 @@
-import { Fragment, Ref, useEffect, useState } from "react";
+import { Fragment, Ref, useLayoutEffect, useState } from "react";
 import { Status } from "../types";
 import { invoke } from "@tauri-apps/api/core";
 import { handleError } from "../utils";
 import {
+  BookHeadphonesIcon,
   BookMarkedIcon,
+  BookTextIcon,
   ChevronRightIcon,
   ClockArrowRightIcon,
-  ImageIcon,
+  FileImageIcon,
   LogInIcon,
+  MusicIcon,
   RefreshCcwIcon,
   SquareArrowRightExitIcon,
+  TextQuoteIcon,
+  WifiIcon,
 } from "lucide-react";
 import { Button } from "./Button";
 
@@ -36,6 +41,41 @@ type Props = {
   blurFilter: { backdropFilter: string };
 };
 
+const calculateCharacterWidths = () => {
+  const element = document.createElement("div");
+  document.body.appendChild(element);
+
+  element.style.position = "absolute";
+  element.style.visibility = "hidden";
+  element.style.height = "auto";
+  element.style.width = "auto";
+  element.style.whiteSpace = "nowrap";
+
+  const chars = {
+    "&nbsp;": 0,
+    "1": 0,
+    "2": 0,
+    "3": 0,
+    "4": 0,
+    "5": 0,
+    "6": 0,
+    "7": 0,
+    "8": 0,
+    "9": 0,
+  };
+
+  const keys = Object.keys(chars) as (keyof typeof chars)[];
+
+  keys.forEach((key) => {
+    element.innerHTML = key;
+    chars[key] = element.getBoundingClientRect().width;
+  });
+
+  element.remove();
+
+  return chars;
+};
+
 export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
   const [anki, setAnki] = useState<AnkiState>({
     status: Status.Offline,
@@ -45,6 +85,10 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
 
   const [loadingDeck, setLoadingDeck] = useState(false);
   const [showDecks, setShowDecks] = useState(false);
+
+  const [currentNote, setCurrentNote] = useState<Note>();
+
+  const [digitWidth, setDigitWidth] = useState(0);
 
   const loadAnki = () => {
     setShowDecks(false);
@@ -61,8 +105,8 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
     invoke<any>("anki_fetch_deck", {
       deck,
       startTimestamp: 1761359213907,
-      endTimestamp: 1761364177359,
-      // endTimestamp: 1761467640296,
+      // endTimestamp: 1761364177359,
+      endTimestamp: 1761467640296,
     })
       .then(setDeck)
       .catch(handleError())
@@ -72,12 +116,20 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
       });
   };
 
-  useEffect(() => {
-    console.log("anki", anki);
-  }, [anki]);
+  useLayoutEffect(() => {
+    if (!deck?.notes) {
+      setDigitWidth(0);
+      return;
+    }
 
-  useEffect(() => {
-    console.log("deck", deck);
+    const charWidths = calculateCharacterWidths();
+    const maxWidth = Object.values(charWidths).reduce(
+      (p, c) => (p > c ? p : c),
+      0
+    );
+    const totalDigits = String(deck.notes.length).length;
+
+    setDigitWidth(totalDigits * maxWidth + charWidths["&nbsp;"]);
   }, [deck]);
 
   return (
@@ -152,41 +204,85 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
           {deck?.notes.map((note, index) => (
             <div
               key={note.id}
-              className="shadow-even shadow-black/25 rounded-md overflow-hidden flex-none bg-white/5"
+              className={
+                "shadow-even rounded-md overflow-hidden flex-none transition transition-discrete " +
+                (note.id === currentNote?.id
+                  ? "bg-indigo-500/25 shadow-indigo-500/25"
+                  : "bg-white/5 shadow-black/25")
+              }
             >
               <div className="flex gap-1 px-1">
                 {[
-                  "Meaning",
-                  "Image_URI",
-                  "Sentence",
-                  "Sentence Audio",
-                  "Reading",
-                  "Audio",
-                ].map((field) => (
+                  {
+                    field: "Meaning",
+                    icon: <TextQuoteIcon className="size-full" />,
+                  },
+                  {
+                    field: "Image_URI",
+                    icon: <FileImageIcon className="size-full" />,
+                  },
+                  {
+                    field: "Sentence",
+                    icon: <BookTextIcon className="size-full" />,
+                  },
+                  {
+                    field: "Sentence Audio",
+                    icon: <BookHeadphonesIcon className="size-full" />,
+                  },
+                  {
+                    field: "Reading",
+                    icon: <MusicIcon className="size-full" />,
+                  },
+                  {
+                    field: "Audio",
+                    icon: <WifiIcon className="size-full rotate-90" />,
+                  },
+                ].map(({ field, icon }) => (
                   <div key={note.id + field} className="flex-1 relative h-2">
                     <button
                       title={field}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                        e.currentTarget.classList.add(
+                          "-bottom-10!",
+                          "rounded-none!"
+                        );
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.classList.remove(
+                          "-bottom-10!",
+                          "rounded-none!"
+                        );
+                      }}
+                      onClick={(e) => {
+                        e.currentTarget.classList.remove(
+                          "-bottom-10!",
+                          "rounded-none!"
+                        );
+                      }}
                       className={
-                        "absolute bottom-0 left-0 py-2 select-none w-full h-12 rounded-b-sm flex-1 drop-shadow-even transition-all hover:-bottom-10 hover:rounded-none z-10 " +
+                        "absolute bottom-0 left-0 py-2 select-none w-full h-12 rounded-b-sm flex-1 drop-shadow-even hover:-bottom-2 transition-all z-10 " +
                         (!!note.fields[field]
                           ? "bg-emerald-700/75 drop-shadow-emerald-500/50 active:bg-emerald-900/75 active:text-gray-300 cursor-pointer"
                           : "bg-rose-700/75 drop-shadow-rose-500/50")
                       }
                     >
-                      {field === "Image_URI" ? (
-                        <ImageIcon className="size-full" />
-                      ) : (
-                        field.charAt(0)
-                      )}
+                      {icon}
                     </button>
                   </div>
                 ))}
               </div>
 
               <div className="flex flex-row">
-                <div className="ps-2 whitespace-nowrap flex-1 text-ellipsis overflow-hidden">
-                  {index + 1}.{" "}
-                  <Button className="hover:drop-shadow-white/50">
+                <div className="ps-2 flex-1 flex flex-row items-center overflow-hidden">
+                  <div
+                    className="flex-none text-center"
+                    style={{ width: `${digitWidth}px` }}
+                  >
+                    {index + 1}&nbsp;
+                  </div>
+
+                  <Button className="hover:drop-shadow-white/50 shrink! text-ellipsis whitespace-nowrap overflow-hidden">
                     {note.fields.Expression}
                   </Button>
                 </div>
@@ -199,7 +295,11 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
                   <ClockArrowRightIcon className="size-full" />
                 </Button>
 
-                <Button className="w-9 ps-1.25 py-2.5 pe-2.5">
+                <Button
+                  onClick={() => setCurrentNote(note)}
+                  className="w-9 ps-1.25 py-2.5 pe-2.5"
+                  disabled={note.id === currentNote?.id}
+                >
                   <SquareArrowRightExitIcon className="size-full" />
                 </Button>
               </div>

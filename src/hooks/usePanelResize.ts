@@ -29,6 +29,19 @@ export const usePanelResize = () => {
     let leftDown = false;
     let rightDown = false;
 
+    const onLeftContext = (e: MouseEvent) => {
+      e.preventDefault();
+      leftSize = 20;
+      lp.style.flexBasis = `${leftSize}%`;
+      mp.style.flexBasis = `${100 - leftSize - rightSize}%`;
+    };
+    const onRightContext = (e: MouseEvent) => {
+      e.preventDefault();
+      rightSize = 20;
+      rp.style.flexBasis = `${rightSize}%`;
+      mp.style.flexBasis = `${100 - leftSize - rightSize}%`;
+    };
+
     const onLeftDown = (e: MouseEvent) => {
       if (e.button === 0) {
         leftDown = true;
@@ -65,6 +78,8 @@ export const usePanelResize = () => {
       }
     };
 
+    lr.addEventListener("contextmenu", onLeftContext);
+    rr.addEventListener("contextmenu", onRightContext);
     lr.addEventListener("mousedown", onLeftDown);
     rr.addEventListener("mousedown", onRightDown);
     document.addEventListener("mouseup", onMouseUp);
