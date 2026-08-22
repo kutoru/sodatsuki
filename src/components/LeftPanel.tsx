@@ -1,4 +1,4 @@
-import { Ref, useEffect, useState } from "react";
+import { Fragment, Ref, useEffect, useState } from "react";
 import { Status } from "../types";
 import { invoke } from "@tauri-apps/api/core";
 import { handleError } from "../utils";
@@ -6,10 +6,12 @@ import {
   BookMarkedIcon,
   ChevronRightIcon,
   ClockArrowRightIcon,
+  ImageIcon,
   LogInIcon,
   RefreshCcwIcon,
   SquareArrowRightExitIcon,
 } from "lucide-react";
+import { Button } from "./Button";
 
 type AnkiState = {
   status: Status;
@@ -82,7 +84,7 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
     <>
       <div
         ref={leftPanel}
-        className="flex-1 bg-white/3 shadow-even shadow-black flex flex-col scrollbar-thin"
+        className="flex-1 bg-white/3 shadow-even shadow-black flex flex-col scrollbar-thin overflow-auto"
         style={blurFilter}
       >
         <div className="flex flex-row items-center">
@@ -101,12 +103,9 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
             Anki
           </div>
 
-          <button
-            onClick={loadAnki}
-            className="cursor-pointer size-10 flex-none transition p-2.5 drop-shadow-even drop-shadow-black hover:drop-shadow-white active:text-gray-400"
-          >
+          <Button onClick={loadAnki} className="p-2.5">
             <RefreshCcwIcon className="size-full" />
-          </button>
+          </Button>
         </div>
 
         <div className="bg-white/10 h-1 mx-2 rounded-full shadow-sm flex-none" />
@@ -120,9 +119,9 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
             {deck?.name || "-"}
           </div>
 
-          <button
+          <Button
             onClick={() => setShowDecks(!showDecks)}
-            className="cursor-pointer size-10 flex-none transition p-2 drop-shadow-even drop-shadow-black hover:drop-shadow-white active:text-gray-400 disabled:drop-shadow-transparent disabled:text-gray-500 disabled:cursor-default"
+            className="p-2"
             disabled={anki.status !== Status.Online}
           >
             <ChevronRightIcon
@@ -131,7 +130,7 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
                 (showDecks ? "rotate-180" : "")
               }
             />
-          </button>
+          </Button>
         </div>
 
         <div
@@ -150,7 +149,7 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
         <div className="bg-white/10 h-1 mx-2 rounded-full shadow-sm flex-none" />
 
         <div className="flex flex-col p-2 overflow-auto gap-2 slim-scrollbar">
-          {deck?.notes.map((note) => (
+          {deck?.notes.map((note, index) => (
             <div
               key={note.id}
               className="shadow-even shadow-black/25 rounded-md overflow-hidden flex-none bg-white/5"
@@ -164,34 +163,45 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
                   "Reading",
                   "Audio",
                 ].map((field) => (
-                  <div
-                    key={note.id + field}
-                    className={
-                      "h-2 rounded-b-xs flex-1 drop-shadow-even cursor-pointer transition-all hover:-mb-2 hover:h-4 " +
-                      (!!note.fields[field]
-                        ? "bg-emerald-500/50 drop-shadow-emerald-500/50 active:bg-emerald-500/25"
-                        : "bg-rose-500/50 drop-shadow-rose-500/50 active:bg-rose-500/25")
-                    }
-                  />
+                  <div key={note.id + field} className="flex-1 relative h-2">
+                    <button
+                      title={field}
+                      className={
+                        "absolute bottom-0 left-0 py-2 select-none w-full h-12 rounded-b-sm flex-1 drop-shadow-even transition-all hover:-bottom-10 hover:rounded-none z-10 " +
+                        (!!note.fields[field]
+                          ? "bg-emerald-700/75 drop-shadow-emerald-500/50 active:bg-emerald-900/75 active:text-gray-300 cursor-pointer"
+                          : "bg-rose-700/75 drop-shadow-rose-500/50")
+                      }
+                    >
+                      {field === "Image_URI" ? (
+                        <ImageIcon className="size-full" />
+                      ) : (
+                        field.charAt(0)
+                      )}
+                    </button>
+                  </div>
                 ))}
               </div>
 
               <div className="flex flex-row">
-                <div className="ps-2 py-2 whitespace-nowrap flex-1">
-                  {note.fields.Expression}
+                <div className="ps-2 whitespace-nowrap flex-1 text-ellipsis overflow-hidden">
+                  {index + 1}.{" "}
+                  <Button className="hover:drop-shadow-white/50">
+                    {note.fields.Expression}
+                  </Button>
                 </div>
 
-                <button className="cursor-pointer h-10 w-9 ps-2.5 py-2.5 pe-1.25 flex-none">
+                <Button className="w-9 ps-2.5 py-2.5 pe-1.25">
                   <LogInIcon className="size-full rotate-180" />
-                </button>
+                </Button>
 
-                <button className="cursor-pointer h-10 w-8 ps-1.25 py-2.5 pe-1.25 flex-none">
+                <Button className="w-8 ps-1.25 py-2.5 pe-1.25">
                   <ClockArrowRightIcon className="size-full" />
-                </button>
+                </Button>
 
-                <button className="cursor-pointer h-10 w-9 ps-1.25 py-2.5 pe-2.5 flex-none">
+                <Button className="w-9 ps-1.25 py-2.5 pe-2.5">
                   <SquareArrowRightExitIcon className="size-full" />
-                </button>
+                </Button>
               </div>
             </div>
           ))}
@@ -211,22 +221,25 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
           />
         )}
 
-        <div className="absolute top-0 -left-3 pointer-events-none px-6 py-3 overflow-x-hidden h-full">
+        <div className="absolute top-0 -left-3 pointer-events-none overflow-x-hidden h-full px-3">
           <div
             className={
-              "flex flex-col pointer-events-auto max-h-full w-max rounded-xl overflow-auto bg-black/80 backdrop-blur-[2px] shadow-even shadow-black transition duration-500 " +
-              (showDecks ? "" : "-translate-x-[calc(100%+1.5rem+0.75rem)]")
+              "flex flex-col pointer-events-auto h-full w-max overflow-auto bg-black/80 backdrop-blur-[2px] shadow-even shadow-black transition duration-500 " +
+              (showDecks ? "" : "-translate-x-[calc(100%+0.75rem+0.75rem)]")
             }
           >
             {anki.decks?.map((deck) => (
-              <button
-                key={deck}
-                onClick={() => loadDeck(deck)}
-                className="cursor-pointer p-2 not-last:border-b-2 border-b-white/25 hover:bg-white/25 active:text-gray-300 bg-clip-padding transition disabled:text-gray-400 disabled:bg-transparent disabled:cursor-default"
-                disabled={loadingDeck}
-              >
-                {deck}
-              </button>
+              <Fragment key={deck}>
+                <button
+                  onClick={() => loadDeck(deck)}
+                  className="select-none cursor-pointer p-2 hover:bg-white/25 active:text-gray-300 transition disabled:text-gray-400 disabled:bg-transparent disabled:cursor-default"
+                  disabled={loadingDeck}
+                >
+                  {deck}
+                </button>
+
+                <div className="bg-white/25 h-1 mx-2 rounded-full flex-none last:hidden" />
+              </Fragment>
             ))}
           </div>
         </div>

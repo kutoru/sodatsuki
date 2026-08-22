@@ -5,9 +5,8 @@ type Props = DetailedHTMLProps<
   HTMLButtonElement
 >;
 
-export const Button = ({ children, className, ...rest }: Props) => {
-  const baseClassName =
-    "cursor-pointer h-10 flex-none select-none transition drop-shadow-even drop-shadow-black hover:drop-shadow-white active:text-gray-400 disabled:drop-shadow-transparent disabled:text-gray-500 disabled:cursor-default ";
+export const ButtonBig = ({ children, className, ...rest }: Props) => {
+  const baseClassName = "border-2 border-rose-600 p-1 cursor-pointer ";
   const extraClassName = className ? className : "";
 
   return (
