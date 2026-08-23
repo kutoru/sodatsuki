@@ -12,6 +12,7 @@ import {
 import { Button } from "../Button";
 import { Note } from "./LeftPanel";
 import { RowComponentProps } from "react-window";
+import { memo } from "react";
 
 type Props = RowComponentProps<{
   notes: Note[];
@@ -20,7 +21,7 @@ type Props = RowComponentProps<{
   setCurrentNote: (note: Note) => void;
 }>;
 
-export const NoteWrapper = ({
+export const NoteRow = ({
   notes,
   digitWidth,
   currentNote,
@@ -32,10 +33,38 @@ export const NoteWrapper = ({
 
   return (
     <div style={style} className="pt-2 px-2">
+      <InnerNoteElement
+        note={note}
+        index={index}
+        isActive={note.id === currentNote?.id}
+        setCurrentNote={setCurrentNote}
+        digitWidth={digitWidth}
+      />
+    </div>
+  );
+};
+
+type InnerNoteElementProps = {
+  note: Note;
+  index: number;
+  isActive: boolean;
+  setCurrentNote: (note: Note) => void;
+  digitWidth: number;
+};
+
+export const InnerNoteElement = memo(
+  ({
+    note,
+    index,
+    isActive,
+    setCurrentNote,
+    digitWidth,
+  }: InnerNoteElementProps) => {
+    return (
       <div
         className={
           "shadow-even rounded-md overflow-hidden flex-none transition " +
-          (note.id === currentNote?.id
+          (isActive
             ? "bg-indigo-500/25 shadow-indigo-500/25"
             : "bg-white/5 shadow-black/25")
         }
@@ -127,12 +156,12 @@ export const NoteWrapper = ({
               setCurrentNote(note);
             }}
             className="w-9 ps-1.25 py-2.5 pe-2.5"
-            disabled={note.id === currentNote?.id}
+            disabled={isActive}
           >
             <SquareArrowRightExitIcon className="size-full" />
           </Button>
         </div>
       </div>
-    </div>
-  );
-};
+    );
+  }
+);
