@@ -2,7 +2,7 @@ import "../App.css";
 import { useBgLines } from "../hooks/useBgLines";
 import { usePanelResize } from "../hooks/usePanelResize";
 import { useBgNoise } from "../hooks/useBgNoise";
-import { LeftPanel } from "./LeftPanel";
+import { LeftPanel } from "./LeftPanel/LeftPanel";
 
 export const App = () => {
   const { leftPanel, middlePanel, rightPanel, leftResize, rightResize } =
