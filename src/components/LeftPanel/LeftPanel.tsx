@@ -1,12 +1,14 @@
-import { Fragment, Ref, useState } from "react";
+import { Fragment, Ref, useEffect, useState } from "react";
 import { AnkiState, DeckState, Status } from "../../types";
 import { invoke } from "@tauri-apps/api/core";
 import { handleError } from "../../utils";
 import { BookMarkedIcon, ChevronRightIcon, RefreshCcwIcon } from "lucide-react";
 import { Button } from "../Button";
-import { List } from "react-window";
+import { List, useListRef } from "react-window";
 import { NoteRow } from "./NoteRow";
 import clsx from "clsx";
+import { Separator } from "../Separator";
+import { useStore } from "../../hooks/useStore";
 
 type Props = {
   leftPanel: Ref<HTMLDivElement>;
@@ -61,6 +63,8 @@ const getDigitWidth = (notesLength: number) => {
 };
 
 export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
+  const dateFilter = useStore((state) => state.dateFilter);
+
   const [anki, setAnki] = useState<AnkiState>({
     status: Status.Offline,
   });
@@ -72,6 +76,8 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
 
   const [digitWidth, setDigitWidth] = useState(0);
 
+  const noteList = useListRef(null);
+
   const loadAnki = () => {
     setShowDecks(false);
     setAnki({ status: Status.Loading });
@@ -81,16 +87,16 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
       .catch(handleError(() => setAnki({ status: Status.Offline })));
   };
 
-  const loadDeck = (deck: string) => {
+  const loadDeck = (deckName: string) => {
     setLoadingDeck(true);
 
     invoke<DeckState>("anki_fetch_deck", {
-      deck,
-      startTimestamp: 1761359213907,
-      endTimestamp: 1761364177359,
-      // endTimestamp: 1761467640296,
+      deck: deckName,
+      startTimestamp: dateFilter.apply ? dateFilter.start : undefined,
+      endTimestamp: dateFilter.apply ? dateFilter.end : undefined,
     })
       .then((deck) => {
+        noteList.current?.scrollToRow({ index: 0 });
         setDigitWidth(getDigitWidth(deck.notes.length));
         setDeck(deck);
       })
@@ -100,6 +106,18 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
         setTimeout(() => setLoadingDeck(false), 500);
       });
   };
+
+  useEffect(() => {
+    loadAnki();
+  }, []);
+
+  useEffect(() => {
+    if (!deck?.name) {
+      return;
+    }
+
+    loadDeck(deck.name);
+  }, [dateFilter]);
 
   return (
     <>
@@ -130,7 +148,7 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
           </Button>
         </div>
 
-        <div className="mx-2 h-1 flex-none rounded-full bg-white/10 shadow-sm" />
+        <Separator />
 
         <div className="flex flex-row items-center">
           <div className="size-10 flex-none p-2">
@@ -144,7 +162,7 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
           <Button
             onClick={() => setShowDecks(!showDecks)}
             className="p-2"
-            disabled={anki.status !== Status.Online}
+            disabled={anki.status !== Status.Online || loadingDeck}
           >
             <ChevronRightIcon
               className={clsx(
@@ -168,10 +186,11 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
           </div>
         </div>
 
-        <div className="mx-2 h-1 flex-none rounded-full bg-white/10 shadow-sm" />
+        <Separator />
 
         {deck?.notes && (
           <List
+            listRef={noteList}
             className="slim-scrollbar pb-2"
             rowComponent={NoteRow}
             rowCount={deck.notes.length}
@@ -205,14 +224,14 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
               !showDecks && "-translate-x-[calc(100%+0.75rem+0.75rem)]",
             )}
           >
-            {anki.decks?.map((deck) => (
-              <Fragment key={deck}>
+            {anki.decks?.map((deckName) => (
+              <Fragment key={deckName}>
                 <button
-                  onClick={() => loadDeck(deck)}
+                  onClick={() => loadDeck(deckName)}
                   className="cursor-pointer p-2 transition select-none hover:bg-white/25 active:text-gray-300 disabled:cursor-default disabled:bg-transparent disabled:text-gray-400"
                   disabled={loadingDeck}
                 >
-                  {deck}
+                  {deckName}
                 </button>
 
                 <div className="mx-2 h-1 flex-none rounded-full bg-white/25 last:hidden" />

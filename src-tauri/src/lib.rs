@@ -4,6 +4,7 @@ mod types;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_clipboard_manager::init())
         .manage(reqwest::Client::new())
         .manage(tauri::async_runtime::Mutex::new(types::ConfigInner {
@@ -16,6 +17,7 @@ pub fn run() {
             cmds::anki_fetch_deck,
             cmds::anki_open_note,
             cmds::copy_to_clipboard,
+            cmds::video_select,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

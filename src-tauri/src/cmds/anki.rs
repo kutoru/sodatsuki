@@ -6,7 +6,8 @@ use std::{
 use serde_json::json;
 
 use crate::types::{
-    AnkiResponse, AnkiResult, Config, DeckResult, FullNote, Http, Note, ResultExt, Status,
+    AnkiFetchDeckResult, AnkiFetchStatusResult, AnkiResponse, Config, FullNote, Http, Note,
+    ResultExt, Status,
 };
 
 async fn call_anki<T>(http: &Http<'_>, config: &Config<'_>, action: &str) -> Result<T, String>
@@ -41,7 +42,7 @@ where
         "params": params,
     });
 
-    println!("Request {}: {:?}", action, body);
+    // println!("Request {}: {:?}", action, body);
 
     let response = http
         .post(url)
@@ -53,7 +54,7 @@ where
         .await
         .err_msg()?;
 
-    println!("Response {}: {:?}", action, response);
+    // println!("Response {}: {:?}", action, response);
 
     match response.result {
         Some(r) => Ok(r),
@@ -62,14 +63,17 @@ where
 }
 
 #[tauri::command]
-pub async fn anki_fetch_status(http: Http<'_>, config: Config<'_>) -> Result<AnkiResult, String> {
+pub async fn anki_fetch_status(
+    http: Http<'_>,
+    config: Config<'_>,
+) -> Result<AnkiFetchStatusResult, String> {
     let media_path = call_anki(&http, &config, "getMediaDirPath").await?;
     let decks: HashMap<String, i64> = call_anki(&http, &config, "deckNamesAndIds").await?;
 
     let mut deck_names: Vec<String> = decks.into_keys().collect();
     deck_names.sort();
 
-    Ok(AnkiResult {
+    Ok(AnkiFetchStatusResult {
         status: Status::Online,
         media_path: Some(media_path),
         decks: deck_names,
@@ -83,7 +87,7 @@ pub async fn anki_fetch_deck(
     deck: String,
     start_timestamp: Option<u128>,
     end_timestamp: Option<u128>,
-) -> Result<DeckResult, String> {
+) -> Result<AnkiFetchDeckResult, String> {
     let all_note_ids: Vec<i64> = call_anki_with_params(
         &http,
         &config,
@@ -128,7 +132,7 @@ pub async fn anki_fetch_deck(
         })
         .collect();
 
-    Ok(DeckResult {
+    Ok(AnkiFetchDeckResult {
         name: deck,
         total_notes: total_notes,
         notes: formatted_notes,

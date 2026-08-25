@@ -14,6 +14,12 @@ pub enum Status {
     Offline,
 }
 
+#[derive(serde::Serialize, Clone)]
+pub struct VideoSelectResult {
+    pub path: String,
+    pub name: String,
+}
+
 pub trait ResultExt<T> {
     fn err_msg(self) -> Result<T, String>;
 }

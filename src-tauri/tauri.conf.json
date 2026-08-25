@@ -15,12 +15,16 @@
         "title": "Sodatsuki",
         "width": 1280,
         "height": 720,
-        "minWidth": 854,
-        "minHeight": 480
+        "minWidth": 1280,
+        "minHeight": 720
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src 'self' ipc: http://ipc.localhost; video-src 'self' asset: http://asset.localhost",
+      "assetProtocol": {
+        "enable": true,
+        "scope": ["**"]
+      }
     }
   },
   "bundle": {

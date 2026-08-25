@@ -20,3 +20,9 @@ export type Note = {
   id: number;
   fields: Record<string, string>;
 };
+
+export type DateFilterState = {
+  apply: boolean;
+  start?: number;
+  end?: number;
+};

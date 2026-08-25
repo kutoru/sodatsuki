@@ -4,7 +4,7 @@ use crate::types::Status;
 
 #[derive(serde::Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct AnkiResult {
+pub struct AnkiFetchStatusResult {
     pub status: Status,
     pub media_path: Option<String>,
     pub decks: Vec<String>,
@@ -12,7 +12,7 @@ pub struct AnkiResult {
 
 #[derive(serde::Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct DeckResult {
+pub struct AnkiFetchDeckResult {
     pub name: String,
     pub total_notes: i32,
     pub notes: Vec<Note>,

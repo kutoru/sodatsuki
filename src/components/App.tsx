@@ -4,6 +4,7 @@ import { usePanelResize } from "../hooks/usePanelResize";
 import { useBgNoise } from "../hooks/useBgNoise";
 import { LeftPanel } from "./LeftPanel/LeftPanel";
 import { Toast } from "./Toast";
+import { MiddlePanel } from "./MiddlePanel";
 
 export const App = () => {
   const { leftPanel, middlePanel, rightPanel, leftResize, rightResize } =
@@ -42,17 +43,7 @@ export const App = () => {
         blurFilter={blurFilter}
       />
 
-      <div ref={middlePanel} className="flex flex-1 flex-col gap-3">
-        <div className="aspect-video flex-none shadow-even shadow-black">
-          <video className="size-full" controls />
-        </div>
-        <div
-          className="flex-1 bg-white/3 shadow-even shadow-black"
-          style={blurFilter}
-        >
-          controls/info
-        </div>
-      </div>
+      <MiddlePanel middlePanel={middlePanel} blurFilter={blurFilter} />
 
       <div
         ref={rightResize}
