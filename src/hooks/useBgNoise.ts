@@ -21,7 +21,7 @@ export const useBgNoise = ({
 
   return {
     backgroundImage: `url("data:image/svg+xml;utf8,${encodeURIComponent(
-      svg
+      svg,
     )}")`,
     backgroundSize: `${tileSize} ${tileSize}`,
   };

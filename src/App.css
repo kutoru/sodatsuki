@@ -2,12 +2,12 @@
 
 @font-face {
   font-family: FiraSans;
-  src: url('FiraSans-Regular.woff2');
+  src: url("FiraSans-Regular.woff2");
 }
 
 @font-face {
   font-family: ZenKakuGothicAntique;
-  src: url('ZenKakuGothicAntique-Regular.ttf');
+  src: url("ZenKakuGothicAntique-Regular.ttf");
 }
 
 html {
@@ -15,12 +15,9 @@ html {
   color-scheme: dark;
 }
 
-.shadow-even {
-  box-shadow: 0 0 5px 0px var(--tw-shadow-color);
-}
-
-.drop-shadow-even {
-  filter: drop-shadow(0 0 5px var(--tw-drop-shadow-color));
+@theme {
+  --shadow-even: 0 0 5px 0px red;
+  --drop-shadow-even: 0 0 5px red;
 }
 
 .slim-scrollbar::-webkit-scrollbar {

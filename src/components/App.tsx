@@ -26,13 +26,13 @@ export const App = () => {
   const blurFilter = { backdropFilter: "blur(2px)" };
 
   return (
-    <div className="flex flex-row h-dvh">
+    <div className="flex h-dvh flex-row">
       <div
-        className="size-full fixed -z-10 mix-blend-overlay"
+        className="fixed -z-10 size-full mix-blend-overlay"
         style={bgLines}
       />
       <div
-        className="size-full fixed -z-10 mix-blend-overlay"
+        className="fixed -z-10 size-full mix-blend-overlay"
         style={bgNoise}
       />
 
@@ -42,12 +42,12 @@ export const App = () => {
         blurFilter={blurFilter}
       />
 
-      <div ref={middlePanel} className="flex-1 flex flex-col gap-3">
+      <div ref={middlePanel} className="flex flex-1 flex-col gap-3">
         <div className="aspect-video flex-none shadow-even shadow-black">
           <video className="size-full" controls />
         </div>
         <div
-          className="bg-white/3 flex-1 shadow-even shadow-black"
+          className="flex-1 bg-white/3 shadow-even shadow-black"
           style={blurFilter}
         >
           controls/info
@@ -56,7 +56,7 @@ export const App = () => {
 
       <div
         ref={rightResize}
-        className="flex-none w-3 cursor-ew-resize select-none"
+        className="w-3 flex-none cursor-ew-resize select-none"
       />
 
       <div

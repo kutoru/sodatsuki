@@ -28,7 +28,7 @@ export const NoteRow = ({ notes, digitWidth, index, style }: Props) => {
   const note = notes[index];
 
   return (
-    <div style={style} className="pt-2 px-2">
+    <div style={style} className="px-2 pt-2">
       <InnerNoteElement
         note={note}
         index={index}
@@ -50,7 +50,7 @@ export const InnerNoteElement = memo(
   ({ note, index, isActive, digitWidth }: InnerNoteElementProps) => {
     const setCurrentNote = useStore((state) => state.setCurrentNote);
     const setSuccessNotification = useStore(
-      (state) => state.setSuccessNotification
+      (state) => state.setSuccessNotification,
     );
 
     const copyExpression = () => {
@@ -72,7 +72,7 @@ export const InnerNoteElement = memo(
     return (
       <div
         className={
-          "shadow-even rounded-md overflow-hidden flex-none transition outline-indigo-300/50 " +
+          "flex-none overflow-hidden rounded-md shadow-even outline-indigo-300/50 transition " +
           (isActive
             ? "bg-indigo-500/25 shadow-indigo-500/25 outline-2"
             : "bg-white/5 shadow-black/25")
@@ -105,7 +105,7 @@ export const InnerNoteElement = memo(
               icon: <WifiIcon className="size-full rotate-90" />,
             },
           ].map(({ field, icon }) => (
-            <div key={note.id + field} className="flex-1 relative h-2">
+            <div key={note.id + field} className="relative h-2 flex-1">
               <button
                 title={field}
                 onContextMenu={(e) => {
@@ -115,19 +115,19 @@ export const InnerNoteElement = memo(
                 onMouseLeave={(e) => {
                   e.currentTarget.classList.remove(
                     "-bottom-10!",
-                    "rounded-none!"
+                    "rounded-none!",
                   );
                 }}
                 onClick={(e) => {
                   e.currentTarget.classList.remove(
                     "-bottom-10!",
-                    "rounded-none!"
+                    "rounded-none!",
                   );
                 }}
                 className={
-                  "absolute bottom-0 left-0 py-2 select-none w-full h-12 rounded-b-sm flex-1 drop-shadow-even hover:-bottom-2 transition-all z-10 " +
+                  "absolute bottom-0 left-0 z-10 h-12 w-full flex-1 rounded-b-sm py-2 drop-shadow-even transition-all select-none hover:-bottom-2 " +
                   (!!note.fields[field]
-                    ? "bg-emerald-700/75 drop-shadow-emerald-500/50 active:bg-emerald-900/75 active:text-gray-300 cursor-pointer"
+                    ? "cursor-pointer bg-emerald-700/75 drop-shadow-emerald-500/50 active:bg-emerald-900/75 active:text-gray-300"
                     : "bg-rose-700/75 drop-shadow-rose-500/50")
                 }
               >
@@ -138,7 +138,7 @@ export const InnerNoteElement = memo(
         </div>
 
         <div className="flex flex-row">
-          <div className="ps-2 flex-1 flex flex-row items-center overflow-hidden">
+          <div className="flex flex-1 flex-row items-center overflow-hidden ps-2">
             <div
               className="flex-none text-center drop-shadow-even drop-shadow-black"
               style={{ width: `${digitWidth}px` }}
@@ -148,7 +148,7 @@ export const InnerNoteElement = memo(
 
             <Button
               onClick={copyExpression}
-              className="hover:drop-shadow-white/50 shrink! text-ellipsis whitespace-nowrap overflow-hidden"
+              className="shrink! overflow-hidden text-ellipsis whitespace-nowrap hover:drop-shadow-white/50"
             >
               {note.fields.Expression}
             </Button>
@@ -156,18 +156,18 @@ export const InnerNoteElement = memo(
 
           <Button
             onClick={openNoteInAnki}
-            className="w-9 ps-2.5 py-2.5 pe-1.25"
+            className="w-9 py-2.5 ps-2.5 pe-1.25"
           >
             <LogInIcon className="size-full rotate-180" />
           </Button>
 
-          <Button onClick={setVideoTime} className="w-8 ps-1.25 py-2.5 pe-1.25">
+          <Button onClick={setVideoTime} className="w-8 py-2.5 ps-1.25 pe-1.25">
             <ClockArrowRightIcon className="size-full" />
           </Button>
 
           <Button
             onClick={() => setCurrentNote(note)}
-            className="w-9 ps-1.25 py-2.5 pe-2.5"
+            className="w-9 py-2.5 ps-1.25 pe-2.5"
             disabled={isActive}
           >
             <SquareArrowRightExitIcon className="size-full" />
@@ -175,5 +175,5 @@ export const InnerNoteElement = memo(
         </div>
       </div>
     );
-  }
+  },
 );

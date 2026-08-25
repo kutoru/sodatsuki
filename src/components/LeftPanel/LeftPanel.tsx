@@ -52,7 +52,7 @@ const getDigitWidth = (notesLength: number) => {
   const charWidths = calculateCharacterWidths();
   const maxWidth = Object.values(charWidths).reduce(
     (p, c) => (p > c ? p : c),
-    0
+    0,
   );
   const totalDigits = String(notesLength).length;
 
@@ -104,13 +104,13 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
     <>
       <div
         ref={leftPanel}
-        className="flex-1 bg-white/3 shadow-even shadow-black flex flex-col scrollbar-thin overflow-auto"
+        className="flex flex-1 scrollbar-thin flex-col overflow-auto bg-white/3 shadow-even shadow-black"
         style={blurFilter}
       >
         <div className="flex flex-row items-center">
           <div
             className={
-              "rounded-full size-3 m-3.5 flex-none transition drop-shadow-even " +
+              "m-3.5 size-3 flex-none rounded-full drop-shadow-even transition " +
               ((anki.status === Status.Offline &&
                 "bg-rose-500 drop-shadow-rose-500") ||
                 (anki.status === Status.Online &&
@@ -119,7 +119,7 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
             }
           />
 
-          <div className="flex-1 text-lg text-center drop-shadow-even drop-shadow-black">
+          <div className="flex-1 text-center text-lg drop-shadow-even drop-shadow-black">
             Anki
           </div>
 
@@ -128,14 +128,14 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
           </Button>
         </div>
 
-        <div className="bg-white/10 h-1 mx-2 rounded-full shadow-sm flex-none" />
+        <div className="mx-2 h-1 flex-none rounded-full bg-white/10 shadow-sm" />
 
         <div className="flex flex-row items-center">
-          <div className="size-10 p-2 flex-none">
+          <div className="size-10 flex-none p-2">
             <BookMarkedIcon className="size-full" />
           </div>
 
-          <div className="flex-1 text-center drop-shadow-even drop-shadow-black text-ellipsis whitespace-nowrap overflow-hidden">
+          <div className="flex-1 overflow-hidden text-center text-ellipsis whitespace-nowrap drop-shadow-even drop-shadow-black">
             {deck?.name || "-"}
           </div>
 
@@ -155,7 +155,7 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
 
         <div
           className={
-            "shadow-even shadow-black rounded-full mx-2 text-center mb-2 " +
+            "mx-2 mb-2 rounded-full text-center shadow-even shadow-black " +
             (deck?.totalNotes === undefined
               ? "bg-rose-950/50"
               : "bg-emerald-950/50")
@@ -166,11 +166,11 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
           </div>
         </div>
 
-        <div className="bg-white/10 h-1 mx-2 rounded-full shadow-sm flex-none" />
+        <div className="mx-2 h-1 flex-none rounded-full bg-white/10 shadow-sm" />
 
         {deck?.notes && (
           <List
-            className="pb-2 slim-scrollbar"
+            className="slim-scrollbar pb-2"
             rowComponent={NoteRow}
             rowCount={deck.notes.length}
             rowHeight={8 + 40 + 8}
@@ -185,7 +185,7 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
 
       <div
         ref={leftResize}
-        className="flex-none w-3 cursor-ew-resize select-none"
+        className="w-3 flex-none cursor-ew-resize select-none"
       />
 
       <div className="relative z-10">
@@ -196,10 +196,10 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
           />
         )}
 
-        <div className="absolute top-0 -left-3 pointer-events-none overflow-x-hidden h-full px-3">
+        <div className="pointer-events-none absolute top-0 -left-3 h-full overflow-x-hidden px-3">
           <div
             className={
-              "flex flex-col pointer-events-auto h-full w-max overflow-auto bg-black/80 backdrop-blur-[2px] shadow-even shadow-black transition duration-500 " +
+              "pointer-events-auto flex h-full w-max flex-col overflow-auto bg-black/80 shadow-even shadow-black backdrop-blur-[2px] transition duration-500 " +
               (showDecks ? "" : "-translate-x-[calc(100%+0.75rem+0.75rem)]")
             }
           >
@@ -207,13 +207,13 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
               <Fragment key={deck}>
                 <button
                   onClick={() => loadDeck(deck)}
-                  className="select-none cursor-pointer p-2 hover:bg-white/25 active:text-gray-300 transition disabled:text-gray-400 disabled:bg-transparent disabled:cursor-default"
+                  className="cursor-pointer p-2 transition select-none hover:bg-white/25 active:text-gray-300 disabled:cursor-default disabled:bg-transparent disabled:text-gray-400"
                   disabled={loadingDeck}
                 >
                   {deck}
                 </button>
 
-                <div className="bg-white/25 h-1 mx-2 rounded-full flex-none last:hidden" />
+                <div className="mx-2 h-1 flex-none rounded-full bg-white/25 last:hidden" />
               </Fragment>
             ))}
           </div>
