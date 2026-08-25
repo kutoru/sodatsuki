@@ -1,25 +1,30 @@
 import { useEffect, useRef } from "react";
 
 import "codemirror/lib/codemirror.css";
-import "codemirror/addon/fold/foldgutter.css";
 import "codemirror/theme/monokai.css";
 import "codemirror/mode/htmlmixed/htmlmixed";
-import "codemirror/mode/stex/stex";
-import "codemirror/addon/fold/foldcode";
-import "codemirror/addon/fold/foldgutter";
 import "codemirror/addon/fold/xml-fold";
 import "codemirror/addon/edit/matchtags";
-import "codemirror/addon/edit/closetag";
-import "codemirror/addon/display/placeholder";
 
 import CodeMirror from "codemirror";
 
-export const useCodeEditor = (initialText: string) => {
+export const useCodeEditor = (
+  field: string,
+  fieldValue: string,
+  setFieldValue: (fieldValue: string) => void,
+) => {
   const parent = useRef<HTMLDivElement>(null);
+  const display = useRef<HTMLDivElement>(null);
   const editor = useRef<CodeMirror.Editor>(null);
 
+  const setDisplayValue = (value: string) => {
+    if (display.current) {
+      display.current.innerHTML = value || `${field}...`;
+    }
+  };
+
   useEffect(() => {
-    if (!parent.current || editor.current) {
+    if (!parent.current || !display.current || editor.current) {
       return;
     }
 
@@ -32,9 +37,41 @@ export const useCodeEditor = (initialText: string) => {
       viewportMargin: Infinity,
       lineWiseCopyCut: false,
       mode: "text/html",
-      value: initialText,
+      value: fieldValue,
+      undoDepth: 0,
     });
+
+    setDisplayValue(fieldValue);
+
+    const change = (
+      instance: CodeMirror.Editor,
+      changeObj: CodeMirror.EditorChange,
+    ) => {
+      console.log("change", instance.getValue(), changeObj);
+
+      setDisplayValue(instance.getValue());
+    };
+
+    const blur = (instance: CodeMirror.Editor, event: FocusEvent) => {
+      console.log("blur", instance, event);
+      instance.setCursor(0);
+      setFieldValue(instance.getValue());
+    };
+
+    editor.current.on("change", change);
+    editor.current.on("blur", blur);
   }, []);
 
-  return { parent, editor };
+  useEffect(() => {
+    const identical = editor.current?.getValue() === fieldValue;
+    console.log("identical", editor.current?.getValue(), fieldValue, identical);
+
+    if (editor.current && !identical) {
+      console.log("effect update");
+      editor.current.setValue(fieldValue);
+      setDisplayValue(fieldValue);
+    }
+  }, [fieldValue]);
+
+  return { editorParent: parent, displayElement: display };
 };

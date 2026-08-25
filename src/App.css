@@ -37,16 +37,11 @@ html {
 }
 
 .CodeMirror {
-  background-color: rgba(0 0 0 / 0.5) !important;
-
+  background-color: transparent !important;
   height: auto !important;
-  font-family: Consolas, monospace;
+  font-family: Consolas, monospace !important;
 }
 
 .CodeMirror-wrap pre {
   word-break: break-word;
-}
-
-.code-mirror {
-  height: 100%;
 }

@@ -6,7 +6,6 @@ import { CheckIcon, RotateCwIcon, XIcon } from "lucide-react";
 import clsx from "clsx";
 import { Field, Note } from "../../types";
 import { FieldElement } from "./FieldElement";
-import { useCodeEditor } from "../../hooks/useCodeEditor";
 
 type Props = {
   rightPanel: Ref<HTMLDivElement>;
@@ -24,10 +23,6 @@ const relevantFields: Field[] = [
 ];
 
 export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
-  const { parent: codeJarParent, editor } = useCodeEditor(
-    `<div style="width: 50px;">This is html <p>code</p> everyone</div>`,
-  );
-
   const currentNote = useStore((state) => state.currentNote);
   const setCurrentNote = useStore((state) => state.setCurrentNote);
 
@@ -37,8 +32,6 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
     if (currentNote) {
       setEditNote(structuredClone(currentNote));
     }
-
-    console.log("note", currentNote);
   }, [currentNote]);
 
   return (
@@ -99,11 +92,19 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
               key={field}
               field={field}
               fieldValue={editNote?.fields[field] ?? ""}
-              setFieldValue={() => {}}
+              setFieldValue={(value) =>
+                setEditNote((prev) => {
+                  if (!prev) {
+                    return prev;
+                  }
+
+                  prev.fields[field] = value;
+
+                  return { ...prev };
+                })
+              }
             />
           ))}
-
-          <div ref={codeJarParent} className="h-min" />
         </div>
       </div>
     </>

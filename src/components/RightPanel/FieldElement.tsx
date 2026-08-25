@@ -1,36 +1,23 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Button } from "../Button";
 import { PencilIcon } from "lucide-react";
 import clsx from "clsx";
+import { useCodeEditor } from "../../hooks/useCodeEditor";
 
 type Props = {
   field: string;
   fieldValue: string;
-  setFieldValue: (field: string) => void;
+  setFieldValue: (fieldValue: string) => void;
 };
 
 export const FieldElement = ({ field, fieldValue, setFieldValue }: Props) => {
   const [expanded, setExpanded] = useState(false);
 
-  const container = useRef<HTMLDivElement>(null);
-  const textarea = useRef<HTMLTextAreaElement>(null);
-
-  useEffect(() => {
-    if (!container.current || !textarea.current) {
-      return;
-    }
-
-    if (expanded) {
-      const totalHeight = textarea.current.scrollHeight;
-
-      container.current.style.height = `${totalHeight}px`;
-      textarea.current.style.height = "auto";
-      textarea.current.style.height = `${totalHeight}px`;
-    } else {
-      container.current.style.height = "0";
-      textarea.current.style.height = "0";
-    }
-  }, [expanded]);
+  const { editorParent, displayElement } = useCodeEditor(
+    field,
+    fieldValue,
+    setFieldValue,
+  );
 
   return (
     <div key={field} className="flex flex-col">
@@ -45,39 +32,21 @@ export const FieldElement = ({ field, fieldValue, setFieldValue }: Props) => {
       </div>
 
       <div
+        ref={displayElement}
         className={clsx(
-          "mx-2 rounded-md bg-white/5 p-1 wrap-break-word shadow-even shadow-black/25 transition-[border-radius]",
+          "mx-2 rounded-md bg-white/5 p-1 wrap-break-word whitespace-pre-line shadow-even shadow-black/25 transition-[border-radius]",
           !fieldValue && "text-gray-400/75 italic",
           expanded && "rounded-b-none",
         )}
-        dangerouslySetInnerHTML={{
-          __html: fieldValue || `${field}...`,
-        }}
       />
 
       <div
-        ref={container}
-        className="flex flex-row overflow-hidden px-2 transition-[height]"
-      >
-        <textarea
-          ref={textarea}
-          className={clsx(
-            "w-0 flex-1 resize-none overflow-hidden rounded-md bg-black/50 p-2 font-mono break-all shadow-even shadow-black/25 transition-[height,border-radius]",
-            expanded && "rounded-t-none",
-          )}
-          value={fieldValue}
-          disabled
-          onInput={(e) => {
-            if (!expanded) {
-              return;
-            }
-
-            const element = e.target as HTMLTextAreaElement;
-            element.style.height = "auto";
-            element.style.height = element.scrollHeight + "px";
-          }}
-        />
-      </div>
+        ref={editorParent}
+        className={clsx(
+          "mx-2 overflow-hidden rounded-md bg-black/50 px-1 shadow-even shadow-black/25 transition-[height,border-radius,padding]",
+          expanded ? "rounded-t-none py-1" : "h-0",
+        )}
+      />
     </div>
   );
 };
