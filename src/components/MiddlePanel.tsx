@@ -11,6 +11,7 @@ import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { handleError } from "../utils";
 import clsx from "clsx";
 import { useStore } from "../hooks/useStore";
+import config from "../mockState.json";
 
 type Props = {
   middlePanel: Ref<HTMLDivElement>;
@@ -71,7 +72,7 @@ export const MiddlePanel = ({ middlePanel, blurFilter }: Props) => {
   const dateFilter = useStore((state) => state.dateFilter);
   const setDateFilter = useStore((state) => state.setDateFilter);
 
-  const [videoFile, setVideoFile] = useState<VideoFileState>();
+  const [videoFile, setVideoFile] = useState<VideoFileState>(config.videoFile);
   const [videoRange, setVideoRange] = useState<{
     start?: number;
     end?: number;
@@ -112,7 +113,6 @@ export const MiddlePanel = ({ middlePanel, blurFilter }: Props) => {
       const end = getVideoEndTime(start, vid);
 
       setVideoRange({ start, end });
-      setDateFilter((prev) => ({ ...prev, start, end }));
     };
 
     video.current.addEventListener("loadedmetadata", onLoadedMetadata);
@@ -198,9 +198,19 @@ export const MiddlePanel = ({ middlePanel, blurFilter }: Props) => {
             </label>
           </div>
 
-          <div className="size-10 flex-none p-2">
+          <Button
+            onClick={() =>
+              setDateFilter(() => ({
+                applyStart: true,
+                applyEnd: true,
+                start: videoRange.start,
+                end: videoRange.end,
+              }))
+            }
+            className="p-2"
+          >
             <FunnelIcon className="size-full" />
-          </div>
+          </Button>
 
           <div
             className={clsx(

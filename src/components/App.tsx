@@ -5,7 +5,7 @@ import { useBgNoise } from "../hooks/useBgNoise";
 import { LeftPanel } from "./LeftPanel/LeftPanel";
 import { Toast } from "./Toast";
 import { MiddlePanel } from "./MiddlePanel";
-import { RightPanel } from "./RightPanel";
+import { RightPanel } from "./RightPanel/RightPanel";
 
 export const App = () => {
   const { leftPanel, middlePanel, rightPanel, leftResize, rightResize } =

@@ -9,6 +9,7 @@ import { NoteRow } from "./NoteRow";
 import clsx from "clsx";
 import { Separator } from "../Separator";
 import { useStore } from "../../hooks/useStore";
+import config from "../../mockState.json";
 
 type Props = {
   leftPanel: Ref<HTMLDivElement>;
@@ -68,6 +69,11 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
   const anki = useStore((state) => state.anki);
   const setAnki = useStore((state) => state.setAnki);
 
+  const [initialDeckState, setInitialDeckState] = useState({
+    deckName: config.deckName,
+    loaded: false,
+  });
+
   const deck = useStore((state) => state.deck);
   const setDeck = useStore((state) => state.setDeck);
 
@@ -112,6 +118,13 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
   useEffect(() => {
     loadAnki();
   }, []);
+
+  useEffect(() => {
+    if (!initialDeckState.loaded && anki.status === Status.Online) {
+      setInitialDeckState({ deckName: "", loaded: true });
+      loadDeck(initialDeckState.deckName);
+    }
+  }, [anki]);
 
   useEffect(() => {
     if (!deck?.name) {

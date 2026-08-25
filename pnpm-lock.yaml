@@ -23,9 +23,21 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      codejar:
+        specifier: ^4.3.0
+        version: 4.3.0
+      codemirror:
+        specifier: ^5.63.1
+        version: 5.65.21
       lucide-react:
         specifier: ^1.33.0
         version: 1.33.0(react@19.2.8)
+      prism-code-editor:
+        specifier: ^5.3.0
+        version: 5.3.0
+      prismjs:
+        specifier: ^1.30.0
+        version: 1.30.0
       react:
         specifier: ^19.1.0
         version: 19.2.8
@@ -45,6 +57,12 @@ importers:
       '@tauri-apps/cli':
         specifier: ^2
         version: 2.11.4
+      '@types/codemirror':
+        specifier: ^5.60.0
+        version: 5.60.18
+      '@types/prismjs':
+        specifier: ^1.26.6
+        version: 1.26.6
       '@types/react':
         specifier: ^19.1.8
         version: 19.2.18
@@ -640,8 +658,14 @@ packages:
   '@types/babel__traverse@7.28.0':
     resolution: {integrity: sha512-8PvcXf70gTDZBgt9ptxJ8elBeBjcLOAcOtoO/mPJjtji1+CdGbHgm77om1GrsPxsiE+uXIpNSK64UYaIwQXd4Q==}
 
+  '@types/codemirror@5.60.18':
+    resolution: {integrity: sha512-aSBOPXH2PXRYixxUpVP1sJ5+S0vEfKDvR+lABZ7Kju/9Qb0SSbZk72NihWaKoQbANyibs92q4DBfYasywxnNkA==}
+
   '@types/estree@1.0.9':
     resolution: {integrity: sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg==}
+
+  '@types/prismjs@1.26.6':
+    resolution: {integrity: sha512-vqlvI7qlMvcCBbVe0AKAb4f97//Hy0EBTaiW8AalRnG/xAN5zOiWWyrNqNXeq8+KAuvRewjCVY1+IPxk4RdNYw==}
 
   '@types/react-dom@19.2.4':
     resolution: {integrity: sha512-Bsc+QHgp+P/F02XDzNCY9jnZNCUuLki36KT7VKrTXXLdHf+vHMNZnW1rVu5DNW/rCK+fya3DATySbLM4yhtKUw==}
@@ -650,6 +674,9 @@ packages:
 
   '@types/react@19.2.18':
     resolution: {integrity: sha512-AnzbBERsrLKtk2XSfTbYRLjQPdy116Sty4q+T+Bp3IC4l6jNBvreVPAHmpq9qhXQM7CXZPjLVmGMw9sy+hxQ3w==}
+
+  '@types/tern@0.23.9':
+    resolution: {integrity: sha512-ypzHFE/wBzh+BlH6rrBgS5I/Z7RD21pGhZ2rltb/+ZrVM1awdZwjx7hE5XfuYgHWk9uvV5HLZN3SloevCAp3Bw==}
 
   '@vitejs/plugin-react@4.7.0':
     resolution: {integrity: sha512-gUu9hwfWvvEDBBmgtAowQCojwZmJ5mcLn3aufeCsitijs3+f2NsrPtlAWIR6OPiqljl96GVCUbLe0HyqIpVaoA==}
@@ -673,6 +700,12 @@ packages:
   clsx@2.1.1:
     resolution: {integrity: sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==}
     engines: {node: '>=6'}
+
+  codejar@4.3.0:
+    resolution: {integrity: sha512-A7BlrtD2oHR4xsABs/lLvDNxiPxkx71SuyHhcilBHbPMASpQs4d1AG2XjDSAm7y40RmfXbSGbMBhllGy//CDOA==}
+
+  codemirror@5.65.21:
+    resolution: {integrity: sha512-6teYk0bA0nR3QP0ihGMoxuKzpl5W80FpnHpBJpgy66NK3cZv5b/d/HY8PnRvfSsCG1MTfr92u2WUl+wT0E40mQ==}
 
   convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
@@ -910,6 +943,13 @@ packages:
     resolution: {integrity: sha512-OpN0zzVdiaiAhxpuuj5efpIS4sY9j7bY6uR5mnj5yPzGkdkjNKSJeUThPb60Jw29QuAZgA4o+/iB49kFiaBX6g==}
     engines: {node: '>=14'}
     hasBin: true
+
+  prism-code-editor@5.3.0:
+    resolution: {integrity: sha512-ET80c+zFx1QXsA+XejqRt1LNoZ2O/N9P1JIuPc1L2AVRSANHKhag0cQTdV0DF2eHjWrccdvRwLD9kp9IvDDBYg==}
+
+  prismjs@1.30.0:
+    resolution: {integrity: sha512-DEvV2ZF2r2/63V+tK8hQvrR2ZGn10srHbXviTlcv7Kpzw8jWiNTqbVgjO3IY8RxrrOUF8VPMQQFysYYYv0YZxw==}
+    engines: {node: '>=6'}
 
   react-dom@19.2.8:
     resolution: {integrity: sha512-rVprimfGBG3DR+Tq0IQG2DT5PxKth1WIGDmj5yPmlzr4YBe7uyE+Du4oVqTDXZSHGGGXRtTJEGSSePyQCMBglQ==}
@@ -1466,7 +1506,13 @@ snapshots:
     dependencies:
       '@babel/types': 7.29.8
 
+  '@types/codemirror@5.60.18':
+    dependencies:
+      '@types/tern': 0.23.9
+
   '@types/estree@1.0.9': {}
+
+  '@types/prismjs@1.26.6': {}
 
   '@types/react-dom@19.2.4(@types/react@19.2.18)':
     dependencies:
@@ -1475,6 +1521,10 @@ snapshots:
   '@types/react@19.2.18':
     dependencies:
       csstype: 3.2.3
+
+  '@types/tern@0.23.9':
+    dependencies:
+      '@types/estree': 1.0.9
 
   '@vitejs/plugin-react@4.7.0(vite@7.3.6(jiti@2.7.0)(lightningcss@1.32.0))':
     dependencies:
@@ -1501,6 +1551,10 @@ snapshots:
   caniuse-lite@1.0.30001809: {}
 
   clsx@2.1.1: {}
+
+  codejar@4.3.0: {}
+
+  codemirror@5.65.21: {}
 
   convert-source-map@2.0.0: {}
 
@@ -1651,6 +1705,10 @@ snapshots:
       prettier: 3.9.6
 
   prettier@3.9.6: {}
+
+  prism-code-editor@5.3.0: {}
+
+  prismjs@1.30.0: {}
 
   react-dom@19.2.8(react@19.2.8):
     dependencies:

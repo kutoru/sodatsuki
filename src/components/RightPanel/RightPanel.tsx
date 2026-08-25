@@ -1,10 +1,12 @@
 import { Ref, useEffect, useState } from "react";
-import { Separator } from "./Separator";
-import { useStore } from "../hooks/useStore";
-import { Button } from "./Button";
-import { CheckIcon, PencilIcon, RotateCwIcon, XIcon } from "lucide-react";
+import { Separator } from "../Separator";
+import { useStore } from "../../hooks/useStore";
+import { Button } from "../Button";
+import { CheckIcon, RotateCwIcon, XIcon } from "lucide-react";
 import clsx from "clsx";
-import { Field, Note } from "../types";
+import { Field, Note } from "../../types";
+import { FieldElement } from "./FieldElement";
+import { useCodeEditor } from "../../hooks/useCodeEditor";
 
 type Props = {
   rightPanel: Ref<HTMLDivElement>;
@@ -12,7 +14,20 @@ type Props = {
   blurFilter: { backdropFilter: string };
 };
 
+const relevantFields: Field[] = [
+  "Meaning",
+  "Reading",
+  "Audio",
+  "Sentence",
+  "Sentence Audio",
+  "Image_URI",
+];
+
 export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
+  const { parent: codeJarParent, editor } = useCodeEditor(
+    `<div style="width: 50px;">This is html <p>code</p> everyone</div>`,
+  );
+
   const currentNote = useStore((state) => state.currentNote);
   const setCurrentNote = useStore((state) => state.setCurrentNote);
 
@@ -25,15 +40,6 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
 
     console.log("note", currentNote);
   }, [currentNote]);
-
-  const relevantFields: Field[] = [
-    "Meaning",
-    "Reading",
-    "Audio",
-    "Sentence",
-    "Sentence Audio",
-    "Image_URI",
-  ];
 
   return (
     <>
@@ -84,41 +90,20 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
 
         <div
           className={clsx(
-            "slim-scrollbar overflow-auto pb-2 transition-opacity",
+            "slim-scrollbar flex-1 overflow-auto pb-2 transition-opacity",
             !currentNote && "pointer-events-none opacity-0 select-none",
           )}
         >
           {relevantFields.map((field) => (
-            <div key={field} className="flex flex-col">
-              <div className="flex flex-row items-center">
-                <div className="flex-1 overflow-hidden ps-2 text-ellipsis whitespace-nowrap drop-shadow-even drop-shadow-black">
-                  {field}
-                </div>
-
-                <Button className="p-2">
-                  <PencilIcon className="size-full" />
-                </Button>
-              </div>
-
-              <div
-                className={clsx(
-                  "mx-2 rounded-md bg-white/5 p-1 wrap-break-word shadow-even shadow-black/25",
-                  !editNote?.fields[field] && "text-gray-400/75 italic",
-                )}
-                dangerouslySetInnerHTML={{
-                  __html: editNote?.fields[field] || `${field}...`,
-                }}
-              />
-
-              {/* <div className="flex px-2">
-                <textarea
-                  className="h-32 w-0 flex-1 resize-none rounded-md bg-white/5 p-1 shadow-even shadow-black/25"
-                  value={currentNote?.fields[field]}
-                  disabled
-                />
-              </div> */}
-            </div>
+            <FieldElement
+              key={field}
+              field={field}
+              fieldValue={editNote?.fields[field] ?? ""}
+              setFieldValue={() => {}}
+            />
           ))}
+
+          <div ref={codeJarParent} className="grid font-mono" />
         </div>
       </div>
     </>

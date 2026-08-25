@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { AnkiState, DateFilterState, DeckState, Note, Status } from "../types";
+import config from "../mockState.json";
 
 type Store = {
   anki: AnkiState;
@@ -28,7 +29,7 @@ export const useStore = create<Store>((set) => ({
   currentNote: undefined,
   setCurrentNote: (note) => set({ currentNote: note }),
 
-  dateFilter: { applyStart: true, applyEnd: true },
+  dateFilter: config.dateFilter,
   setDateFilter: (updater) =>
     set((state) => ({ dateFilter: updater(state.dateFilter) })),
 

@@ -35,3 +35,25 @@ html {
   background: var(--color-separator);
   border-radius: 0.25rem;
 }
+
+.language-html {
+  caret-color: white;
+
+  .tag {
+    color: red;
+  }
+
+  .attr-name {
+    color: green;
+  }
+
+  .attr-value {
+    color: yellow;
+
+    .attr-equals {
+      color: white;
+    }
+  }
+}
+
+      .CodeMirror {background-color: rgba(0 0 0 / 0.5) !important; font-family: FiraSans !important;}
