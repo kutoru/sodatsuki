@@ -103,7 +103,7 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
             />
           ))}
 
-          <div ref={codeJarParent} className="grid font-mono" />
+          <div ref={codeJarParent} className="h-min" />
         </div>
       </div>
     </>

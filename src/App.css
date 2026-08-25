@@ -36,24 +36,17 @@ html {
   border-radius: 0.25rem;
 }
 
-.language-html {
-  caret-color: white;
+.CodeMirror {
+  background-color: rgba(0 0 0 / 0.5) !important;
 
-  .tag {
-    color: red;
-  }
-
-  .attr-name {
-    color: green;
-  }
-
-  .attr-value {
-    color: yellow;
-
-    .attr-equals {
-      color: white;
-    }
-  }
+  height: auto !important;
+  font-family: Consolas, monospace;
 }
 
-      .CodeMirror {background-color: rgba(0 0 0 / 0.5) !important; font-family: FiraSans !important;}
+.CodeMirror-wrap pre {
+  word-break: break-word;
+}
+
+.code-mirror {
+  height: 100%;
+}

@@ -1,12 +1,4 @@
 import { useEffect, useRef } from "react";
-import { CodeJar } from "codejar";
-import prismjs from "prismjs";
-import { minimalEditor, basicEditor } from "prism-code-editor/setups";
-import "prism-code-editor/prism/languages/markup";
-import { matchTags } from "prism-code-editor/match-tags";
-import { matchBrackets } from "prism-code-editor/match-brackets";
-import { highlightBracketPairs } from "prism-code-editor/highlight-brackets";
-import { PrismEditor } from "prism-code-editor";
 
 import "codemirror/lib/codemirror.css";
 import "codemirror/addon/fold/foldgutter.css";
@@ -46,36 +38,3 @@ export const useCodeEditor = (initialText: string) => {
 
   return { parent, editor };
 };
-
-// export const useCodeEditor = (initialText: string) => {
-//   const parent = useRef<HTMLDivElement>(null);
-//   const editor = useRef<PrismEditor>(null);
-
-//   useEffect(() => {
-//     if (!parent.current || editor.current) {
-//       return;
-//     }
-
-//     editor.current = basicEditor(parent.current, {
-//       language: "html",
-//       theme: "github-dark",
-//       lineNumbers: false,
-//       value: initialText,
-//       wordWrap: true,
-//     });
-
-//     editor.current.addExtensions(matchTags());
-//     editor.current.addExtensions(matchBrackets());
-//     editor.current.addExtensions(highlightBracketPairs());
-
-//     // parent.current.classList.add("language-html");
-//     // jar.current = CodeJar(
-//     //   parent.current,
-//     //   (e) => prismjs.highlightElement(e),
-//     //   {},
-//     // );
-//     // jar.current.updateCode(initialText);
-//   }, []);
-
-//   return { parent, editor };
-// };
