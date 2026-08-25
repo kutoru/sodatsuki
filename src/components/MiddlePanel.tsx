@@ -161,7 +161,7 @@ export const MiddlePanel = ({ middlePanel, blurFilter }: Props) => {
             )}
           >
             <Button
-              className="w-8 flex-none p-2 pe-0"
+              className="w-8 p-2 pe-0"
               onClick={() =>
                 setDateFilter((prev) => ({ ...prev, start: videoRange.start }))
               }
@@ -209,7 +209,7 @@ export const MiddlePanel = ({ middlePanel, blurFilter }: Props) => {
             )}
           >
             <Button
-              className="w-8 flex-none p-2 pe-0"
+              className="w-8 p-2 pe-0"
               onClick={() =>
                 setDateFilter((prev) => ({ ...prev, end: videoRange.end }))
               }

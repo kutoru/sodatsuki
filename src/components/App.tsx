@@ -5,6 +5,7 @@ import { useBgNoise } from "../hooks/useBgNoise";
 import { LeftPanel } from "./LeftPanel/LeftPanel";
 import { Toast } from "./Toast";
 import { MiddlePanel } from "./MiddlePanel";
+import { RightPanel } from "./RightPanel";
 
 export const App = () => {
   const { leftPanel, middlePanel, rightPanel, leftResize, rightResize } =
@@ -32,6 +33,7 @@ export const App = () => {
         className="fixed -z-10 size-full mix-blend-overlay"
         style={bgLines}
       />
+
       <div
         className="fixed -z-10 size-full mix-blend-overlay"
         style={bgNoise}
@@ -45,18 +47,11 @@ export const App = () => {
 
       <MiddlePanel middlePanel={middlePanel} blurFilter={blurFilter} />
 
-      <div
-        ref={rightResize}
-        className="w-3 flex-none cursor-ew-resize select-none"
+      <RightPanel
+        rightPanel={rightPanel}
+        rightResize={rightResize}
+        blurFilter={blurFilter}
       />
-
-      <div
-        ref={rightPanel}
-        className="flex-1 bg-white/3 shadow-even shadow-black"
-        style={blurFilter}
-      >
-        field editor
-      </div>
 
       <Toast />
     </div>
