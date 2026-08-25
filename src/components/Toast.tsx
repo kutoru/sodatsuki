@@ -19,7 +19,7 @@ export const Toast = () => {
   return (
     <div
       className={
-        "fixed pointer-events-none size-full transition flex delay-300 z-50 " +
+        "fixed pointer-events-none size-full transition flex z-50 " +
         (successNotificationShown ? "" : "opacity-0")
       }
     >

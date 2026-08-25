@@ -145,39 +145,11 @@ pub async fn anki_open_note(
         &http,
         &config,
         "guiBrowse",
-        json!({ "query": format!("nid:{}", note_id) }),
+        json!({
+            "query": format!("nid:{}", note_id),
+        }),
     )
     .await?;
 
-    focus_anki_window()?;
-
-    Ok(())
-}
-
-#[cfg(target_os = "windows")]
-pub fn focus_anki_window() -> Result<(), String> {
-    use showpid::platform::ActivateWindow;
-
-    let mut system = sysinfo::System::new();
-
-    system.refresh_processes(sysinfo::ProcessesToUpdate::All, true);
-
-    let (pid, _process) = system
-        .processes()
-        .iter()
-        .find(|(_pid, process)| process.name() == "anki.exe")
-        .ok_or("Could not find anki.exe".to_string())?;
-
-    let config = showpid::Config::new(pid.as_u32()).with_verbose(true);
-    let mut activator = showpid::platform::WindowActivator::new(config);
-    activator.execute().err_msg()?;
-
-    println!("Window activated successfully");
-
-    Ok(())
-}
-
-#[cfg(not(target_os = "windows"))]
-pub fn focus_anki_window() -> Result<(), String> {
     Ok(())
 }

@@ -24,5 +24,3 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 reqwest = { version = "0.13.4", features = ["json"] }
 tauri-plugin-clipboard-manager = "2"
-sysinfo = "0.39.6"
-showpid = "1.0.9"
