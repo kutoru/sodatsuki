@@ -2,7 +2,6 @@ import {
   ExternalLinkIcon,
   FilePlayIcon,
   FunnelIcon,
-  MinusIcon,
   RotateCwIcon,
 } from "lucide-react";
 import { Ref, useEffect, useRef, useState } from "react";
@@ -67,6 +66,8 @@ const msToDateString = (ms?: number) => {
 };
 
 export const MiddlePanel = ({ middlePanel, blurFilter }: Props) => {
+  const deck = useStore((state) => state.deck);
+
   const dateFilter = useStore((state) => state.dateFilter);
   const setDateFilter = useStore((state) => state.setDateFilter);
 
@@ -78,13 +79,19 @@ export const MiddlePanel = ({ middlePanel, blurFilter }: Props) => {
 
   const video = useRef<HTMLVideoElement>(null);
 
-  const dateInputRed = true;
-
   const selectFile = () => {
     invoke<VideoFileState>("video_select")
       .then(setVideoFile)
       .catch(handleError());
   };
+
+  useEffect(() => {
+    if (!video.current) {
+      return;
+    }
+
+    video.current.volume = 0.2;
+  }, []);
 
   useEffect(() => {
     if (!video.current) {
@@ -105,7 +112,7 @@ export const MiddlePanel = ({ middlePanel, blurFilter }: Props) => {
       const end = getVideoEndTime(start, vid);
 
       setVideoRange({ start, end });
-      setDateFilter((prev) => ({ apply: prev.apply, start, end }));
+      setDateFilter((prev) => ({ ...prev, start, end }));
     };
 
     video.current.addEventListener("loadedmetadata", onLoadedMetadata);
@@ -146,15 +153,11 @@ export const MiddlePanel = ({ middlePanel, blurFilter }: Props) => {
 
         <Separator />
 
-        <div className="flex flex-row items-center justify-between">
-          <div className="size-14 flex-none p-4">
-            <FunnelIcon className="size-full" />
-          </div>
-
+        <div className="flex flex-row items-center justify-evenly p-2">
           <div
             className={clsx(
-              "flex h-10 max-w-64 flex-1 rounded-full shadow-even shadow-black transition-colors",
-              dateInputRed ? "bg-rose-950/50" : "bg-emerald-950/50",
+              "flex h-10 max-w-72 flex-1 rounded-full shadow-even shadow-black transition-colors",
+              !deck ? "bg-rose-950/50" : "bg-emerald-950/50",
             )}
           >
             <Button
@@ -179,16 +182,30 @@ export const MiddlePanel = ({ middlePanel, blurFilter }: Props) => {
                 }));
               }}
             />
+
+            <label className="cursor-pointer p-2.5 ps-0">
+              <input
+                className="aspect-square size-full flex-none cursor-pointer shadow-even shadow-black hover:shadow-white/25"
+                type="checkbox"
+                onChange={(e) =>
+                  setDateFilter((prev) => ({
+                    ...prev,
+                    applyStart: e.target.checked,
+                  }))
+                }
+                checked={dateFilter.applyStart}
+              />
+            </label>
           </div>
 
           <div className="size-10 flex-none p-2">
-            <MinusIcon className="size-full" />
+            <FunnelIcon className="size-full" />
           </div>
 
           <div
             className={clsx(
-              "flex h-10 max-w-64 flex-1 rounded-full shadow-even shadow-black transition-colors",
-              dateInputRed ? "bg-rose-950/50" : "bg-emerald-950/50",
+              "flex h-10 max-w-72 flex-1 rounded-full shadow-even shadow-black transition-colors",
+              !deck ? "bg-rose-950/50" : "bg-emerald-950/50",
             )}
           >
             <Button
@@ -213,16 +230,21 @@ export const MiddlePanel = ({ middlePanel, blurFilter }: Props) => {
                 }));
               }}
             />
-          </div>
 
-          <input
-            className="m-4 size-6 flex-none cursor-pointer shadow-even shadow-black hover:shadow-white/25"
-            type="checkbox"
-            onChange={(e) =>
-              setDateFilter((prev) => ({ ...prev, apply: e.target.checked }))
-            }
-            checked={dateFilter.apply}
-          />
+            <label className="cursor-pointer p-2.5 ps-0">
+              <input
+                className="aspect-square size-full flex-none cursor-pointer shadow-even shadow-black hover:shadow-white/25"
+                type="checkbox"
+                onChange={(e) =>
+                  setDateFilter((prev) => ({
+                    ...prev,
+                    applyEnd: e.target.checked,
+                  }))
+                }
+                checked={dateFilter.applyEnd}
+              />
+            </label>
+          </div>
         </div>
       </div>
     </div>

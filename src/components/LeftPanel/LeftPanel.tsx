@@ -1,4 +1,4 @@
-import { Fragment, Ref, useEffect, useState } from "react";
+import { Fragment, Ref, useEffect, useRef, useState } from "react";
 import { AnkiState, DeckState, Status } from "../../types";
 import { invoke } from "@tauri-apps/api/core";
 import { handleError } from "../../utils";
@@ -65,11 +65,11 @@ const getDigitWidth = (notesLength: number) => {
 export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
   const dateFilter = useStore((state) => state.dateFilter);
 
-  const [anki, setAnki] = useState<AnkiState>({
-    status: Status.Offline,
-  });
+  const anki = useStore((state) => state.anki);
+  const setAnki = useStore((state) => state.setAnki);
 
-  const [deck, setDeck] = useState<DeckState>();
+  const deck = useStore((state) => state.deck);
+  const setDeck = useStore((state) => state.setDeck);
 
   const [loadingDeck, setLoadingDeck] = useState(false);
   const [showDecks, setShowDecks] = useState(false);
@@ -77,6 +77,7 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
   const [digitWidth, setDigitWidth] = useState(0);
 
   const noteList = useListRef(null);
+  const lastLoadedDeck = useRef(0);
 
   const loadAnki = () => {
     setShowDecks(false);
@@ -89,14 +90,15 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
 
   const loadDeck = (deckName: string) => {
     setLoadingDeck(true);
+    lastLoadedDeck.current = Date.now();
 
     invoke<DeckState>("anki_fetch_deck", {
       deck: deckName,
-      startTimestamp: dateFilter.apply ? dateFilter.start : undefined,
-      endTimestamp: dateFilter.apply ? dateFilter.end : undefined,
+      startTimestamp: dateFilter.applyStart ? dateFilter.start : undefined,
+      endTimestamp: dateFilter.applyEnd ? dateFilter.end : undefined,
     })
       .then((deck) => {
-        noteList.current?.scrollToRow({ index: 0 });
+        noteList.current?.element?.scrollTo({ top: 0 });
         setDigitWidth(getDigitWidth(deck.notes.length));
         setDeck(deck);
       })
@@ -116,7 +118,14 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
       return;
     }
 
-    loadDeck(deck.name);
+    const timeout = setTimeout(
+      () => loadDeck(deck.name),
+      lastLoadedDeck.current + 1000 - Date.now(),
+    );
+
+    return () => {
+      clearTimeout(timeout);
+    };
   }, [dateFilter]);
 
   return (
@@ -176,9 +185,7 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
         <div
           className={clsx(
             "mx-2 mb-2 rounded-full text-center shadow-even shadow-black",
-            deck?.totalNotes === undefined
-              ? "bg-rose-950/50"
-              : "bg-emerald-950/50",
+            !deck ? "bg-rose-950/50" : "bg-emerald-950/50",
           )}
         >
           <div className="drop-shadow-even drop-shadow-black">

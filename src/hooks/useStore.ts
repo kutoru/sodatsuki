@@ -1,7 +1,13 @@
 import { create } from "zustand";
-import { DateFilterState, Note } from "../types";
+import { AnkiState, DateFilterState, DeckState, Note, Status } from "../types";
 
 type Store = {
+  anki: AnkiState;
+  setAnki: (anki: AnkiState) => void;
+
+  deck?: DeckState;
+  setDeck: (deck: DeckState) => void;
+
   currentNote?: Note;
   setCurrentNote: (note?: Note) => void;
 
@@ -13,10 +19,16 @@ type Store = {
 };
 
 export const useStore = create<Store>((set) => ({
+  anki: { status: Status.Offline },
+  setAnki: (anki) => set({ anki }),
+
+  deck: undefined,
+  setDeck: (deck) => set({ deck }),
+
   currentNote: undefined,
   setCurrentNote: (note) => set({ currentNote: note }),
 
-  dateFilter: { apply: true },
+  dateFilter: { applyStart: true, applyEnd: true },
   setDateFilter: (updater) =>
     set((state) => ({ dateFilter: updater(state.dateFilter) })),
 

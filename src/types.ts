@@ -22,7 +22,8 @@ export type Note = {
 };
 
 export type DateFilterState = {
-  apply: boolean;
+  applyStart: boolean;
+  applyEnd: boolean;
   start?: number;
   end?: number;
 };
