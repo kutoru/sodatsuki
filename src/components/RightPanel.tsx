@@ -42,7 +42,7 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
 
           <div
             className={clsx(
-              "flex-1 text-lg drop-shadow-even drop-shadow-black transition",
+              "flex-1 overflow-hidden text-lg text-ellipsis whitespace-nowrap drop-shadow-even drop-shadow-black transition",
               !currentNote && "opacity-0 select-none",
             )}
           >
