@@ -10,25 +10,21 @@ import {
   SquareArrowRightExitIcon,
 } from "lucide-react";
 import { Button } from "../Button";
-import { Note } from "./LeftPanel";
 import { RowComponentProps } from "react-window";
 import { memo } from "react";
+import { useStore } from "../../hooks/useStore";
+import { invoke } from "@tauri-apps/api/core";
+import { handleError } from "../../utils";
+import { Note } from "../../types";
 
 type Props = RowComponentProps<{
   notes: Note[];
   digitWidth: number;
-  currentNote?: Note;
-  setCurrentNote: (note: Note) => void;
 }>;
 
-export const NoteRow = ({
-  notes,
-  digitWidth,
-  currentNote,
-  setCurrentNote,
-  index,
-  style,
-}: Props) => {
+export const NoteRow = ({ notes, digitWidth, index, style }: Props) => {
+  const currentNote = useStore((state) => state.currentNote);
+
   const note = notes[index];
 
   return (
@@ -37,7 +33,6 @@ export const NoteRow = ({
         note={note}
         index={index}
         isActive={note.id === currentNote?.id}
-        setCurrentNote={setCurrentNote}
         digitWidth={digitWidth}
       />
     </div>
@@ -48,24 +43,38 @@ type InnerNoteElementProps = {
   note: Note;
   index: number;
   isActive: boolean;
-  setCurrentNote: (note: Note) => void;
   digitWidth: number;
 };
 
 export const InnerNoteElement = memo(
-  ({
-    note,
-    index,
-    isActive,
-    setCurrentNote,
-    digitWidth,
-  }: InnerNoteElementProps) => {
+  ({ note, index, isActive, digitWidth }: InnerNoteElementProps) => {
+    const setCurrentNote = useStore((state) => state.setCurrentNote);
+    const setSuccessNotification = useStore(
+      (state) => state.setSuccessNotification
+    );
+
+    const copyExpression = () => {
+      invoke("copy_to_clipboard", { text: note.fields.Expression })
+        .then(() => setSuccessNotification(true))
+        .catch(handleError());
+    };
+
+    const openNoteInAnki = () => {
+      invoke("anki_open_note", { noteId: note.id })
+        .then(() => setSuccessNotification(true))
+        .catch(handleError());
+    };
+
+    const setVideoTime = () => {
+      // probably something to do with store
+    };
+
     return (
       <div
         className={
-          "shadow-even rounded-md overflow-hidden flex-none transition " +
+          "shadow-even rounded-md overflow-hidden flex-none transition outline-indigo-300/50 " +
           (isActive
-            ? "bg-indigo-500/25 shadow-indigo-500/25"
+            ? "bg-indigo-500/25 shadow-indigo-500/25 outline-2"
             : "bg-white/5 shadow-black/25")
         }
       >
@@ -131,30 +140,33 @@ export const InnerNoteElement = memo(
         <div className="flex flex-row">
           <div className="ps-2 flex-1 flex flex-row items-center overflow-hidden">
             <div
-              className="flex-none text-center"
+              className="flex-none text-center drop-shadow-even drop-shadow-black"
               style={{ width: `${digitWidth}px` }}
             >
               {index + 1}&nbsp;
             </div>
 
-            <Button className="hover:drop-shadow-white/50 shrink! text-ellipsis whitespace-nowrap overflow-hidden">
+            <Button
+              onClick={copyExpression}
+              className="hover:drop-shadow-white/50 shrink! text-ellipsis whitespace-nowrap overflow-hidden"
+            >
               {note.fields.Expression}
             </Button>
           </div>
 
-          <Button className="w-9 ps-2.5 py-2.5 pe-1.25">
+          <Button
+            onClick={openNoteInAnki}
+            className="w-9 ps-2.5 py-2.5 pe-1.25"
+          >
             <LogInIcon className="size-full rotate-180" />
           </Button>
 
-          <Button className="w-8 ps-1.25 py-2.5 pe-1.25">
+          <Button onClick={setVideoTime} className="w-8 ps-1.25 py-2.5 pe-1.25">
             <ClockArrowRightIcon className="size-full" />
           </Button>
 
           <Button
-            onClick={() => {
-              (window as any).start = Date.now();
-              setCurrentNote(note);
-            }}
+            onClick={() => setCurrentNote(note)}
             className="w-9 ps-1.25 py-2.5 pe-2.5"
             disabled={isActive}
           >

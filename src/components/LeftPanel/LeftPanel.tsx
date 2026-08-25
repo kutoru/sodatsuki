@@ -1,28 +1,11 @@
 import { Fragment, Ref, useState } from "react";
-import { Status } from "../../types";
+import { AnkiState, DeckState, Status } from "../../types";
 import { invoke } from "@tauri-apps/api/core";
 import { handleError } from "../../utils";
 import { BookMarkedIcon, ChevronRightIcon, RefreshCcwIcon } from "lucide-react";
 import { Button } from "../Button";
 import { List } from "react-window";
 import { NoteRow } from "./NoteRow";
-
-export type AnkiState = {
-  status: Status;
-  mediaPath?: string;
-  decks?: string[];
-};
-
-export type DeckState = {
-  name: string;
-  totalNotes: number;
-  notes: Note[];
-};
-
-export type Note = {
-  id: number;
-  fields: Record<string, string>;
-};
 
 type Props = {
   leftPanel: Ref<HTMLDivElement>;
@@ -86,8 +69,6 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
   const [loadingDeck, setLoadingDeck] = useState(false);
   const [showDecks, setShowDecks] = useState(false);
 
-  const [currentNote, setCurrentNote] = useState<Note>();
-
   const [digitWidth, setDigitWidth] = useState(0);
 
   const loadAnki = () => {
@@ -105,8 +86,8 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
     invoke<DeckState>("anki_fetch_deck", {
       deck,
       startTimestamp: 1761359213907,
-      // endTimestamp: 1761364177359,
-      endTimestamp: 1761467640296,
+      endTimestamp: 1761364177359,
+      // endTimestamp: 1761467640296,
     })
       .then((deck) => {
         setDigitWidth(getDigitWidth(deck.notes.length));
@@ -196,8 +177,6 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
             rowProps={{
               notes: deck?.notes,
               digitWidth,
-              currentNote,
-              setCurrentNote,
             }}
             rowKey={(index, { notes }) => notes[index].id}
           />

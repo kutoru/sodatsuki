@@ -3,6 +3,7 @@ import { useBgLines } from "../hooks/useBgLines";
 import { usePanelResize } from "../hooks/usePanelResize";
 import { useBgNoise } from "../hooks/useBgNoise";
 import { LeftPanel } from "./LeftPanel/LeftPanel";
+import { Toast } from "./Toast";
 
 export const App = () => {
   const { leftPanel, middlePanel, rightPanel, leftResize, rightResize } =
@@ -65,6 +66,8 @@ export const App = () => {
       >
         field editor
       </div>
+
+      <Toast />
     </div>
   );
 };
