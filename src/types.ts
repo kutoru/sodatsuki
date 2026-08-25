@@ -16,9 +16,18 @@ export type DeckState = {
   notes: Note[];
 };
 
+export type Field =
+  | "Expression"
+  | "Meaning"
+  | "Image_URI"
+  | "Sentence"
+  | "Sentence Audio"
+  | "Reading"
+  | "Audio";
+
 export type Note = {
   id: number;
-  fields: Record<string, string>;
+  fields: Record<Field, string>;
 };
 
 export type DateFilterState = {

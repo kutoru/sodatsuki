@@ -18,17 +18,34 @@ pub struct AnkiFetchDeckResult {
     pub notes: Vec<Note>,
 }
 
+#[derive(serde::Serialize, Clone, std::fmt::Debug, serde::Deserialize, PartialEq, Eq, Hash)]
+pub enum Fields {
+    Expression,
+    Meaning,
+    #[serde(rename = "Image_URI")]
+    ImageUri,
+    Sentence,
+    #[serde(rename = "Sentence Audio")]
+    SentenceAudio,
+    #[serde(rename = "Sentence-Kana")]
+    SentenceKana,
+    #[serde(rename = "Sentence-English")]
+    SentenceEnglish,
+    Reading,
+    Audio,
+}
+
 #[derive(serde::Serialize, Clone, std::fmt::Debug, serde::Deserialize)]
 pub struct Note {
     pub id: i64,
-    pub fields: HashMap<String, String>,
+    pub fields: HashMap<Fields, String>,
 }
 
 #[derive(std::fmt::Debug, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FullNote {
     pub note_id: i64,
-    pub fields: HashMap<String, FullField>,
+    pub fields: HashMap<Fields, FullField>,
 }
 
 #[derive(std::fmt::Debug, serde::Deserialize)]

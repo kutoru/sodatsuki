@@ -11,11 +11,11 @@ import {
 } from "lucide-react";
 import { Button } from "../Button";
 import { RowComponentProps } from "react-window";
-import { memo } from "react";
+import { JSX, memo } from "react";
 import { useStore } from "../../hooks/useStore";
 import { invoke } from "@tauri-apps/api/core";
 import { handleError } from "../../utils";
-import { Note } from "../../types";
+import { Field, Note } from "../../types";
 import clsx from "clsx";
 
 type Props = RowComponentProps<{
@@ -70,6 +70,33 @@ export const InnerNoteElement = memo(
       // probably something to do with store
     };
 
+    const fieldList: { field: Field; icon: JSX.Element }[] = [
+      {
+        field: "Meaning",
+        icon: <TextQuoteIcon className="size-full" />,
+      },
+      {
+        field: "Image_URI",
+        icon: <FileImageIcon className="size-full" />,
+      },
+      {
+        field: "Sentence",
+        icon: <BookTextIcon className="size-full" />,
+      },
+      {
+        field: "Sentence Audio",
+        icon: <BookHeadphonesIcon className="size-full" />,
+      },
+      {
+        field: "Reading",
+        icon: <MusicIcon className="size-full" />,
+      },
+      {
+        field: "Audio",
+        icon: <WifiIcon className="size-full rotate-90" />,
+      },
+    ];
+
     return (
       <div
         className={clsx(
@@ -80,32 +107,7 @@ export const InnerNoteElement = memo(
         )}
       >
         <div className="flex gap-1 px-1">
-          {[
-            {
-              field: "Meaning",
-              icon: <TextQuoteIcon className="size-full" />,
-            },
-            {
-              field: "Image_URI",
-              icon: <FileImageIcon className="size-full" />,
-            },
-            {
-              field: "Sentence",
-              icon: <BookTextIcon className="size-full" />,
-            },
-            {
-              field: "Sentence Audio",
-              icon: <BookHeadphonesIcon className="size-full" />,
-            },
-            {
-              field: "Reading",
-              icon: <MusicIcon className="size-full" />,
-            },
-            {
-              field: "Audio",
-              icon: <WifiIcon className="size-full rotate-90" />,
-            },
-          ].map(({ field, icon }) => (
+          {fieldList.map(({ field, icon }) => (
             <div key={note.id + field} className="relative h-2 flex-1">
               <button
                 title={field}
