@@ -6,6 +6,7 @@ import { BookMarkedIcon, ChevronRightIcon, RefreshCcwIcon } from "lucide-react";
 import { Button } from "../Button";
 import { List } from "react-window";
 import { NoteRow } from "./NoteRow";
+import clsx from "clsx";
 
 type Props = {
   leftPanel: Ref<HTMLDivElement>;
@@ -109,14 +110,15 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
       >
         <div className="flex flex-row items-center">
           <div
-            className={
-              "m-3.5 size-3 flex-none rounded-full drop-shadow-even transition " +
-              ((anki.status === Status.Offline &&
-                "bg-rose-500 drop-shadow-rose-500") ||
-                (anki.status === Status.Online &&
-                  "bg-emerald-500 drop-shadow-emerald-500") ||
-                "bg-amber-500 drop-shadow-amber-500")
-            }
+            className={clsx(
+              "m-3.5 size-3 flex-none rounded-full drop-shadow-even transition",
+              anki.status === Status.Offline &&
+                "bg-rose-500 drop-shadow-rose-500",
+              anki.status === Status.Loading &&
+                "bg-amber-500 drop-shadow-amber-500",
+              anki.status === Status.Online &&
+                "bg-emerald-500 drop-shadow-emerald-500",
+            )}
           />
 
           <div className="flex-1 text-center text-lg drop-shadow-even drop-shadow-black">
@@ -145,21 +147,21 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
             disabled={anki.status !== Status.Online}
           >
             <ChevronRightIcon
-              className={
-                "size-full transition-[rotate] duration-500 " +
-                (showDecks ? "rotate-180" : "")
-              }
+              className={clsx(
+                "size-full transition-[rotate] duration-500",
+                showDecks && "rotate-180",
+              )}
             />
           </Button>
         </div>
 
         <div
-          className={
-            "mx-2 mb-2 rounded-full text-center shadow-even shadow-black " +
-            (deck?.totalNotes === undefined
+          className={clsx(
+            "mx-2 mb-2 rounded-full text-center shadow-even shadow-black",
+            deck?.totalNotes === undefined
               ? "bg-rose-950/50"
-              : "bg-emerald-950/50")
-          }
+              : "bg-emerald-950/50",
+          )}
         >
           <div className="drop-shadow-even drop-shadow-black">
             {deck?.notes.length ?? 0} / {deck?.totalNotes ?? 0}
@@ -198,10 +200,10 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
 
         <div className="pointer-events-none absolute top-0 -left-3 h-full overflow-x-hidden px-3">
           <div
-            className={
-              "pointer-events-auto flex h-full w-max flex-col overflow-auto bg-black/80 shadow-even shadow-black backdrop-blur-[2px] transition duration-500 " +
-              (showDecks ? "" : "-translate-x-[calc(100%+0.75rem+0.75rem)]")
-            }
+            className={clsx(
+              "pointer-events-auto flex h-full w-max flex-col overflow-auto bg-black/80 shadow-even shadow-black backdrop-blur-[2px] transition duration-500",
+              !showDecks && "-translate-x-[calc(100%+0.75rem+0.75rem)]",
+            )}
           >
             {anki.decks?.map((deck) => (
               <Fragment key={deck}>

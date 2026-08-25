@@ -16,6 +16,7 @@ import { useStore } from "../../hooks/useStore";
 import { invoke } from "@tauri-apps/api/core";
 import { handleError } from "../../utils";
 import { Note } from "../../types";
+import clsx from "clsx";
 
 type Props = RowComponentProps<{
   notes: Note[];
@@ -71,12 +72,12 @@ export const InnerNoteElement = memo(
 
     return (
       <div
-        className={
-          "flex-none overflow-hidden rounded-md shadow-even outline-indigo-300/50 transition " +
-          (isActive
+        className={clsx(
+          "flex-none overflow-hidden rounded-md shadow-even outline-indigo-300/50 transition",
+          isActive
             ? "bg-indigo-500/25 shadow-indigo-500/25 outline-2"
-            : "bg-white/5 shadow-black/25")
-        }
+            : "bg-white/5 shadow-black/25",
+        )}
       >
         <div className="flex gap-1 px-1">
           {[
@@ -124,12 +125,12 @@ export const InnerNoteElement = memo(
                     "rounded-none!",
                   );
                 }}
-                className={
-                  "absolute bottom-0 left-0 z-10 h-12 w-full flex-1 rounded-b-sm py-2 drop-shadow-even transition-all select-none hover:-bottom-2 " +
-                  (!!note.fields[field]
+                className={clsx(
+                  "absolute bottom-0 left-0 z-10 h-12 w-full flex-1 rounded-b-sm py-2 drop-shadow-even transition-all select-none hover:-bottom-2",
+                  !!note.fields[field]
                     ? "cursor-pointer bg-emerald-700/75 drop-shadow-emerald-500/50 active:bg-emerald-900/75 active:text-gray-300"
-                    : "bg-rose-700/75 drop-shadow-rose-500/50")
-                }
+                    : "bg-rose-700/75 drop-shadow-rose-500/50",
+                )}
               >
                 {icon}
               </button>

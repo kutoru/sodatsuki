@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { ButtonHTMLAttributes, DetailedHTMLProps } from "react";
 
 type Props = DetailedHTMLProps<
@@ -6,11 +7,11 @@ type Props = DetailedHTMLProps<
 >;
 
 export const ButtonBig = ({ children, className, ...rest }: Props) => {
-  const baseClassName = "border-2 border-rose-600 p-1 cursor-pointer ";
-  const extraClassName = className ? className : "";
-
   return (
-    <button className={baseClassName + extraClassName} {...rest}>
+    <button
+      className={clsx("cursor-pointer border-2 border-rose-600 p-1", className)}
+      {...rest}
+    >
       {children}
     </button>
   );
