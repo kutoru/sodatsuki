@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { Field } from "../types";
 
 import "codemirror/lib/codemirror.css";
 import "codemirror/theme/monokai.css";
@@ -7,19 +8,32 @@ import "codemirror/addon/fold/xml-fold";
 import "codemirror/addon/edit/matchtags";
 
 import CodeMirror from "codemirror";
+import { useStore } from "./useStore";
 
 export const useCodeEditor = (
-  field: string,
+  field: Field,
   fieldValue: string,
   setFieldValue: (fieldValue: string) => void,
 ) => {
+  const setCodeEditorRefreshCallback = useStore(
+    (state) => state.setCodeEditorRefreshCallback,
+  );
+
   const parent = useRef<HTMLDivElement>(null);
   const display = useRef<HTMLDivElement>(null);
   const editor = useRef<CodeMirror.Editor>(null);
 
   const setDisplayValue = (value: string) => {
-    if (display.current) {
-      display.current.innerHTML = value || `${field}...`;
+    if (!display.current) {
+      return;
+    }
+
+    if (value.trim()) {
+      display.current.innerHTML = value;
+      display.current.classList.remove("text-gray-400/75", "italic");
+    } else {
+      display.current.innerHTML = `${field}...`;
+      display.current.classList.add("text-gray-400/75", "italic");
     }
   };
 
@@ -33,15 +47,15 @@ export const useCodeEditor = (
       lineWrapping: true,
       matchTags: { bothTags: true },
       extraKeys: { Tab: false, "Shift-Tab": false },
-      tabindex: 0,
       viewportMargin: Infinity,
       lineWiseCopyCut: false,
       mode: "text/html",
       value: fieldValue,
-      undoDepth: 0,
     });
 
     setDisplayValue(fieldValue);
+
+    setCodeEditorRefreshCallback(field, () => editor.current?.refresh());
 
     const change = (
       instance: CodeMirror.Editor,
@@ -54,8 +68,9 @@ export const useCodeEditor = (
 
     const blur = (instance: CodeMirror.Editor, event: FocusEvent) => {
       console.log("blur", instance, event);
-      instance.setCursor(0);
-      setFieldValue(instance.getValue());
+
+      instance.setCursor(instance.lineCount(), 0, { scroll: false });
+      setFieldValue(instance.getValue().trim());
     };
 
     editor.current.on("change", change);
@@ -68,6 +83,7 @@ export const useCodeEditor = (
 
     if (editor.current && !identical) {
       console.log("effect update");
+
       editor.current.setValue(fieldValue);
       setDisplayValue(fieldValue);
     }

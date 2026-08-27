@@ -1,5 +1,12 @@
 import { create } from "zustand";
-import { AnkiState, DateFilterState, DeckState, Note, Status } from "../types";
+import {
+  AnkiState,
+  DateFilterState,
+  DeckState,
+  Field,
+  Note,
+  Status,
+} from "../types";
 import config from "../mockState.json";
 
 type Store = {
@@ -17,9 +24,13 @@ type Store = {
 
   successNotificationShown: boolean;
   setSuccessNotification: (show: boolean) => void;
+
+  codeEditorRefreshCallbacks: Partial<Record<Field, () => void>>;
+  setCodeEditorRefreshCallback: (field: Field, callback: () => void) => void;
+  refreshCodeEditors: () => void;
 };
 
-export const useStore = create<Store>((set) => ({
+export const useStore = create<Store>((set, get) => ({
   anki: { status: Status.Offline },
   setAnki: (anki) => set({ anki }),
 
@@ -35,4 +46,14 @@ export const useStore = create<Store>((set) => ({
 
   successNotificationShown: false,
   setSuccessNotification: (show) => set({ successNotificationShown: show }),
+
+  codeEditorRefreshCallbacks: {},
+  setCodeEditorRefreshCallback: (field, callback) => {
+    get().codeEditorRefreshCallbacks[field] = callback;
+  },
+  refreshCodeEditors: () => {
+    Object.values(get().codeEditorRefreshCallbacks).forEach((refreshCallback) =>
+      refreshCallback(),
+    );
+  },
 }));

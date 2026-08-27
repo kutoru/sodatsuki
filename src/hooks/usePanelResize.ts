@@ -1,6 +1,26 @@
 import { useEffect, useRef } from "react";
+import { useStore } from "./useStore";
 
 export const usePanelResize = () => {
+  const refreshCodeEditors = useStore((state) => state.refreshCodeEditors);
+  const getRefreshCodeEditorsDebounced = () => {
+    const delay = 100;
+    let lastRefreshed = 0;
+    let timeout: number | undefined;
+
+    return () => {
+      clearTimeout(timeout);
+
+      timeout = setTimeout(
+        () => {
+          lastRefreshed = Date.now();
+          refreshCodeEditors();
+        },
+        lastRefreshed + delay - Date.now(),
+      );
+    };
+  };
+
   const leftPanel = useRef<HTMLDivElement>(null);
   const middlePanel = useRef<HTMLDivElement>(null);
   const rightPanel = useRef<HTMLDivElement>(null);
@@ -19,6 +39,8 @@ export const usePanelResize = () => {
       return;
     }
 
+    const refreshCodeEditorsDebounced = getRefreshCodeEditorsDebounced();
+
     let leftSize = 20;
     let rightSize = 20;
 
@@ -34,12 +56,16 @@ export const usePanelResize = () => {
       leftSize = 20;
       lp.style.flexBasis = `${leftSize}%`;
       mp.style.flexBasis = `${100 - leftSize - rightSize}%`;
+
+      refreshCodeEditorsDebounced();
     };
     const onRightContext = (e: MouseEvent) => {
       e.preventDefault();
       rightSize = 20;
       rp.style.flexBasis = `${rightSize}%`;
       mp.style.flexBasis = `${100 - leftSize - rightSize}%`;
+
+      refreshCodeEditorsDebounced();
     };
 
     const onLeftDown = (e: MouseEvent) => {
@@ -75,6 +101,8 @@ export const usePanelResize = () => {
 
       if (leftDown || rightDown) {
         mp.style.flexBasis = `${100 - leftSize - rightSize}%`;
+
+        refreshCodeEditorsDebounced();
       }
     };
 

@@ -1,16 +1,23 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "../Button";
 import { PencilIcon } from "lucide-react";
 import clsx from "clsx";
 import { useCodeEditor } from "../../hooks/useCodeEditor";
+import { Field } from "../../types";
 
 type Props = {
-  field: string;
+  noteId: number;
+  field: Field;
   fieldValue: string;
   setFieldValue: (fieldValue: string) => void;
 };
 
-export const FieldElement = ({ field, fieldValue, setFieldValue }: Props) => {
+export const FieldElement = ({
+  noteId,
+  field,
+  fieldValue,
+  setFieldValue,
+}: Props) => {
   const [expanded, setExpanded] = useState(false);
 
   const { editorParent, displayElement } = useCodeEditor(
@@ -18,6 +25,10 @@ export const FieldElement = ({ field, fieldValue, setFieldValue }: Props) => {
     fieldValue,
     setFieldValue,
   );
+
+  useEffect(() => {
+    setExpanded(false);
+  }, [noteId]);
 
   return (
     <div key={field} className="flex flex-col">
@@ -34,8 +45,8 @@ export const FieldElement = ({ field, fieldValue, setFieldValue }: Props) => {
       <div
         ref={displayElement}
         className={clsx(
-          "mx-2 rounded-md bg-white/5 p-1 wrap-break-word whitespace-pre-line shadow-even shadow-black/25 transition-[border-radius]",
-          !fieldValue && "text-gray-400/75 italic",
+          "mx-2 rounded-md bg-white/5 p-1 wrap-break-word shadow-even shadow-black/25 transition-[border-radius]",
+          !fieldValue.trim() && "text-gray-400/75 italic",
           expanded && "rounded-b-none",
         )}
       />

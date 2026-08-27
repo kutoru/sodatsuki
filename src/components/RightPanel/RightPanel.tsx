@@ -87,24 +87,26 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
             !currentNote && "pointer-events-none opacity-0 select-none",
           )}
         >
-          {relevantFields.map((field) => (
-            <FieldElement
-              key={field}
-              field={field}
-              fieldValue={editNote?.fields[field] ?? ""}
-              setFieldValue={(value) =>
-                setEditNote((prev) => {
-                  if (!prev) {
-                    return prev;
-                  }
+          {editNote &&
+            relevantFields.map((field) => (
+              <FieldElement
+                key={field}
+                noteId={editNote.id}
+                field={field}
+                fieldValue={editNote.fields[field]}
+                setFieldValue={(value) =>
+                  setEditNote((prev) => {
+                    if (!prev) {
+                      return prev;
+                    }
 
-                  prev.fields[field] = value;
+                    prev.fields[field] = value;
 
-                  return { ...prev };
-                })
-              }
-            />
-          ))}
+                    return { ...prev };
+                  })
+                }
+              />
+            ))}
         </div>
       </div>
     </>
