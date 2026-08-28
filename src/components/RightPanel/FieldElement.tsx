@@ -1,6 +1,6 @@
 import { JSX, memo, useEffect, useState } from "react";
 import { Button } from "../Button";
-import { PencilIcon, PlayIcon } from "lucide-react";
+import { AsteriskIcon, PencilIcon, PlayIcon } from "lucide-react";
 import clsx from "clsx";
 import { useCodeEditor } from "../../hooks/useCodeEditor";
 import { Field, NotificationType } from "../../types";
@@ -13,10 +13,11 @@ type Props = {
   field: Field;
   fieldValue: string;
   setFieldValue: (fieldValue: string) => void;
+  fieldDiffers: boolean;
 };
 
 export const FieldElement = memo(
-  ({ noteId, field, fieldValue, setFieldValue }: Props) => {
+  ({ noteId, field, fieldValue, setFieldValue, fieldDiffers }: Props) => {
     const anki = useStore((state) => state.anki);
     const playPreviewAudio = useStore((state) => state.playPreviewAudio);
     const showNotification = useStore((state) => state.showNotification);
@@ -101,7 +102,7 @@ export const FieldElement = memo(
                 className="ms-1 size-5 cursor-pointer rounded-full bg-gray-500 p-1"
                 title={file}
               >
-                <PlayIcon className="size-full" />
+                <PlayIcon className="size-full" strokeWidth={3} />
               </button>
             </span>,
           );
@@ -125,8 +126,22 @@ export const FieldElement = memo(
     return (
       <div key={field} className="flex flex-col">
         <div className="flex flex-row items-center">
-          <div className="flex-1 overflow-hidden ps-2 text-ellipsis whitespace-nowrap drop-shadow-even drop-shadow-black">
+          <div
+            className={clsx(
+              "flex-1 overflow-hidden ps-2 text-ellipsis whitespace-nowrap drop-shadow-even drop-shadow-black",
+              fieldDiffers && "font-bold italic",
+            )}
+          >
             {field}
+          </div>
+
+          <div
+            className={clsx(
+              "h-10 w-8 p-2 pe-0 text-amber-300 drop-shadow-even drop-shadow-amber-300 transition",
+              !fieldDiffers && "opacity-0",
+            )}
+          >
+            <AsteriskIcon className="size-full" />
           </div>
 
           <Button onClick={() => setExpanded(!expanded)} className="p-2">

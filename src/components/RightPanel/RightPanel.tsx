@@ -29,6 +29,7 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
   const setCurrentNote = useStore((state) => state.setCurrentNote);
 
   const [editNote, setEditNote] = useState<Note>();
+
   const editNoteFieldSetters = useMemo<FieldSetters>(
     () =>
       relevantFields.reduce((setters, field) => {
@@ -48,8 +49,21 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
     [],
   );
 
+  const editNoteDiffs: Record<Field, boolean> = relevantFields.reduce(
+    (diffs, field) => {
+      diffs[field] =
+        !currentNote || !editNote
+          ? false
+          : currentNote.fields[field] !== editNote.fields[field];
+      return diffs;
+    },
+    {} as Record<Field, boolean>,
+  );
+
+  const hasDiff = !!Object.values(editNoteDiffs).find((v) => v);
+
   useEffect(() => {
-    if (currentNote) {
+    if (currentNote && currentNote.id !== editNote?.id) {
       setEditNote(structuredClone(currentNote));
     }
   }, [currentNote]);
@@ -70,7 +84,7 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
           <Button
             onClick={() => setEditNote(structuredClone(currentNote))}
             className="p-2.5"
-            disabled={!currentNote}
+            disabled={!hasDiff}
           >
             <RotateCwIcon className="size-full" />
           </Button>
@@ -84,7 +98,7 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
             {editNote?.fields.Expression}
           </div>
 
-          <Button className="p-2" disabled={!currentNote}>
+          <Button className="p-2" disabled={!hasDiff}>
             <CheckIcon className="size-full" />
           </Button>
 
@@ -115,6 +129,7 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
                 field={field}
                 fieldValue={editNote.fields[field]}
                 setFieldValue={editNoteFieldSetters[field]}
+                fieldDiffers={editNoteDiffs[field]}
               />
             ))}
         </div>

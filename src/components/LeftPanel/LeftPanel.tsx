@@ -74,6 +74,9 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
   const deck = useStore((state) => state.deck);
   const setDeck = useStore((state) => state.setDeck);
 
+  const currentNote = useStore((state) => state.currentNote);
+  const setCurrentNote = useStore((state) => state.setCurrentNote);
+
   const [loadingDeck, setLoadingDeck] = useState(false);
   const [showDecks, setShowDecks] = useState(false);
 
@@ -100,10 +103,13 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
       startTimestamp: dateFilter.applyStart ? dateFilter.start : undefined,
       endTimestamp: dateFilter.applyEnd ? dateFilter.end : undefined,
     })
-      .then((deck) => {
-        noteList.current?.element?.scrollTo({ top: 0 });
-        setDigitWidth(getDigitWidth(deck.notes.length));
-        setDeck(deck);
+      .then((newDeck) => {
+        if (deck?.name !== newDeck.name) {
+          noteList.current?.element?.scrollTo({ top: 0 });
+        }
+
+        setDigitWidth(getDigitWidth(newDeck.notes.length));
+        setDeck(newDeck);
       })
       .catch(handleError())
       .finally(() => {
@@ -121,6 +127,17 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
       loadDeck(deckName);
     }
   }, [anki]);
+
+  useEffect(() => {
+    if (!currentNote || !deck) {
+      return;
+    }
+
+    const updatedNote = deck.notes.find((v) => v.id === currentNote.id);
+    if (updatedNote) {
+      setCurrentNote(updatedNote);
+    }
+  }, [deck]);
 
   useEffect(() => {
     if (!deckName) {
