@@ -3,9 +3,10 @@ import { Button } from "../Button";
 import { PencilIcon, PlayIcon } from "lucide-react";
 import clsx from "clsx";
 import { useCodeEditor } from "../../hooks/useCodeEditor";
-import { Field } from "../../types";
+import { Field, NotificationType } from "../../types";
 import { useStore } from "../../hooks/useStore";
-import { convertFileSrc } from "@tauri-apps/api/core";
+import { convertFileSrc, invoke } from "@tauri-apps/api/core";
+import { handleError } from "../../utils";
 
 type Props = {
   noteId: number;
@@ -18,6 +19,7 @@ export const FieldElement = memo(
   ({ noteId, field, fieldValue, setFieldValue }: Props) => {
     const anki = useStore((state) => state.anki);
     const playPreviewAudio = useStore((state) => state.playPreviewAudio);
+    const showNotification = useStore((state) => state.showNotification);
 
     const [expanded, setExpanded] = useState(false);
 
@@ -26,6 +28,12 @@ export const FieldElement = memo(
     useEffect(() => {
       setExpanded(false);
     }, [noteId]);
+
+    const openFile = (path: string) => {
+      invoke("file_open", { path })
+        .then(() => showNotification(NotificationType.Success))
+        .catch(handleError());
+    };
 
     // TODO: render the whole thing as innerHTML as opposed to creating a bunch of spans
     const parseFieldForPreview = () => {
@@ -54,7 +62,8 @@ export const FieldElement = memo(
       elementMatches.forEach(([element, file]) => {
         const [first, second] = value.split(element);
 
-        const src = convertFileSrc(anki.mediaPath + "/" + file);
+        const path = anki.mediaPath + "/" + file;
+        const src = convertFileSrc(path);
 
         if (first) {
           parts.push(
@@ -68,9 +77,9 @@ export const FieldElement = memo(
 
         if (element.startsWith("<")) {
           parts.push(
-            // TODO: open in image viewer on click
             <button
               key={parts.length}
+              onClick={() => openFile(path)}
               className="w-full max-w-80 cursor-pointer"
               title={file}
             >

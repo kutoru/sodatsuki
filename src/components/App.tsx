@@ -3,7 +3,7 @@ import { useBgLines } from "../hooks/useBgLines";
 import { usePanelResize } from "../hooks/usePanelResize";
 import { useBgNoise } from "../hooks/useBgNoise";
 import { LeftPanel } from "./LeftPanel/LeftPanel";
-import { Toast } from "./Toast";
+import { Notification } from "./Notification";
 import { MiddlePanel } from "./MiddlePanel";
 import { RightPanel } from "./RightPanel/RightPanel";
 import { PreviewAudio } from "./PreviewAudio";
@@ -54,7 +54,7 @@ export const App = () => {
         blurFilter={blurFilter}
       />
 
-      <Toast />
+      <Notification />
 
       <PreviewAudio />
     </div>

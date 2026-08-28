@@ -5,6 +5,7 @@ import {
   DeckState,
   Field,
   Note,
+  NotificationType,
   Status,
 } from "../types";
 import config from "../mockState.json";
@@ -22,8 +23,9 @@ type Store = {
   dateFilter: DateFilterState;
   setDateFilter: (updater: (prev: DateFilterState) => DateFilterState) => void;
 
-  successNotificationShown: boolean;
-  setSuccessNotification: (show: boolean) => void;
+  notificationState: { shown: boolean; type: NotificationType };
+  showNotification: (type: NotificationType) => void;
+  hideNotification: () => void;
 
   codeEditorRefreshCallbacks: Partial<Record<Field, () => void>>;
   setCodeEditorRefreshCallback: (field: Field, callback: () => void) => void;
@@ -47,8 +49,12 @@ export const useStore = create<Store>((set, get) => ({
   setDateFilter: (updater) =>
     set((state) => ({ dateFilter: updater(state.dateFilter) })),
 
-  successNotificationShown: false,
-  setSuccessNotification: (show) => set({ successNotificationShown: show }),
+  notificationState: { shown: false, type: NotificationType.Success },
+  showNotification: (type) => set({ notificationState: { shown: true, type } }),
+  hideNotification: () =>
+    set((state) => ({
+      notificationState: { ...state.notificationState, shown: false },
+    })),
 
   codeEditorRefreshCallbacks: {},
   setCodeEditorRefreshCallback: (field, callback) => {

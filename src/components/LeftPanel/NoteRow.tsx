@@ -15,7 +15,7 @@ import { JSX, memo } from "react";
 import { useStore } from "../../hooks/useStore";
 import { invoke } from "@tauri-apps/api/core";
 import { handleError } from "../../utils";
-import { Field, Note } from "../../types";
+import { Field, Note, NotificationType } from "../../types";
 import clsx from "clsx";
 
 type Props = RowComponentProps<{
@@ -50,19 +50,17 @@ type InnerNoteElementProps = {
 export const InnerNoteElement = memo(
   ({ note, index, isActive, digitWidth }: InnerNoteElementProps) => {
     const setCurrentNote = useStore((state) => state.setCurrentNote);
-    const setSuccessNotification = useStore(
-      (state) => state.setSuccessNotification,
-    );
+    const showNotification = useStore((state) => state.showNotification);
 
     const copyExpression = () => {
       invoke("copy_to_clipboard", { text: note.fields.Expression })
-        .then(() => setSuccessNotification(true))
+        .then(() => showNotification(NotificationType.Success))
         .catch(handleError());
     };
 
     const openNoteInAnki = () => {
       invoke("anki_open_note", { noteId: note.id })
-        .then(() => setSuccessNotification(true))
+        .then(() => showNotification(NotificationType.Success))
         .catch(handleError());
     };
 

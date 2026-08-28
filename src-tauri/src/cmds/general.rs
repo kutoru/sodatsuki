@@ -1,6 +1,7 @@
 use tauri::{AppHandle, Manager};
 use tauri_plugin_clipboard_manager::ClipboardExt;
 use tauri_plugin_dialog::DialogExt;
+use tauri_plugin_opener::OpenerExt;
 
 use crate::types::{ResultExt, VideoSelectResult};
 
@@ -38,4 +39,9 @@ pub async fn video_select(app: AppHandle) -> Result<VideoSelectResult, String> {
         .to_string();
 
     Ok(VideoSelectResult { path, name })
+}
+
+#[tauri::command]
+pub async fn file_open(app: AppHandle, path: String) -> Result<(), String> {
+    app.opener().open_path(path, None::<&str>).err_msg()
 }

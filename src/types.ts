@@ -36,3 +36,8 @@ export type DateFilterState = {
   start?: number;
   end?: number;
 };
+
+export enum NotificationType {
+  Success,
+  Error,
+}
