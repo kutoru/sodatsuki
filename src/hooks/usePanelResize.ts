@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 import { useStore } from "./useStore";
 
 export const usePanelResize = () => {
@@ -28,7 +28,7 @@ export const usePanelResize = () => {
   const leftResize = useRef<HTMLDivElement>(null);
   const rightResize = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const lp = leftPanel.current;
     const mp = middlePanel.current;
     const rp = rightPanel.current;
@@ -114,6 +114,8 @@ export const usePanelResize = () => {
     document.addEventListener("mousemove", onMouseMove);
 
     return () => {
+      lr.removeEventListener("contextmenu", onLeftContext);
+      rr.removeEventListener("contextmenu", onRightContext);
       lr.removeEventListener("mousedown", onLeftDown);
       rr.removeEventListener("mousedown", onRightDown);
       document.removeEventListener("mouseup", onMouseUp);

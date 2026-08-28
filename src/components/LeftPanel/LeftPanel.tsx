@@ -104,7 +104,17 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
       endTimestamp: dateFilter.applyEnd ? dateFilter.end : undefined,
     })
       .then((newDeck) => {
-        if (deck?.name !== newDeck.name) {
+        const sameName = deck?.name === newDeck.name;
+        let scrollUp = true;
+
+        if (sameName) {
+          const diff = Math.abs(deck.notes.length - newDeck.notes.length);
+          if (diff <= 3) {
+            scrollUp = false;
+          }
+        }
+
+        if (scrollUp) {
           noteList.current?.element?.scrollTo({ top: 0 });
         }
 
