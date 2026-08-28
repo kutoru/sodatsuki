@@ -6,6 +6,7 @@ import { LeftPanel } from "./LeftPanel/LeftPanel";
 import { Toast } from "./Toast";
 import { MiddlePanel } from "./MiddlePanel";
 import { RightPanel } from "./RightPanel/RightPanel";
+import { PreviewAudio } from "./PreviewAudio";
 
 export const App = () => {
   const { leftPanel, middlePanel, rightPanel, leftResize, rightResize } =
@@ -54,6 +55,8 @@ export const App = () => {
       />
 
       <Toast />
+
+      <PreviewAudio />
     </div>
   );
 };

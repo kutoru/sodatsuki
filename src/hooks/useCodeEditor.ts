@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Field } from "../types";
 import { useStore } from "./useStore";
-import { convertFileSrc } from "@tauri-apps/api/core";
 
 import "codemirror/lib/codemirror.css";
 import "codemirror/theme/monokai.css";
@@ -10,27 +9,6 @@ import "codemirror/addon/fold/xml-fold";
 import "codemirror/addon/edit/matchtags";
 
 import CodeMirror from "codemirror";
-
-const formatFieldPreview = (fieldValue: string) => {
-  const mediaPath = useStore.getState().anki.mediaPath;
-  if (!mediaPath) {
-    return fieldValue;
-  }
-
-  const soundMatches = Array.from(fieldValue.matchAll(/\[sound:(.*)\]/g));
-  const imageMatches = Array.from(fieldValue.matchAll(/img.*src="(.*)"/g));
-
-  if (fieldValue.startsWith("[") || fieldValue.startsWith("<")) {
-    console.log(fieldValue, soundMatches, imageMatches);
-  }
-
-  imageMatches.forEach(([, file]) => {
-    const src = mediaPath + "/" + file;
-    fieldValue = fieldValue.replace(file, convertFileSrc(src));
-  });
-
-  return fieldValue;
-};
 
 export const useCodeEditor = (
   field: Field,
@@ -42,25 +20,10 @@ export const useCodeEditor = (
   );
 
   const parent = useRef<HTMLDivElement>(null);
-  const preview = useRef<HTMLDivElement>(null);
   const editor = useRef<CodeMirror.Editor>(null);
 
-  const setDisplayValue = (value: string) => {
-    if (!preview.current) {
-      return;
-    }
-
-    if (value.trim()) {
-      preview.current.innerHTML = formatFieldPreview(value);
-      preview.current.classList.remove("text-gray-400/75", "italic");
-    } else {
-      preview.current.innerHTML = `${field}...`;
-      preview.current.classList.add("text-gray-400/75", "italic");
-    }
-  };
-
   useEffect(() => {
-    if (!parent.current || !preview.current || editor.current) {
+    if (!parent.current || editor.current) {
       return;
     }
 
@@ -75,15 +38,13 @@ export const useCodeEditor = (
       value: fieldValue,
     });
 
-    setDisplayValue(fieldValue);
-
     setCodeEditorRefreshCallback(field, () => editor.current?.refresh());
 
     const change = (
       instance: CodeMirror.Editor,
       _changeObj: CodeMirror.EditorChange,
     ) => {
-      setDisplayValue(instance.getValue());
+      setFieldValue(instance.getValue());
     };
 
     const blur = (instance: CodeMirror.Editor, _event: FocusEvent) => {
@@ -100,9 +61,8 @@ export const useCodeEditor = (
 
     if (editor.current && !identical) {
       editor.current.setValue(fieldValue);
-      setDisplayValue(fieldValue);
     }
   }, [fieldValue]);
 
-  return { editorParent: parent, previewElement: preview };
+  return { editorParent: parent };
 };

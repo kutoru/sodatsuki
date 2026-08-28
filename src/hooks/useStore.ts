@@ -28,6 +28,9 @@ type Store = {
   codeEditorRefreshCallbacks: Partial<Record<Field, () => void>>;
   setCodeEditorRefreshCallback: (field: Field, callback: () => void) => void;
   refreshCodeEditors: () => void;
+
+  previewAudioData?: { src: string };
+  playPreviewAudio: (src: string) => void;
 };
 
 export const useStore = create<Store>((set, get) => ({
@@ -56,4 +59,7 @@ export const useStore = create<Store>((set, get) => ({
       refreshCallback(),
     );
   },
+
+  previewAudioData: undefined,
+  playPreviewAudio: (src) => set({ previewAudioData: { src } }),
 }));

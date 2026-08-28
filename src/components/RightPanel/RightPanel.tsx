@@ -1,4 +1,4 @@
-import { Ref, useEffect, useState } from "react";
+import { Ref, useEffect, useMemo, useState } from "react";
 import { Separator } from "../Separator";
 import { useStore } from "../../hooks/useStore";
 import { Button } from "../Button";
@@ -12,6 +12,8 @@ type Props = {
   rightResize: Ref<HTMLDivElement>;
   blurFilter: { backdropFilter: string };
 };
+
+type FieldSetters = Record<Field, (value: string) => void>;
 
 const relevantFields: Field[] = [
   "Meaning",
@@ -27,6 +29,24 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
   const setCurrentNote = useStore((state) => state.setCurrentNote);
 
   const [editNote, setEditNote] = useState<Note>();
+  const editNoteFieldSetters = useMemo<FieldSetters>(
+    () =>
+      relevantFields.reduce((setters, field) => {
+        setters[field] = (value) =>
+          setEditNote((prev) => {
+            if (!prev) {
+              return prev;
+            }
+
+            prev.fields[field] = value;
+
+            return { ...prev };
+          });
+
+        return setters;
+      }, {} as FieldSetters),
+    [],
+  );
 
   useEffect(() => {
     if (currentNote) {
@@ -94,17 +114,7 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
                 noteId={editNote.id}
                 field={field}
                 fieldValue={editNote.fields[field]}
-                setFieldValue={(value) =>
-                  setEditNote((prev) => {
-                    if (!prev) {
-                      return prev;
-                    }
-
-                    prev.fields[field] = value;
-
-                    return { ...prev };
-                  })
-                }
+                setFieldValue={editNoteFieldSetters[field]}
               />
             ))}
         </div>
