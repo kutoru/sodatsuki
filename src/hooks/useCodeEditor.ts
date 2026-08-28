@@ -1,5 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Field } from "../types";
+import { useStore } from "./useStore";
+import { convertFileSrc } from "@tauri-apps/api/core";
 
 import "codemirror/lib/codemirror.css";
 import "codemirror/theme/monokai.css";
@@ -8,7 +10,27 @@ import "codemirror/addon/fold/xml-fold";
 import "codemirror/addon/edit/matchtags";
 
 import CodeMirror from "codemirror";
-import { useStore } from "./useStore";
+
+const formatFieldPreview = (fieldValue: string) => {
+  const mediaPath = useStore.getState().anki.mediaPath;
+  if (!mediaPath) {
+    return fieldValue;
+  }
+
+  const soundMatches = Array.from(fieldValue.matchAll(/\[sound:(.*)\]/g));
+  const imageMatches = Array.from(fieldValue.matchAll(/img.*src="(.*)"/g));
+
+  if (fieldValue.startsWith("[") || fieldValue.startsWith("<")) {
+    console.log(fieldValue, soundMatches, imageMatches);
+  }
+
+  imageMatches.forEach(([, file]) => {
+    const src = mediaPath + "/" + file;
+    fieldValue = fieldValue.replace(file, convertFileSrc(src));
+  });
+
+  return fieldValue;
+};
 
 export const useCodeEditor = (
   field: Field,
@@ -20,25 +42,25 @@ export const useCodeEditor = (
   );
 
   const parent = useRef<HTMLDivElement>(null);
-  const display = useRef<HTMLDivElement>(null);
+  const preview = useRef<HTMLDivElement>(null);
   const editor = useRef<CodeMirror.Editor>(null);
 
   const setDisplayValue = (value: string) => {
-    if (!display.current) {
+    if (!preview.current) {
       return;
     }
 
     if (value.trim()) {
-      display.current.innerHTML = value;
-      display.current.classList.remove("text-gray-400/75", "italic");
+      preview.current.innerHTML = formatFieldPreview(value);
+      preview.current.classList.remove("text-gray-400/75", "italic");
     } else {
-      display.current.innerHTML = `${field}...`;
-      display.current.classList.add("text-gray-400/75", "italic");
+      preview.current.innerHTML = `${field}...`;
+      preview.current.classList.add("text-gray-400/75", "italic");
     }
   };
 
   useEffect(() => {
-    if (!parent.current || !display.current || editor.current) {
+    if (!parent.current || !preview.current || editor.current) {
       return;
     }
 
@@ -59,16 +81,12 @@ export const useCodeEditor = (
 
     const change = (
       instance: CodeMirror.Editor,
-      changeObj: CodeMirror.EditorChange,
+      _changeObj: CodeMirror.EditorChange,
     ) => {
-      console.log("change", instance.getValue(), changeObj);
-
       setDisplayValue(instance.getValue());
     };
 
-    const blur = (instance: CodeMirror.Editor, event: FocusEvent) => {
-      console.log("blur", instance, event);
-
+    const blur = (instance: CodeMirror.Editor, _event: FocusEvent) => {
       instance.setCursor(instance.lineCount(), 0, { scroll: false });
       setFieldValue(instance.getValue().trim());
     };
@@ -79,15 +97,12 @@ export const useCodeEditor = (
 
   useEffect(() => {
     const identical = editor.current?.getValue() === fieldValue;
-    console.log("identical", editor.current?.getValue(), fieldValue, identical);
 
     if (editor.current && !identical) {
-      console.log("effect update");
-
       editor.current.setValue(fieldValue);
       setDisplayValue(fieldValue);
     }
   }, [fieldValue]);
 
-  return { editorParent: parent, displayElement: display };
+  return { editorParent: parent, previewElement: preview };
 };

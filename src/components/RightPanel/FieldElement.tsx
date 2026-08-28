@@ -20,7 +20,7 @@ export const FieldElement = ({
 }: Props) => {
   const [expanded, setExpanded] = useState(false);
 
-  const { editorParent, displayElement } = useCodeEditor(
+  const { editorParent, previewElement } = useCodeEditor(
     field,
     fieldValue,
     setFieldValue,
@@ -43,9 +43,9 @@ export const FieldElement = ({
       </div>
 
       <div
-        ref={displayElement}
+        ref={previewElement}
         className={clsx(
-          "mx-2 rounded-md bg-white/5 p-1 wrap-break-word shadow-even shadow-black/25 transition-[border-radius]",
+          "field-preview mx-2 rounded-md bg-white/5 p-1 wrap-break-word shadow-even shadow-black/25 transition-[border-radius]",
           !fieldValue.trim() && "text-gray-400/75 italic",
           expanded && "rounded-b-none",
         )}

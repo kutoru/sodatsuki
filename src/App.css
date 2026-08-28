@@ -45,3 +45,10 @@ html {
 .CodeMirror-wrap pre {
   word-break: break-word;
 }
+
+.field-preview {
+  img {
+    width: 100%;
+    max-width: 20rem;
+  }
+}
