@@ -35,7 +35,6 @@ export const FieldElement = memo(
         .catch(handleError());
     };
 
-    // TODO: render the whole thing as innerHTML as opposed to creating a bunch of spans
     const parseFieldForPreview = () => {
       if (!fieldValue) {
         return `${field}...`;
@@ -53,17 +52,22 @@ export const FieldElement = memo(
       let value = fieldValue;
       const parts: JSX.Element[] = [];
 
-      const soundMatches = value.matchAll(/\[sound:(.*)\]/g);
-      const imageMatches = value.matchAll(/<img.*src="(.*)".*>/g);
+      const soundMatches = value.matchAll(/\[sound:(.*?)\]/g);
+      const imageMatches = value.matchAll(/<img.*?src="(.*?)".*?>/g);
 
       const elementMatches = [...soundMatches, ...imageMatches];
       elementMatches.sort((a, b) => a.index - b.index);
 
       elementMatches.forEach(([element, file]) => {
-        const [first, second] = value.split(element);
-
         const path = anki.mediaPath + "/" + file;
         const src = convertFileSrc(path);
+
+        if (element.includes("style")) {
+          value = value.replace(element, element.replace(file, src));
+          return;
+        }
+
+        const [first, second] = value.split(element);
 
         if (first) {
           parts.push(
@@ -132,7 +136,7 @@ export const FieldElement = memo(
 
         <div
           className={clsx(
-            "mx-2 flex flex-row flex-wrap items-end rounded-md bg-white/5 p-1 wrap-break-word shadow-even shadow-black/25 transition-[border-radius]",
+            "field-preview mx-2 rounded-md bg-white/5 p-1 wrap-break-word shadow-even shadow-black/25 transition-[border-radius]",
             !fieldValue.trim() && "text-gray-400/75 italic",
             expanded && "rounded-b-none",
           )}
