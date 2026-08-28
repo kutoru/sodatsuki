@@ -41,3 +41,8 @@ export enum NotificationType {
   Success,
   Error,
 }
+
+export type VideoFileState = {
+  path: string;
+  name: string;
+};

@@ -11,17 +11,12 @@ import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { handleError } from "../utils";
 import clsx from "clsx";
 import { useStore } from "../hooks/useStore";
-import config from "../mockState.json";
 import { Checkbox } from "./Checkbox";
+import { VideoFileState } from "../types";
 
 type Props = {
   middlePanel: Ref<HTMLDivElement>;
   blurFilter: { backdropFilter: string };
-};
-
-type VideoFileState = {
-  path: string;
-  name: string;
 };
 
 // expected filename: 2025 10 28 07 36 41...
@@ -73,7 +68,9 @@ export const MiddlePanel = ({ middlePanel, blurFilter }: Props) => {
   const dateFilter = useStore((state) => state.dateFilter);
   const setDateFilter = useStore((state) => state.setDateFilter);
 
-  const [videoFile, setVideoFile] = useState<VideoFileState>(config.videoFile);
+  const videoFile = useStore((state) => state.videoFile);
+  const setVideoFile = useStore((state) => state.setVideoFile);
+
   const [videoRange, setVideoRange] = useState<{
     start?: number;
     end?: number;

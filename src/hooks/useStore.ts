@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import {
   AnkiState,
   DateFilterState,
@@ -7,18 +8,24 @@ import {
   Note,
   NotificationType,
   Status,
+  VideoFileState,
 } from "../types";
-import config from "../mockState.json";
 
 type Store = {
   anki: AnkiState;
   setAnki: (anki: AnkiState) => void;
+
+  deckName?: string;
+  setDeckName: (deckName: string) => void;
 
   deck?: DeckState;
   setDeck: (deck: DeckState) => void;
 
   currentNote?: Note;
   setCurrentNote: (note?: Note) => void;
+
+  videoFile?: VideoFileState;
+  setVideoFile: (videoFile: VideoFileState) => void;
 
   dateFilter: DateFilterState;
   setDateFilter: (updater: (prev: DateFilterState) => DateFilterState) => void;
@@ -35,37 +42,56 @@ type Store = {
   playPreviewAudio: (src: string) => void;
 };
 
-export const useStore = create<Store>((set, get) => ({
-  anki: { status: Status.Offline },
-  setAnki: (anki) => set({ anki }),
+export const useStore = create<Store>()(
+  persist(
+    (set, get) => ({
+      anki: { status: Status.Offline },
+      setAnki: (anki) => set({ anki }),
 
-  deck: undefined,
-  setDeck: (deck) => set({ deck }),
+      deckName: undefined,
+      setDeckName: (deckName) => set({ deckName }),
 
-  currentNote: undefined,
-  setCurrentNote: (note) => set({ currentNote: note }),
+      deck: undefined,
+      setDeck: (deck) => set({ deck }),
 
-  dateFilter: config.dateFilter,
-  setDateFilter: (updater) =>
-    set((state) => ({ dateFilter: updater(state.dateFilter) })),
+      currentNote: undefined,
+      setCurrentNote: (note) => set({ currentNote: note }),
 
-  notificationState: { shown: false, type: NotificationType.Success },
-  showNotification: (type) => set({ notificationState: { shown: true, type } }),
-  hideNotification: () =>
-    set((state) => ({
-      notificationState: { ...state.notificationState, shown: false },
-    })),
+      videoFile: undefined,
+      setVideoFile: (videoState) => set({ videoFile: videoState }),
 
-  codeEditorRefreshCallbacks: {},
-  setCodeEditorRefreshCallback: (field, callback) => {
-    get().codeEditorRefreshCallbacks[field] = callback;
-  },
-  refreshCodeEditors: () => {
-    Object.values(get().codeEditorRefreshCallbacks).forEach((refreshCallback) =>
-      refreshCallback(),
-    );
-  },
+      dateFilter: { applyStart: true, applyEnd: true },
+      setDateFilter: (updater) =>
+        set((state) => ({ dateFilter: updater(state.dateFilter) })),
 
-  previewAudioData: undefined,
-  playPreviewAudio: (src) => set({ previewAudioData: { src } }),
-}));
+      notificationState: { shown: false, type: NotificationType.Success },
+      showNotification: (type) =>
+        set({ notificationState: { shown: true, type } }),
+      hideNotification: () =>
+        set((state) => ({
+          notificationState: { ...state.notificationState, shown: false },
+        })),
+
+      codeEditorRefreshCallbacks: {},
+      setCodeEditorRefreshCallback: (field, callback) => {
+        get().codeEditorRefreshCallbacks[field] = callback;
+      },
+      refreshCodeEditors: () => {
+        Object.values(get().codeEditorRefreshCallbacks).forEach(
+          (refreshCallback) => refreshCallback(),
+        );
+      },
+
+      previewAudioData: undefined,
+      playPreviewAudio: (src) => set({ previewAudioData: { src } }),
+    }),
+    {
+      name: "storage",
+      partialize: (state) => ({
+        deckName: state.deckName,
+        videoFile: state.videoFile,
+        dateFilter: state.dateFilter,
+      }),
+    },
+  ),
+);

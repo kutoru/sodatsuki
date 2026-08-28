@@ -9,7 +9,6 @@ import { NoteRow } from "./NoteRow";
 import clsx from "clsx";
 import { Separator } from "../Separator";
 import { useStore } from "../../hooks/useStore";
-import config from "../../mockState.json";
 
 type Props = {
   leftPanel: Ref<HTMLDivElement>;
@@ -69,10 +68,8 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
   const anki = useStore((state) => state.anki);
   const setAnki = useStore((state) => state.setAnki);
 
-  const [initialDeckState, setInitialDeckState] = useState({
-    deckName: config.deckName,
-    loaded: false,
-  });
+  const deckName = useStore((state) => state.deckName);
+  const setDeckName = useStore((state) => state.setDeckName);
 
   const deck = useStore((state) => state.deck);
   const setDeck = useStore((state) => state.setDeck);
@@ -120,19 +117,18 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
   }, []);
 
   useEffect(() => {
-    if (!initialDeckState.loaded && anki.status === Status.Online) {
-      setInitialDeckState({ deckName: "", loaded: true });
-      loadDeck(initialDeckState.deckName);
+    if (deckName && anki.status === Status.Online) {
+      loadDeck(deckName);
     }
   }, [anki]);
 
   useEffect(() => {
-    if (!deck?.name) {
+    if (!deckName) {
       return;
     }
 
     const timeout = setTimeout(
-      () => loadDeck(deck.name),
+      () => loadDeck(deckName),
       lastLoadedDeck.current + 1000 - Date.now(),
     );
 
@@ -178,7 +174,7 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
           </div>
 
           <div className="flex-1 overflow-hidden text-center text-ellipsis whitespace-nowrap drop-shadow-even drop-shadow-black">
-            {deck?.name || "-"}
+            {deckName || "-"}
           </div>
 
           <Button
@@ -202,7 +198,7 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
           )}
         >
           <div className="drop-shadow-even drop-shadow-black">
-            {deck?.notes.length ?? 0} / {deck?.totalNotes ?? 0}
+            {deck?.notes.length || 0} / {deck?.totalNotes || 0}
           </div>
         </div>
 
@@ -247,7 +243,10 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
             {anki.decks?.map((deckName) => (
               <Fragment key={deckName}>
                 <button
-                  onClick={() => loadDeck(deckName)}
+                  onClick={() => {
+                    setDeckName(deckName);
+                    loadDeck(deckName);
+                  }}
                   className="cursor-pointer p-2 transition select-none hover:bg-white/25 active:text-gray-300 disabled:cursor-default disabled:bg-transparent disabled:text-gray-400"
                   disabled={loadingDeck}
                 >
