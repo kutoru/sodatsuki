@@ -12,6 +12,7 @@ import { handleError } from "../utils";
 import clsx from "clsx";
 import { useStore } from "../hooks/useStore";
 import config from "../mockState.json";
+import { Checkbox } from "./Checkbox";
 
 type Props = {
   middlePanel: Ref<HTMLDivElement>;
@@ -183,19 +184,15 @@ export const MiddlePanel = ({ middlePanel, blurFilter }: Props) => {
               }}
             />
 
-            <label className="cursor-pointer p-2.5 ps-0">
-              <input
-                className="aspect-square size-full flex-none cursor-pointer shadow-even shadow-black hover:shadow-white/25"
-                type="checkbox"
-                onChange={(e) =>
-                  setDateFilter((prev) => ({
-                    ...prev,
-                    applyStart: e.target.checked,
-                  }))
-                }
-                checked={dateFilter.applyStart}
-              />
-            </label>
+            <Checkbox
+              onChange={(e) =>
+                setDateFilter((prev) => ({
+                  ...prev,
+                  applyStart: e.target.checked,
+                }))
+              }
+              checked={dateFilter.applyStart}
+            />
           </div>
 
           <Button
@@ -241,19 +238,15 @@ export const MiddlePanel = ({ middlePanel, blurFilter }: Props) => {
               }}
             />
 
-            <label className="cursor-pointer p-2.5 ps-0">
-              <input
-                className="aspect-square size-full flex-none cursor-pointer shadow-even shadow-black hover:shadow-white/25"
-                type="checkbox"
-                onChange={(e) =>
-                  setDateFilter((prev) => ({
-                    ...prev,
-                    applyEnd: e.target.checked,
-                  }))
-                }
-                checked={dateFilter.applyEnd}
-              />
-            </label>
+            <Checkbox
+              onChange={(e) =>
+                setDateFilter((prev) => ({
+                  ...prev,
+                  applyEnd: e.target.checked,
+                }))
+              }
+              checked={dateFilter.applyEnd}
+            />
           </div>
         </div>
       </div>
