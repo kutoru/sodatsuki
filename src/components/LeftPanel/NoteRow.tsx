@@ -74,6 +74,31 @@ const fieldList: { field: Field; icon: JSX.Element }[] = [
   },
 ];
 
+enum FieldStatus {
+  Ok,
+  Warn,
+  Missing,
+}
+
+const getFieldStatus = (field: Field, value: string): FieldStatus => {
+  if (!value) {
+    return FieldStatus.Missing;
+  }
+
+  switch (field) {
+    case "Meaning":
+      return value.startsWith("<") ? FieldStatus.Warn : FieldStatus.Ok;
+    case "Reading":
+      return value.startsWith("<o") ? FieldStatus.Warn : FieldStatus.Ok;
+    case "Expression":
+    case "Audio":
+    case "Sentence":
+    case "Sentence Audio":
+    case "Image_URI":
+      return FieldStatus.Ok;
+  }
+};
+
 export const InnerNoteElement = memo(
   ({ note, index, isActive, digitWidth }: InnerNoteElementProps) => {
     const setSelectedNote = useStore((state) => state.setSelectedNote);
@@ -106,51 +131,67 @@ export const InnerNoteElement = memo(
         )}
       >
         <div className="flex gap-1 px-1">
-          {fieldList.map(({ field, icon }) => (
-            <div key={note.id + field} className="relative h-2 flex-1">
-              <button
-                title={field}
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  e.currentTarget.classList.add("-bottom-10!", "rounded-none!");
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.classList.remove(
-                    "-bottom-10!",
-                    "rounded-none!",
-                  );
-                }}
-                onClick={(e) => {
-                  e.currentTarget.classList.remove(
-                    "-bottom-10!",
-                    "rounded-none!",
-                  );
+          {fieldList.map(({ field, icon }) => {
+            const status = getFieldStatus(field, note.fields[field]);
 
-                  if (!note.fields[field]) {
-                    return;
-                  }
+            return (
+              <div key={note.id + field} className="relative h-2 flex-1">
+                <button
+                  title={field}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    e.currentTarget.classList.add(
+                      "-bottom-10!",
+                      "rounded-none!",
+                    );
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.classList.remove(
+                      "-bottom-10!",
+                      "rounded-none!",
+                    );
+                  }}
+                  onClick={(e) => {
+                    e.currentTarget.classList.remove(
+                      "-bottom-10!",
+                      "rounded-none!",
+                    );
 
-                  setEditNote((prev) => {
-                    if (!prev) {
-                      return undefined;
+                    if (status === FieldStatus.Missing) {
+                      return;
                     }
 
-                    prev.fields[field] += "\n<br>\n" + note.fields[field];
+                    setEditNote((prev) => {
+                      if (!prev) {
+                        return undefined;
+                      }
 
-                    return { ...prev };
-                  });
-                }}
-                className={clsx(
-                  "absolute bottom-0 left-0 z-10 h-12 w-full flex-1 rounded-b-sm py-2 drop-shadow-even transition-all select-none hover:-bottom-2",
-                  !!note.fields[field]
-                    ? "cursor-pointer bg-emerald-700/75 drop-shadow-emerald-500/50 active:bg-emerald-900/75 active:text-gray-300"
-                    : "bg-rose-700/75 drop-shadow-rose-500/50",
-                )}
-              >
-                {icon}
-              </button>
-            </div>
-          ))}
+                      if (prev.fields[field]) {
+                        prev.fields[field] += "\n<br>\n";
+                      }
+
+                      prev.fields[field] += note.fields[field];
+
+                      return { ...prev };
+                    });
+                  }}
+                  className={clsx(
+                    "absolute bottom-0 left-0 z-10 h-12 w-full flex-1 rounded-b-sm py-2 drop-shadow-even transition-all select-none hover:-bottom-2",
+                    status !== FieldStatus.Missing &&
+                      "cursor-pointer active:text-gray-300",
+                    status === FieldStatus.Ok &&
+                      "bg-emerald-700/75 drop-shadow-emerald-500/50 active:bg-emerald-900/75",
+                    status === FieldStatus.Warn &&
+                      "bg-amber-700/75 drop-shadow-amber-500/50 active:bg-amber-900/75",
+                    status === FieldStatus.Missing &&
+                      "bg-rose-700/75 drop-shadow-rose-500/50",
+                  )}
+                >
+                  {icon}
+                </button>
+              </div>
+            );
+          })}
         </div>
 
         <div className="flex flex-row">

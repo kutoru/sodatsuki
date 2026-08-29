@@ -19,11 +19,11 @@ export type DeckState = {
 export type Field =
   | "Expression"
   | "Meaning"
-  | "Image_URI"
+  | "Reading"
+  | "Audio"
   | "Sentence"
   | "Sentence Audio"
-  | "Reading"
-  | "Audio";
+  | "Image_URI";
 
 export type Note = {
   id: number;

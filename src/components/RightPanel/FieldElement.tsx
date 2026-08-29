@@ -16,6 +16,15 @@ type Props = {
   fieldDiffers: boolean;
 };
 
+const splitStringInHalf = (value: string, separator: string) => {
+  const index = value.indexOf(separator);
+  if (index === -1) {
+    return [value];
+  }
+
+  return [value.slice(0, index), value.slice(index + separator.length)];
+};
+
 export const FieldElement = memo(
   ({ noteId, field, fieldValue, setFieldValue, fieldDiffers }: Props) => {
     const anki = useStore((state) => state.anki);
@@ -68,7 +77,7 @@ export const FieldElement = memo(
           return;
         }
 
-        const [first, second] = value.split(element);
+        const [first, second] = splitStringInHalf(value, element);
 
         if (first) {
           parts.push(
