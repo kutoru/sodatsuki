@@ -4,7 +4,7 @@ import {
   FunnelIcon,
   RotateCwIcon,
 } from "lucide-react";
-import { Ref, useEffect, useRef, useState } from "react";
+import { Ref, useEffect, useRef } from "react";
 import { Button } from "./Button";
 import { Separator } from "./Separator";
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
@@ -71,10 +71,8 @@ export const MiddlePanel = ({ middlePanel, blurFilter }: Props) => {
   const videoFile = useStore((state) => state.videoFile);
   const setVideoFile = useStore((state) => state.setVideoFile);
 
-  const [videoRange, setVideoRange] = useState<{
-    start?: number;
-    end?: number;
-  }>({ start: undefined, end: undefined });
+  const videoHandle = useStore((state) => state.videoHandle);
+  const setVideoHandle = useStore((state) => state.setVideoHandle);
 
   const video = useRef<HTMLVideoElement>(null);
 
@@ -97,20 +95,26 @@ export const MiddlePanel = ({ middlePanel, blurFilter }: Props) => {
       return;
     }
 
-    setVideoRange({});
-
     if (!videoFile) {
       video.current.src = "";
+      setVideoHandle(undefined);
+
       return;
     }
 
     const onLoadedMetadata = (e: Event) => {
-      const vid = e.target as HTMLVideoElement;
+      const element = e.target as HTMLVideoElement;
 
       const start = getVideoStartTime(videoFile.name);
-      const end = getVideoEndTime(start, vid);
+      const end = getVideoEndTime(start, element);
 
-      setVideoRange({ start, end });
+      setVideoHandle({
+        setTime: (ms) => {
+          element.currentTime = ms / 1000;
+        },
+        start,
+        end,
+      });
     };
 
     video.current.addEventListener("loadedmetadata", onLoadedMetadata);
@@ -161,9 +165,12 @@ export const MiddlePanel = ({ middlePanel, blurFilter }: Props) => {
             <Button
               className="w-8 p-2 pe-0"
               onClick={() =>
-                setDateFilter((prev) => ({ ...prev, start: videoRange.start }))
+                setDateFilter((prev) => ({
+                  ...prev,
+                  start: videoHandle?.start,
+                }))
               }
-              disabled={!videoRange.start}
+              disabled={!videoHandle?.start}
             >
               <RotateCwIcon className="size-full" />
             </Button>
@@ -197,8 +204,8 @@ export const MiddlePanel = ({ middlePanel, blurFilter }: Props) => {
               setDateFilter(() => ({
                 applyStart: true,
                 applyEnd: true,
-                start: videoRange.start,
-                end: videoRange.end,
+                start: videoHandle?.start,
+                end: videoHandle?.end,
               }))
             }
             className="p-2"
@@ -215,9 +222,9 @@ export const MiddlePanel = ({ middlePanel, blurFilter }: Props) => {
             <Button
               className="w-8 p-2 pe-0"
               onClick={() =>
-                setDateFilter((prev) => ({ ...prev, end: videoRange.end }))
+                setDateFilter((prev) => ({ ...prev, end: videoHandle?.end }))
               }
-              disabled={!videoRange.end}
+              disabled={!videoHandle?.end}
             >
               <RotateCwIcon className="size-full" />
             </Button>

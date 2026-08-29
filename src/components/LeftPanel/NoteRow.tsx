@@ -104,6 +104,13 @@ export const InnerNoteElement = memo(
     const setSelectedNote = useStore((state) => state.setSelectedNote);
     const showNotification = useStore((state) => state.showNotification);
     const setEditNote = useStore((state) => state.setEditNote);
+    const videoHandle = useStore((state) => state.videoHandle);
+
+    const canSetTime =
+      !!videoHandle?.start &&
+      !!videoHandle?.end &&
+      note.id > videoHandle.start &&
+      note.id < videoHandle.end;
 
     const copyExpression = () => {
       invoke("copy_to_clipboard", { text: note.fields.Expression })
@@ -118,7 +125,8 @@ export const InnerNoteElement = memo(
     };
 
     const setVideoTime = () => {
-      // probably something to do with store
+      const timeDifference = note.id - videoHandle!.start!;
+      videoHandle!.setTime(timeDifference);
     };
 
     return (
@@ -218,7 +226,11 @@ export const InnerNoteElement = memo(
             <LogInIcon className="size-full rotate-180" />
           </Button>
 
-          <Button onClick={setVideoTime} className="w-8 py-2.5 ps-1.25 pe-1.25">
+          <Button
+            onClick={setVideoTime}
+            className="w-8 py-2.5 ps-1.25 pe-1.25"
+            disabled={!canSetTime}
+          >
             <ClockArrowRightIcon className="size-full" />
           </Button>
 

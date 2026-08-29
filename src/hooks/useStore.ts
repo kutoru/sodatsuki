@@ -13,6 +13,12 @@ import {
 
 type ValueOrSetterArg<T> = T | ((prev: T) => T);
 
+type VideoHandle = {
+  setTime: (ms: number) => void;
+  start?: number;
+  end?: number;
+};
+
 type Store = {
   anki: AnkiState;
   setAnki: (anki: AnkiState) => void;
@@ -31,6 +37,9 @@ type Store = {
 
   videoFile?: VideoFileState;
   setVideoFile: (videoFile: VideoFileState) => void;
+
+  videoHandle?: VideoHandle;
+  setVideoHandle: (videoHandle?: VideoHandle) => void;
 
   dateFilter: DateFilterState;
   setDateFilter: (updater: (prev: DateFilterState) => DateFilterState) => void;
@@ -72,7 +81,10 @@ export const useStore = create<Store>()(
           : set({ editNote: noteOrSetter }),
 
       videoFile: undefined,
-      setVideoFile: (videoState) => set({ videoFile: videoState }),
+      setVideoFile: (videoFile) => set({ videoFile: videoFile }),
+
+      videoHandle: undefined,
+      setVideoHandle: (videoHandle) => set({ videoHandle }),
 
       dateFilter: { applyStart: true, applyEnd: true },
       setDateFilter: (updater) =>
