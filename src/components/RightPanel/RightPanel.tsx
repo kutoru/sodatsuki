@@ -1,10 +1,10 @@
-import { Ref, useEffect, useMemo, useState } from "react";
+import { Ref, useEffect, useMemo } from "react";
 import { Separator } from "../Separator";
 import { useStore } from "../../hooks/useStore";
 import { Button } from "../Button";
 import { CheckIcon, RotateCwIcon, XIcon } from "lucide-react";
 import clsx from "clsx";
-import { Field, Note } from "../../types";
+import { Field } from "../../types";
 import { FieldElement } from "./FieldElement";
 
 type Props = {
@@ -25,12 +25,13 @@ const relevantFields: Field[] = [
 ];
 
 export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
-  const currentNote = useStore((state) => state.currentNote);
-  const setCurrentNote = useStore((state) => state.setCurrentNote);
+  const selectedNote = useStore((state) => state.selectedNote);
+  const setSelectedNote = useStore((state) => state.setSelectedNote);
 
-  const [editNote, setEditNote] = useState<Note>();
+  const editNote = useStore((state) => state.editNote);
+  const setEditNote = useStore((state) => state.setEditNote);
 
-  const editNoteFieldSetters = useMemo<FieldSetters>(
+  const editNoteFieldUpdaters = useMemo<FieldSetters>(
     () =>
       relevantFields.reduce((setters, field) => {
         setters[field] = (value) =>
@@ -52,9 +53,9 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
   const editNoteDiffs: Record<Field, boolean> = relevantFields.reduce(
     (diffs, field) => {
       diffs[field] =
-        !currentNote || !editNote
+        !selectedNote || !editNote
           ? false
-          : currentNote.fields[field] !== editNote.fields[field];
+          : selectedNote.fields[field] !== editNote.fields[field];
       return diffs;
     },
     {} as Record<Field, boolean>,
@@ -63,10 +64,10 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
   const hasDiff = !!Object.values(editNoteDiffs).find((v) => v);
 
   useEffect(() => {
-    if (currentNote && currentNote.id !== editNote?.id) {
-      setEditNote(structuredClone(currentNote));
+    if (selectedNote && selectedNote.id !== editNote?.id) {
+      setEditNote(structuredClone(selectedNote));
     }
-  }, [currentNote]);
+  }, [selectedNote]);
 
   return (
     <>
@@ -82,7 +83,7 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
       >
         <div className="flex flex-row items-center">
           <Button
-            onClick={() => setEditNote(structuredClone(currentNote))}
+            onClick={() => setEditNote(structuredClone(selectedNote))}
             className="p-2.5"
             disabled={!hasDiff}
           >
@@ -92,7 +93,7 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
           <div
             className={clsx(
               "flex-1 overflow-hidden text-lg text-ellipsis whitespace-nowrap drop-shadow-even drop-shadow-black transition-opacity",
-              !currentNote && "opacity-0 select-none",
+              !selectedNote && "opacity-0 select-none",
             )}
           >
             {editNote?.fields.Expression}
@@ -105,9 +106,9 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
           <div className="h-6 w-1 flex-none rounded-full bg-separator shadow-sm" />
 
           <Button
-            onClick={() => setCurrentNote(undefined)}
+            onClick={() => setSelectedNote(undefined)}
             className="p-2"
-            disabled={!currentNote}
+            disabled={!selectedNote}
           >
             <XIcon className="size-full" />
           </Button>
@@ -118,7 +119,7 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
         <div
           className={clsx(
             "slim-scrollbar flex-1 overflow-auto pb-2 transition-opacity",
-            !currentNote && "pointer-events-none opacity-0 select-none",
+            !selectedNote && "pointer-events-none opacity-0 select-none",
           )}
         >
           {editNote &&
@@ -128,7 +129,7 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
                 noteId={editNote.id}
                 field={field}
                 fieldValue={editNote.fields[field]}
-                setFieldValue={editNoteFieldSetters[field]}
+                setFieldValue={editNoteFieldUpdaters[field]}
                 fieldDiffers={editNoteDiffs[field]}
               />
             ))}

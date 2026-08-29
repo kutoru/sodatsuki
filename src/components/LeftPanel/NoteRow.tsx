@@ -24,7 +24,7 @@ type Props = RowComponentProps<{
 }>;
 
 export const NoteRow = ({ notes, digitWidth, index, style }: Props) => {
-  const currentNote = useStore((state) => state.currentNote);
+  const selectedNote = useStore((state) => state.selectedNote);
 
   const note = notes[index];
 
@@ -33,7 +33,7 @@ export const NoteRow = ({ notes, digitWidth, index, style }: Props) => {
       <InnerNoteElement
         note={note}
         index={index}
-        isActive={note.id === currentNote?.id}
+        isActive={note.id === selectedNote?.id}
         digitWidth={digitWidth}
       />
     </div>
@@ -47,10 +47,38 @@ type InnerNoteElementProps = {
   digitWidth: number;
 };
 
+const fieldList: { field: Field; icon: JSX.Element }[] = [
+  {
+    field: "Meaning",
+    icon: <TextQuoteIcon className="size-full" />,
+  },
+  {
+    field: "Reading",
+    icon: <MusicIcon className="size-full" />,
+  },
+  {
+    field: "Audio",
+    icon: <WifiIcon className="size-full rotate-90" />,
+  },
+  {
+    field: "Sentence",
+    icon: <BookTextIcon className="size-full" />,
+  },
+  {
+    field: "Sentence Audio",
+    icon: <BookHeadphonesIcon className="size-full" />,
+  },
+  {
+    field: "Image_URI",
+    icon: <FileImageIcon className="size-full" />,
+  },
+];
+
 export const InnerNoteElement = memo(
   ({ note, index, isActive, digitWidth }: InnerNoteElementProps) => {
-    const setCurrentNote = useStore((state) => state.setCurrentNote);
+    const setSelectedNote = useStore((state) => state.setSelectedNote);
     const showNotification = useStore((state) => state.showNotification);
+    const setEditNote = useStore((state) => state.setEditNote);
 
     const copyExpression = () => {
       invoke("copy_to_clipboard", { text: note.fields.Expression })
@@ -67,33 +95,6 @@ export const InnerNoteElement = memo(
     const setVideoTime = () => {
       // probably something to do with store
     };
-
-    const fieldList: { field: Field; icon: JSX.Element }[] = [
-      {
-        field: "Meaning",
-        icon: <TextQuoteIcon className="size-full" />,
-      },
-      {
-        field: "Image_URI",
-        icon: <FileImageIcon className="size-full" />,
-      },
-      {
-        field: "Sentence",
-        icon: <BookTextIcon className="size-full" />,
-      },
-      {
-        field: "Sentence Audio",
-        icon: <BookHeadphonesIcon className="size-full" />,
-      },
-      {
-        field: "Reading",
-        icon: <MusicIcon className="size-full" />,
-      },
-      {
-        field: "Audio",
-        icon: <WifiIcon className="size-full rotate-90" />,
-      },
-    ];
 
     return (
       <div
@@ -124,6 +125,20 @@ export const InnerNoteElement = memo(
                     "-bottom-10!",
                     "rounded-none!",
                   );
+
+                  if (!note.fields[field]) {
+                    return;
+                  }
+
+                  setEditNote((prev) => {
+                    if (!prev) {
+                      return undefined;
+                    }
+
+                    prev.fields[field] += "\n<br>\n" + note.fields[field];
+
+                    return { ...prev };
+                  });
                 }}
                 className={clsx(
                   "absolute bottom-0 left-0 z-10 h-12 w-full flex-1 rounded-b-sm py-2 drop-shadow-even transition-all select-none hover:-bottom-2",
@@ -167,7 +182,7 @@ export const InnerNoteElement = memo(
           </Button>
 
           <Button
-            onClick={() => setCurrentNote(note)}
+            onClick={() => setSelectedNote(note)}
             className="w-9 py-2.5 ps-1.25 pe-2.5"
             disabled={isActive}
           >

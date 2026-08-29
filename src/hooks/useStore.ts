@@ -21,8 +21,14 @@ type Store = {
   deck?: DeckState;
   setDeck: (deck: DeckState) => void;
 
-  currentNote?: Note;
-  setCurrentNote: (note?: Note) => void;
+  selectedNote?: Note;
+  setSelectedNote: (note?: Note) => void;
+
+  editNote?: Note;
+  setEditNote: (
+    noteOrSetter:
+      Note | undefined | ((prev: Note | undefined) => Note | undefined),
+  ) => void;
 
   videoFile?: VideoFileState;
   setVideoFile: (videoFile: VideoFileState) => void;
@@ -54,8 +60,14 @@ export const useStore = create<Store>()(
       deck: undefined,
       setDeck: (deck) => set({ deck }),
 
-      currentNote: undefined,
-      setCurrentNote: (note) => set({ currentNote: note }),
+      selectedNote: undefined,
+      setSelectedNote: (note) => set({ selectedNote: note }),
+
+      editNote: undefined,
+      setEditNote: (noteOrSetter) =>
+        typeof noteOrSetter === "function"
+          ? set((state) => ({ editNote: noteOrSetter(state.editNote) }))
+          : set({ editNote: noteOrSetter }),
 
       videoFile: undefined,
       setVideoFile: (videoState) => set({ videoFile: videoState }),
