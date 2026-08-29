@@ -17,6 +17,7 @@ pub fn run() {
             cmds::anki_fetch_status,
             cmds::anki_fetch_deck,
             cmds::anki_open_note,
+            cmds::anki_save_note,
             cmds::copy_to_clipboard,
             cmds::video_select,
             cmds::file_open,

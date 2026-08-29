@@ -1,11 +1,13 @@
-import { Ref, useEffect, useMemo } from "react";
+import { Ref, useEffect, useMemo, useState } from "react";
 import { Separator } from "../Separator";
 import { useStore } from "../../hooks/useStore";
 import { Button } from "../Button";
 import { CheckIcon, RotateCwIcon, XIcon } from "lucide-react";
 import clsx from "clsx";
-import { Field } from "../../types";
+import { Field, NotificationType } from "../../types";
 import { FieldElement } from "./FieldElement";
+import { invoke } from "@tauri-apps/api/core";
+import { handleError } from "../../utils";
 
 type Props = {
   rightPanel: Ref<HTMLDivElement>;
@@ -25,11 +27,16 @@ const relevantFields: Field[] = [
 ];
 
 export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
+  const showNotification = useStore((state) => state.showNotification);
+  const setDeck = useStore((state) => state.setDeck);
+
   const selectedNote = useStore((state) => state.selectedNote);
   const setSelectedNote = useStore((state) => state.setSelectedNote);
 
   const editNote = useStore((state) => state.editNote);
   const setEditNote = useStore((state) => state.setEditNote);
+
+  const [savingNote, setSavingNote] = useState(false);
 
   const editNoteFieldUpdaters = useMemo<FieldSetters>(
     () =>
@@ -62,6 +69,37 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
   );
 
   const hasDiff = !!Object.values(editNoteDiffs).find((v) => v);
+
+  const saveNote = () => {
+    if (!editNote) {
+      return;
+    }
+
+    setSavingNote(true);
+    const note = structuredClone(editNote);
+
+    invoke("anki_save_note", { note })
+      .then(() => {
+        setSelectedNote(note);
+        setDeck((prev) => {
+          if (!prev) {
+            return undefined;
+          }
+
+          const noteIndex = prev.notes.findIndex((v) => v.id === note.id);
+          if (noteIndex === -1) {
+            return prev;
+          }
+
+          prev.notes[noteIndex] = note;
+          return { ...prev };
+        });
+
+        showNotification(NotificationType.Success);
+      })
+      .catch(handleError())
+      .finally(() => setSavingNote(false));
+  };
 
   useEffect(() => {
     if (selectedNote && selectedNote.id !== editNote?.id) {
@@ -99,7 +137,11 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
             {editNote?.fields.Expression}
           </div>
 
-          <Button className="p-2" disabled={!hasDiff}>
+          <Button
+            onClick={saveNote}
+            className="p-2"
+            disabled={!hasDiff || savingNote}
+          >
             <CheckIcon className="size-full" />
           </Button>
 

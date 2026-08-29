@@ -11,6 +11,8 @@ import {
   VideoFileState,
 } from "../types";
 
+type ValueOrSetterArg<T> = T | ((prev: T) => T);
+
 type Store = {
   anki: AnkiState;
   setAnki: (anki: AnkiState) => void;
@@ -19,16 +21,13 @@ type Store = {
   setDeckName: (deckName: string) => void;
 
   deck?: DeckState;
-  setDeck: (deck: DeckState) => void;
+  setDeck: (deckOrSetter: ValueOrSetterArg<DeckState | undefined>) => void;
 
   selectedNote?: Note;
   setSelectedNote: (note?: Note) => void;
 
   editNote?: Note;
-  setEditNote: (
-    noteOrSetter:
-      Note | undefined | ((prev: Note | undefined) => Note | undefined),
-  ) => void;
+  setEditNote: (noteOrSetter: ValueOrSetterArg<Note | undefined>) => void;
 
   videoFile?: VideoFileState;
   setVideoFile: (videoFile: VideoFileState) => void;
@@ -58,7 +57,10 @@ export const useStore = create<Store>()(
       setDeckName: (deckName) => set({ deckName }),
 
       deck: undefined,
-      setDeck: (deck) => set({ deck }),
+      setDeck: (deckOrSetter) =>
+        typeof deckOrSetter === "function"
+          ? set((state) => ({ deck: deckOrSetter(state.deck) }))
+          : set({ deck: deckOrSetter }),
 
       selectedNote: undefined,
       setSelectedNote: (note) => set({ selectedNote: note }),

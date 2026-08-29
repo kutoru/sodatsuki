@@ -17,15 +17,14 @@ where
     call_anki_with_params(http, config, action, json!({})).await
 }
 
-async fn call_anki_with_params<T, U>(
+async fn call_anki_with_params<T>(
     http: &Http<'_>,
     config: &Config<'_>,
     action: &str,
-    params: U,
+    params: serde_json::Value,
 ) -> Result<T, String>
 where
     T: serde::de::DeserializeOwned + std::fmt::Debug,
-    U: serde::Serialize,
 {
     let http: &reqwest::Client = http.inner();
     let config = config.lock().await;
@@ -156,4 +155,28 @@ pub async fn anki_open_note(
     .await?;
 
     Ok(())
+}
+
+#[tauri::command]
+pub async fn anki_save_note(http: Http<'_>, config: Config<'_>, note: Note) -> Result<(), String> {
+    let result = call_anki_with_params(
+        &http,
+        &config,
+        "updateNoteFields",
+        json!({
+            "note": note,
+        }),
+    )
+    .await;
+
+    match result {
+        Ok(v) => Ok(v),
+        Err(e) => {
+            if e == "Empty Anki error" {
+                Ok(())
+            } else {
+                Err(e)
+            }
+        }
+    }
 }
