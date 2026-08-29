@@ -59,3 +59,13 @@ html {
     list-style-position: outside;
   }
 }
+
+audio,
+audio::-webkit-media-controls-panel {
+  background-color: var(--color-rose-950);
+}
+
+audio.active,
+audio.active::-webkit-media-controls-panel {
+  background-color: var(--color-emerald-950);
+}

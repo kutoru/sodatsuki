@@ -150,7 +150,7 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
   }, [deck]);
 
   useEffect(() => {
-    if (!deckName) {
+    if (!deckName || anki.status !== Status.Online) {
       return;
     }
 

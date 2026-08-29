@@ -14,6 +14,8 @@ import {
 type ValueOrSetterArg<T> = T | ((prev: T) => T);
 
 type VideoHandle = {
+  duration: number;
+  getTime: () => number;
   setTime: (ms: number) => void;
   start?: number;
   end?: number;
