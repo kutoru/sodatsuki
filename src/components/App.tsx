@@ -4,7 +4,7 @@ import { usePanelResize } from "../hooks/usePanelResize";
 import { useBgNoise } from "../hooks/useBgNoise";
 import { LeftPanel } from "./LeftPanel/LeftPanel";
 import { Notification } from "./Notification";
-import { MiddlePanel } from "./MiddlePanel";
+import { MiddlePanel } from "./MiddlePanel/MiddlePanel";
 import { RightPanel } from "./RightPanel/RightPanel";
 import { PreviewAudio } from "./PreviewAudio";
 

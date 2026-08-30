@@ -3,6 +3,10 @@ import { NotificationType } from "./types";
 
 export const handleError = (callback?: () => void) => (reason: any) => {
   console.warn("Error:", reason);
-  useStore.getState().showNotification(NotificationType.Error);
-  callback?.();
+
+  if (!callback) {
+    useStore.getState().showNotification(NotificationType.Error);
+  } else {
+    callback();
+  }
 };
