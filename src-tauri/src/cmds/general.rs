@@ -45,3 +45,47 @@ pub async fn video_select(app: AppHandle) -> Result<VideoSelectResult, String> {
 pub async fn file_open(app: AppHandle, path: String) -> Result<(), String> {
     app.opener().open_path(path, None::<&str>).err_msg()
 }
+
+#[tauri::command]
+pub async fn clip_capture(
+    video_path: String,
+    start: f64,
+    end: f64,
+) -> Result<tauri::ipc::Response, String> {
+    // TODO: consider https://docs.rs/async-process/latest/async_process/
+    // TODO: add normalization/compression "-af loudnorm=I=-21:TP=-2:LRA=10,volume=-6dB"
+    let output = std::process::Command::new("ffmpeg")
+        .args([
+            "-ss",
+            &format!("{}ms", start),
+            "-t",
+            &format!("{}ms", end - start),
+            "-i",
+            &video_path,
+            "-ac",
+            "1",
+            "-ar",
+            "22050",
+            "-b:a",
+            "96k",
+            "-acodec",
+            "libmp3lame",
+            "-f",
+            "mp3",
+            "-",
+        ])
+        .output()
+        .err_msg()?;
+
+    let code = output
+        .status
+        .code()
+        .ok_or("Missing exit code".to_string())
+        .err_msg()?;
+
+    if code != 0 {
+        Err(String::from_utf8(output.stderr).err_msg()?)
+    } else {
+        Ok(tauri::ipc::Response::new(output.stdout))
+    }
+}

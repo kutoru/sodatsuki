@@ -21,6 +21,7 @@ pub fn run() {
             cmds::copy_to_clipboard,
             cmds::video_select,
             cmds::file_open,
+            cmds::clip_capture,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -32,57 +32,72 @@ export const Video = () => {
   const videoFile = useStore((state) => state.videoFile);
   const setVideoHandle = useStore((state) => state.setVideoHandle);
 
-  const video = useRef<HTMLVideoElement>(null);
+  const videoElement = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (!video.current) {
+    if (!videoElement.current) {
       return;
     }
 
-    video.current.volume = 0.2;
+    videoElement.current.volume = 0.2;
   }, []);
 
   useEffect(() => {
-    if (!video.current) {
+    const video = videoElement.current;
+    if (!video) {
       return;
     }
 
     if (!videoFile) {
-      video.current.src = "";
+      video.src = "";
       setVideoHandle(undefined);
 
       return;
     }
 
-    const onLoadedMetadata = (e: Event) => {
-      const element = e.target as HTMLVideoElement;
-
+    const onLoadedMetadata = () => {
       const start = getVideoStartTime(videoFile.name);
-      const end = getVideoEndTime(start, element);
+      const end = getVideoEndTime(start, video);
 
       setVideoHandle({
-        duration: element.duration * 1000,
+        duration: video.duration * 1000,
         getTime: () => {
-          return element.currentTime * 1000;
+          return video.currentTime * 1000;
         },
         setTime: (ms) => {
-          element.currentTime = ms / 1000;
+          video.currentTime = ms / 1000;
         },
         start,
         end,
       });
     };
 
-    video.current.addEventListener("loadedmetadata", onLoadedMetadata);
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+
+      const initialDelta = (e.deltaY / 100) * -1;
+
+      if (e.shiftKey) {
+        video.currentTime += initialDelta * 10;
+      } else if (e.ctrlKey) {
+        video.currentTime += initialDelta / 10;
+      } else {
+        video.currentTime += initialDelta;
+      }
+    };
+
+    video.addEventListener("loadedmetadata", onLoadedMetadata);
+    video.addEventListener("wheel", onWheel);
 
     return () => {
-      video.current?.removeEventListener("loadedmetadata", onLoadedMetadata);
+      video.removeEventListener("loadedmetadata", onLoadedMetadata);
+      video.removeEventListener("wheel", onWheel);
     };
   }, [videoFile]);
 
   return (
     <video
-      ref={video}
+      ref={videoElement}
       className="size-full"
       src={videoFile?.path && convertFileSrc(videoFile?.path)}
       controls
