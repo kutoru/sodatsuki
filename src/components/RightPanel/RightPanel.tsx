@@ -4,7 +4,7 @@ import { useStore } from "../../hooks/useStore";
 import { Button } from "../Button";
 import { CheckIcon, RotateCwIcon, XIcon } from "lucide-react";
 import clsx from "clsx";
-import { Field, NotificationType } from "../../types";
+import { Field, Note, NotificationType } from "../../types";
 import { FieldElement } from "./FieldElement";
 import { invoke } from "@tauri-apps/api/core";
 import { handleError } from "../../utils";
@@ -29,6 +29,9 @@ const relevantFields: Field[] = [
 export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
   const showNotification = useStore((state) => state.showNotification);
   const setDeck = useStore((state) => state.setDeck);
+  const newMediaNames = useStore((state) => state.newMediaNames);
+  const useClip = useStore((state) => state.useClip);
+  const releaseMedia = useStore((state) => state.releaseMedia);
 
   const selectedNote = useStore((state) => state.selectedNote);
   const setSelectedNote = useStore((state) => state.setSelectedNote);
@@ -70,35 +73,63 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
 
   const hasDiff = !!Object.values(editNoteDiffs).find((v) => v);
 
-  const saveNote = () => {
+  const saveNote = async () => {
     if (!editNote) {
       return;
     }
 
     setSavingNote(true);
-    const note = structuredClone(editNote);
 
-    invoke("anki_save_note", { note })
-      .then(() => {
-        setSelectedNote(note);
+    // get set of new names
+    // do useMedia for each name
+    // map blobs to arrayBuffers
+
+    // send new note, file names and array buffers to rust
+    // in rust, convert buffers to base64 and save to anki with new names
+    // find and replace old names with new names
+    // finally save the new note and send it back to FE
+
+    // on FE receive the note
+    // release the used media
+    // update editNote (since filenames updated)
+
+    const uniqueNames = Array.from(new Set(newMediaNames));
+    const newMedia = uniqueNames.map(useClip);
+    const filePromises = newMedia
+      .filter((media) => !!media)
+      .map(async (media) => ({
+        name: media.name,
+        data: await media.blob.arrayBuffer(),
+      }));
+
+    const files = await Promise.all(filePromises);
+
+    invoke<Note>("anki_save_note", { note: editNote, files })
+      .then((savedNote) => {
+        setSelectedNote(savedNote);
+        setEditNote(structuredClone(savedNote));
+
         setDeck((prev) => {
           if (!prev) {
             return undefined;
           }
 
-          const noteIndex = prev.notes.findIndex((v) => v.id === note.id);
+          const noteIndex = prev.notes.findIndex((v) => v.id === savedNote.id);
           if (noteIndex === -1) {
             return prev;
           }
 
-          prev.notes[noteIndex] = note;
+          prev.notes[noteIndex] = savedNote;
           return { ...prev };
         });
 
         showNotification(NotificationType.Success);
       })
       .catch(handleError())
-      .finally(() => setSavingNote(false));
+      .finally(() => {
+        newMedia.forEach(releaseMedia);
+        setSavingNote(false);
+      });
   };
 
   useEffect(() => {

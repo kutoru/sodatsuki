@@ -3,11 +3,12 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
+use base64::Engine;
 use serde_json::json;
 
 use crate::types::{
-    AnkiFetchDeckResult, AnkiFetchStatusResult, AnkiResponse, Config, FullNote, Http, Note,
-    ResultExt, Status,
+    AnkiFetchDeckResult, AnkiFetchStatusResult, AnkiResponse, CapturedMedia, Config, FullNote,
+    Http, Note, ResultExt, Status,
 };
 
 async fn call_anki<T>(http: &Http<'_>, config: &Config<'_>, action: &str) -> Result<T, String>
@@ -61,6 +62,13 @@ where
     }
 }
 
+fn get_unix_ms() -> u128 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("SystemTime error")
+        .as_millis()
+}
+
 #[tauri::command]
 pub async fn anki_fetch_status(
     http: Http<'_>,
@@ -107,7 +115,7 @@ pub async fn anki_fetch_deck(
             "deck": deck,
             "start": start_timestamp.unwrap_or(0),
             "end": end_timestamp.unwrap_or_else(|| {
-                SystemTime::now().duration_since(UNIX_EPOCH).expect("SystemTime error").as_millis()
+                get_unix_ms()
             }),
         }),
     )
@@ -158,8 +166,51 @@ pub async fn anki_open_note(
 }
 
 #[tauri::command]
-pub async fn anki_save_note(http: Http<'_>, config: Config<'_>, note: Note) -> Result<(), String> {
-    let result = call_anki_with_params(
+pub async fn anki_save_note(
+    http: Http<'_>,
+    config: Config<'_>,
+    mut note: Note,
+    files: Vec<CapturedMedia>,
+) -> Result<Note, String> {
+    for file in files {
+        let label = note
+            .fields
+            .get("Expression")
+            .map_or("".into(), |l| format!("-{}", l));
+
+        let ext = file
+            .name
+            .split('.')
+            .next_back()
+            .map_or("".into(), |e| format!(".{}", e));
+
+        let new_name = format!("sodatsuki-{}{}{}", get_unix_ms(), label, ext);
+
+        let data = base64::prelude::BASE64_STANDARD.encode(file.data);
+
+        let result = call_anki_with_params::<String>(
+            &http,
+            &config,
+            "storeMediaFile",
+            json!({
+                "filename": &new_name,
+                "data": data,
+            }),
+        )
+        .await;
+
+        if let Err(err) = result {
+            if err != "Empty Anki error" {
+                return Err(err);
+            }
+        }
+
+        for v in note.fields.values_mut() {
+            *v = v.replace(&file.name, &new_name);
+        }
+    }
+
+    let result = call_anki_with_params::<()>(
         &http,
         &config,
         "updateNoteFields",
@@ -169,14 +220,11 @@ pub async fn anki_save_note(http: Http<'_>, config: Config<'_>, note: Note) -> R
     )
     .await;
 
-    match result {
-        Ok(v) => Ok(v),
-        Err(e) => {
-            if e == "Empty Anki error" {
-                Ok(())
-            } else {
-                Err(e)
-            }
+    if let Err(err) = result {
+        if err != "Empty Anki error" {
+            return Err(err);
         }
     }
+
+    Ok(note)
 }

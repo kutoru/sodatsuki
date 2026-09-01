@@ -46,6 +46,8 @@ export type ScreenshotState = CapturedMediaState & {
   type: CapturedMediaType.Screenshot;
 };
 
+let capturedMediaCounter = 0;
+
 type Store = {
   anki: AnkiState;
   setAnki: (anki: AnkiState) => void;
@@ -61,6 +63,11 @@ type Store = {
 
   editNote?: Note;
   setEditNote: (noteOrUpdater: ValueOrUpdaterArg<Note | undefined>) => void;
+
+  // TODO: instead of storing names ("ref-1.mp3") store and replace whole elements ("[audio:ref-1.mp3]")
+  newMediaNames: string[];
+  addNewMediaName: (name?: string) => void;
+  removeNewMediaName: (name?: string) => void;
 
   videoFile?: VideoFileState;
   setVideoFile: (videoFile: VideoFileState) => void;
@@ -127,6 +134,23 @@ export const useStore = create<Store>()(
           ? set((state) => ({ editNote: noteOrUpdater(state.editNote) }))
           : set({ editNote: noteOrUpdater }),
 
+      newMediaNames: [],
+      addNewMediaName: (name) => {
+        if (name) {
+          get().newMediaNames.push(name);
+        }
+      },
+      removeNewMediaName: (name) => {
+        if (!name) {
+          return;
+        }
+
+        const names = get().newMediaNames;
+        const index = names.indexOf(name);
+        names[index] = names[names.length - 1];
+        names.pop();
+      },
+
       videoFile: undefined,
       setVideoFile: (videoFile) => set({ videoFile: videoFile }),
 
@@ -165,7 +189,7 @@ export const useStore = create<Store>()(
       addClip: ({ videoPath, start, end, arrayBuffer }) => {
         const blob = new Blob([arrayBuffer]);
         const src = URL.createObjectURL(blob);
-        const name = `sodatsuki-${Date.now()}.mp3`;
+        const name = `ref-${++capturedMediaCounter}.mp3`;
 
         const clipState: ClipState = {
           videoPath,

@@ -41,3 +41,9 @@ pub struct AnkiResponse<T> {
     pub result: Option<T>,
     pub error: Option<String>,
 }
+
+#[derive(serde::Deserialize, std::fmt::Debug)]
+pub struct CapturedMedia {
+    pub name: String,
+    pub data: Vec<u8>,
+}

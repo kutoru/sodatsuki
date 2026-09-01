@@ -10,14 +10,21 @@ export const ClipPreview = ({ element, fileName }: Props) => {
   const playPreviewAudio = useStore((state) => state.playPreviewAudio);
   const useClip = useStore((state) => state.useClip);
   const releaseMedia = useStore((state) => state.releaseMedia);
+  const addNewMediaName = useStore((state) => state.addNewMediaName);
+  const removeNewMediaName = useStore((state) => state.removeNewMediaName);
 
   const [clipState, setClipState] = useState<ClipState>();
 
   useEffect(() => {
     const state = useClip(fileName);
-    setClipState(state);
 
-    return () => releaseMedia(state);
+    setClipState(state);
+    addNewMediaName(state?.name);
+
+    return () => {
+      removeNewMediaName(state?.name);
+      releaseMedia(state);
+    };
   }, [fileName]);
 
   const path = anki.mediaPath + "/" + fileName;
