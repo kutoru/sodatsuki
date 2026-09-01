@@ -1,12 +1,13 @@
 import { JSX, memo, useEffect, useState } from "react";
 import { Button } from "../Button";
-import { AsteriskIcon, PencilIcon, PlayIcon } from "lucide-react";
+import { FileVolumeIcon, PencilIcon } from "lucide-react";
 import clsx from "clsx";
 import { useCodeEditor } from "../../hooks/useCodeEditor";
-import { Field, NotificationType } from "../../types";
+import { Field } from "../../types";
 import { useStore } from "../../hooks/useStore";
-import { convertFileSrc, invoke } from "@tauri-apps/api/core";
-import { handleError } from "../../utils";
+import { convertFileSrc } from "@tauri-apps/api/core";
+import { ScreenshotPreview } from "./ScreenshotPreview";
+import { ClipPreview } from "./ClipPreview";
 
 type Props = {
   noteId: number;
@@ -28,8 +29,7 @@ const splitStringInHalf = (value: string, separator: string) => {
 export const FieldElement = memo(
   ({ noteId, field, fieldValue, setFieldValue, fieldDiffers }: Props) => {
     const anki = useStore((state) => state.anki);
-    const playPreviewAudio = useStore((state) => state.playPreviewAudio);
-    const showNotification = useStore((state) => state.showNotification);
+    const currentClipName = useStore((state) => state.currentClipName);
 
     const [expanded, setExpanded] = useState(false);
 
@@ -38,12 +38,6 @@ export const FieldElement = memo(
     useEffect(() => {
       setExpanded(false);
     }, [noteId]);
-
-    const openFile = (path: string) => {
-      invoke("file_open", { path })
-        .then(() => showNotification(NotificationType.Success))
-        .catch(handleError());
-    };
 
     const parseFieldForPreview = () => {
       if (!fieldValue) {
@@ -68,12 +62,12 @@ export const FieldElement = memo(
       const elementMatches = [...soundMatches, ...imageMatches];
       elementMatches.sort((a, b) => a.index - b.index);
 
-      elementMatches.forEach(([element, file]) => {
-        const path = anki.mediaPath + "/" + file;
-        const src = convertFileSrc(path);
-
+      elementMatches.forEach(([element, fileName]) => {
         if (element.includes("style")) {
-          value = value.replace(element, element.replace(file, src));
+          const path = anki.mediaPath + "/" + fileName;
+          const src = convertFileSrc(path);
+
+          value = value.replace(element, element.replace(fileName, src));
           return;
         }
 
@@ -91,29 +85,17 @@ export const FieldElement = memo(
 
         if (element.startsWith("<")) {
           parts.push(
-            <button
-              key={parts.length}
-              onClick={() => openFile(path)}
-              className="w-full max-w-80 cursor-pointer"
-              title={file}
-            >
-              <img src={src} className="size-full" />
-            </button>,
+            <ScreenshotPreview key={parts.length} fileName={fileName} />,
           );
         }
 
         if (element.startsWith("[")) {
           parts.push(
-            <span key={parts.length} className="max-w-full">
-              {element}
-              <button
-                onClick={() => playPreviewAudio(src)}
-                className="ms-1 size-5 cursor-pointer rounded-full bg-gray-500 p-1"
-                title={file}
-              >
-                <PlayIcon className="size-full" strokeWidth={3} />
-              </button>
-            </span>,
+            <ClipPreview
+              key={parts.length}
+              element={element}
+              fileName={fileName}
+            />,
           );
         }
 
@@ -133,7 +115,7 @@ export const FieldElement = memo(
     };
 
     return (
-      <div key={field} className="flex flex-col">
+      <div className="flex flex-col">
         <div className="flex flex-row items-center">
           <div
             className={clsx(
@@ -142,16 +124,25 @@ export const FieldElement = memo(
             )}
           >
             {field}
+            {fieldDiffers && " *"}
           </div>
 
-          <div
-            className={clsx(
-              "h-10 w-8 p-2 pe-0 text-amber-300 drop-shadow-even drop-shadow-amber-300 transition",
-              !fieldDiffers && "opacity-0",
-            )}
-          >
-            <AsteriskIcon className="size-full" />
-          </div>
+          {field === "Sentence Audio" && (
+            <Button
+              onClick={() => {
+                const element = `[sound:${currentClipName}]`;
+                if (fieldValue) {
+                  setFieldValue(fieldValue + "\n<br>\n" + element);
+                } else {
+                  setFieldValue(element);
+                }
+              }}
+              className="w-8 p-2 pe-0"
+              disabled={!currentClipName}
+            >
+              <FileVolumeIcon className="size-full" />
+            </Button>
+          )}
 
           <Button onClick={() => setExpanded(!expanded)} className="p-2">
             <PencilIcon className="size-full" />

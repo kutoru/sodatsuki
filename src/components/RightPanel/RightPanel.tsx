@@ -132,9 +132,11 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
             className={clsx(
               "flex-1 overflow-hidden text-lg text-ellipsis whitespace-nowrap drop-shadow-even drop-shadow-black transition-opacity",
               !selectedNote && "opacity-0 select-none",
+              hasDiff && "italic",
             )}
           >
             {editNote?.fields.Expression}
+            {hasDiff && " *"}
           </div>
 
           <Button

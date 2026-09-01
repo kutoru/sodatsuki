@@ -11,7 +11,7 @@ import {
   VideoFileState,
 } from "../types";
 
-type ValueOrSetterArg<T> = T | ((prev: T) => T);
+type ValueOrUpdaterArg<T> = T | ((prev: T) => T);
 
 type VideoHandle = {
   duration: number;
@@ -19,6 +19,32 @@ type VideoHandle = {
   setTime: (ms: number) => void;
   start?: number;
   end?: number;
+};
+
+enum CapturedMediaType {
+  Clip,
+  Screenshot,
+}
+
+type CapturedMediaState = {
+  videoPath: string;
+  name: string;
+  blob: Blob;
+  src: string;
+  rc: number;
+  // TODO: delete with a delay
+  // releaseTimeoutId: number | undefined;
+};
+
+export type ClipState = CapturedMediaState & {
+  start: number;
+  end: number;
+  type: CapturedMediaType.Clip;
+};
+
+export type ScreenshotState = CapturedMediaState & {
+  timestamp: number;
+  type: CapturedMediaType.Screenshot;
 };
 
 type Store = {
@@ -29,13 +55,13 @@ type Store = {
   setDeckName: (deckName: string) => void;
 
   deck?: DeckState;
-  setDeck: (deckOrSetter: ValueOrSetterArg<DeckState | undefined>) => void;
+  setDeck: (deckOrUpdater: ValueOrUpdaterArg<DeckState | undefined>) => void;
 
   selectedNote?: Note;
   setSelectedNote: (note?: Note) => void;
 
   editNote?: Note;
-  setEditNote: (noteOrSetter: ValueOrSetterArg<Note | undefined>) => void;
+  setEditNote: (noteOrUpdater: ValueOrUpdaterArg<Note | undefined>) => void;
 
   videoFile?: VideoFileState;
   setVideoFile: (videoFile: VideoFileState) => void;
@@ -45,6 +71,9 @@ type Store = {
 
   dateFilter: DateFilterState;
   setDateFilter: (updater: (prev: DateFilterState) => DateFilterState) => void;
+
+  currentClipName: string | undefined;
+  setCurrentClipName: (clipName: string) => void;
 
   notificationState: { shown: boolean; type: NotificationType };
   showNotification: (type: NotificationType) => void;
@@ -56,6 +85,23 @@ type Store = {
 
   previewAudioData?: { src: string };
   playPreviewAudio: (src: string) => void;
+
+  capturedMedia: Map<string, ClipState | ScreenshotState>;
+  addClip: (clip: {
+    videoPath: string;
+    start: number;
+    end: number;
+    arrayBuffer: ArrayBuffer;
+  }) => ClipState;
+  // addScreenshot: (screenshot: {
+  //   videoPath: string;
+  //   timestamp: number;
+  //   arrayBuffer: ArrayBuffer;
+  // }) => ScreenshotState;
+
+  useClip: (name: string) => ClipState | undefined;
+  // useScreenshot: (name: string) => ScreenshotState | undefined;
+  releaseMedia: (media: ClipState | ScreenshotState | undefined) => void;
 };
 
 export const useStore = create<Store>()(
@@ -68,19 +114,19 @@ export const useStore = create<Store>()(
       setDeckName: (deckName) => set({ deckName }),
 
       deck: undefined,
-      setDeck: (deckOrSetter) =>
-        typeof deckOrSetter === "function"
-          ? set((state) => ({ deck: deckOrSetter(state.deck) }))
-          : set({ deck: deckOrSetter }),
+      setDeck: (deckOrUpdater) =>
+        typeof deckOrUpdater === "function"
+          ? set((state) => ({ deck: deckOrUpdater(state.deck) }))
+          : set({ deck: deckOrUpdater }),
 
       selectedNote: undefined,
       setSelectedNote: (note) => set({ selectedNote: note }),
 
       editNote: undefined,
-      setEditNote: (noteOrSetter) =>
-        typeof noteOrSetter === "function"
-          ? set((state) => ({ editNote: noteOrSetter(state.editNote) }))
-          : set({ editNote: noteOrSetter }),
+      setEditNote: (noteOrUpdater) =>
+        typeof noteOrUpdater === "function"
+          ? set((state) => ({ editNote: noteOrUpdater(state.editNote) }))
+          : set({ editNote: noteOrUpdater }),
 
       videoFile: undefined,
       setVideoFile: (videoFile) => set({ videoFile: videoFile }),
@@ -91,6 +137,9 @@ export const useStore = create<Store>()(
       dateFilter: { applyStart: true, applyEnd: true },
       setDateFilter: (updater) =>
         set((state) => ({ dateFilter: updater(state.dateFilter) })),
+
+      currentClipName: undefined,
+      setCurrentClipName: (clipName) => set({ currentClipName: clipName }),
 
       notificationState: { shown: false, type: NotificationType.Success },
       showNotification: (type) =>
@@ -112,6 +161,66 @@ export const useStore = create<Store>()(
 
       previewAudioData: undefined,
       playPreviewAudio: (src) => set({ previewAudioData: { src } }),
+
+      capturedMedia: new Map(),
+      addClip: ({ videoPath, start, end, arrayBuffer }) => {
+        const blob = new Blob([arrayBuffer]);
+        const src = URL.createObjectURL(blob);
+        const name = `sodatsuki-${Date.now()}.mp3`;
+
+        const clipState: ClipState = {
+          videoPath,
+          start,
+          end,
+          name,
+          blob,
+          src,
+          rc: 1,
+          type: CapturedMediaType.Clip,
+        };
+
+        get().capturedMedia.set(name, clipState);
+        console.log("media", get().capturedMedia);
+
+        return clipState;
+      },
+
+      useClip: (name) => {
+        const state = get().capturedMedia.get(name);
+        if (state?.type !== CapturedMediaType.Clip) {
+          return undefined;
+        }
+
+        state.rc += 1;
+
+        console.log("use clip", get().capturedMedia);
+
+        return state;
+      },
+      releaseMedia: (media) => {
+        if (!media) {
+          console.log("release media", media, get().capturedMedia);
+          return;
+        }
+
+        const state = get().capturedMedia.get(media.name);
+        if (!state) {
+          throw new Error("Could not find media to release");
+        }
+
+        state.rc -= 1;
+        if (state.rc > 0) {
+          console.log("release media", media, get().capturedMedia);
+          return;
+        }
+
+        get().capturedMedia.delete(state.name);
+        URL.revokeObjectURL(state.src);
+        delete (state as any).src;
+        delete (state as any).blob;
+
+        console.log("release media", media, get().capturedMedia);
+      },
     }),
     {
       name: "storage",

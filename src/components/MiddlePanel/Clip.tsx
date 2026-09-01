@@ -7,21 +7,16 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "../Button";
-import { useStore } from "../../hooks/useStore";
+import { ClipState, useStore } from "../../hooks/useStore";
 import { invoke } from "@tauri-apps/api/core";
 import { handleError } from "../../utils";
-
-type ClipState = {
-  videoPath: string;
-  start: number;
-  end: number;
-  blob: Blob;
-  src: string;
-};
 
 export const Clip = () => {
   const videoFile = useStore((state) => state.videoFile);
   const videoHandle = useStore((state) => state.videoHandle);
+  const setCurrentClipName = useStore((state) => state.setCurrentClipName);
+  const addClip = useStore((state) => state.addClip);
+  const releaseMedia = useStore((state) => state.releaseMedia);
 
   const [clipTime, setClipTime] = useState<{
     start: number;
@@ -35,6 +30,8 @@ export const Clip = () => {
   const audioElement = useRef<HTMLAudioElement>(null);
 
   const captureClip = () => {
+    const prevClipState = clipState;
+
     const videoPath = videoFile?.path;
     const start = clipTime.start;
     const end = clipTime.end;
@@ -47,17 +44,14 @@ export const Clip = () => {
 
     invoke<ArrayBuffer>("clip_capture", { videoPath, start, end })
       .then((arrayBuffer) => {
-        const blob = new Blob([arrayBuffer]);
-        // TODO: add objecturl cleanup
-        const src = URL.createObjectURL(blob);
+        const newClipState = addClip({ videoPath, start, end, arrayBuffer });
+        setClipState(newClipState);
 
-        setClipState({
-          videoPath,
-          start,
-          end,
-          blob,
-          src,
-        });
+        setCurrentClipName(newClipState.name);
+
+        if (prevClipState) {
+          releaseMedia(prevClipState);
+        }
       })
       .catch(handleError())
       .finally(() => setCapturing(false));
@@ -72,10 +66,6 @@ export const Clip = () => {
   useEffect(() => {
     setClipTime({ start: 0, end: 0 });
   }, [videoHandle]);
-
-  useEffect(() => {
-    console.log("clip", clipState);
-  }, [clipState]);
 
   const pathAligns = !!videoFile && videoFile.path === clipState?.videoPath;
   const startAligns = pathAligns && clipTime.start === clipState.start;
