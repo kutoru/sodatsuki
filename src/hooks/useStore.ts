@@ -32,8 +32,7 @@ type CapturedMediaState = {
   blob: Blob;
   src: string;
   rc: number;
-  // TODO: delete with a delay
-  // releaseTimeoutId: number | undefined;
+  releaseTimeoutId?: number;
 };
 
 export type ClipState = CapturedMediaState & {
@@ -180,7 +179,6 @@ export const useStore = create<Store>()(
         };
 
         get().capturedMedia.set(name, clipState);
-        console.log("media", get().capturedMedia);
 
         return clipState;
       },
@@ -193,13 +191,12 @@ export const useStore = create<Store>()(
 
         state.rc += 1;
 
-        console.log("use clip", get().capturedMedia);
+        clearTimeout(state.releaseTimeoutId);
 
         return state;
       },
       releaseMedia: (media) => {
         if (!media) {
-          console.log("release media", media, get().capturedMedia);
           return;
         }
 
@@ -210,16 +207,15 @@ export const useStore = create<Store>()(
 
         state.rc -= 1;
         if (state.rc > 0) {
-          console.log("release media", media, get().capturedMedia);
           return;
         }
 
-        get().capturedMedia.delete(state.name);
-        URL.revokeObjectURL(state.src);
-        delete (state as any).src;
-        delete (state as any).blob;
-
-        console.log("release media", media, get().capturedMedia);
+        state.releaseTimeoutId = setTimeout(() => {
+          get().capturedMedia.delete(state.name);
+          URL.revokeObjectURL(state.src);
+          delete (state as any).src;
+          delete (state as any).blob;
+        }, 300_000);
       },
     }),
     {
