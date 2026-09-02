@@ -22,6 +22,7 @@ pub fn run() {
             cmds::video_select,
             cmds::file_open,
             cmds::clip_capture,
+            cmds::frame_capture,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

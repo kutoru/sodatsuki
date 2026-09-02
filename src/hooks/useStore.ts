@@ -2,9 +2,12 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import {
   AnkiState,
+  CapturedMediaType,
+  ClipState,
   DateFilterState,
   DeckState,
   Field,
+  FrameState,
   Note,
   NotificationType,
   Status,
@@ -21,30 +24,11 @@ type VideoHandle = {
   end?: number;
 };
 
-enum CapturedMediaType {
-  Clip,
-  Screenshot,
-}
-
-type CapturedMediaState = {
-  videoPath: string;
-  name: string;
-  blob: Blob;
-  src: string;
-  rc: number;
-  releaseTimeoutId?: number;
-};
-
-export type ClipState = CapturedMediaState & {
-  start: number;
-  end: number;
-  type: CapturedMediaType.Clip;
-};
-
-export type ScreenshotState = CapturedMediaState & {
-  timestamp: number;
-  type: CapturedMediaType.Screenshot;
-};
+type UseMediaReturnType<T> = T extends CapturedMediaType.Clip
+  ? ClipState
+  : T extends CapturedMediaType.Frame
+    ? FrameState
+    : ClipState | FrameState;
 
 let capturedMediaCounter = 0;
 
@@ -64,7 +48,6 @@ type Store = {
   editNote?: Note;
   setEditNote: (noteOrUpdater: ValueOrUpdaterArg<Note | undefined>) => void;
 
-  // TODO: instead of storing names ("ref-1.mp3") store and replace whole elements ("[audio:ref-1.mp3]")
   newMediaNames: string[];
   addNewMediaName: (name?: string) => void;
   removeNewMediaName: (name?: string) => void;
@@ -92,22 +75,24 @@ type Store = {
   previewAudioData?: { src: string };
   playPreviewAudio: (src: string) => void;
 
-  capturedMedia: Map<string, ClipState | ScreenshotState>;
+  capturedMedia: Map<string, ClipState | FrameState>;
   addClip: (clip: {
     videoPath: string;
     start: number;
     end: number;
     arrayBuffer: ArrayBuffer;
   }) => ClipState;
-  // addScreenshot: (screenshot: {
-  //   videoPath: string;
-  //   timestamp: number;
-  //   arrayBuffer: ArrayBuffer;
-  // }) => ScreenshotState;
+  addFrame: (frame: {
+    videoPath: string;
+    timestamp: number;
+    arrayBuffer: ArrayBuffer;
+  }) => FrameState;
 
-  useClip: (name: string) => ClipState | undefined;
-  // useScreenshot: (name: string) => ScreenshotState | undefined;
-  releaseMedia: (media: ClipState | ScreenshotState | undefined) => void;
+  useMedia: <T extends CapturedMediaType>(
+    name: string,
+    type: T,
+  ) => UseMediaReturnType<T> | undefined;
+  releaseMedia: (media: ClipState | FrameState | undefined) => void;
 };
 
 export const useStore = create<Store>()(
@@ -206,10 +191,29 @@ export const useStore = create<Store>()(
 
         return clipState;
       },
+      addFrame: ({ videoPath, timestamp, arrayBuffer }) => {
+        const blob = new Blob([arrayBuffer]);
+        const src = URL.createObjectURL(blob);
+        const name = `ref-${++capturedMediaCounter}.jpg`;
 
-      useClip: (name) => {
+        const frameState: FrameState = {
+          videoPath,
+          timestamp,
+          name,
+          blob,
+          src,
+          rc: 1,
+          type: CapturedMediaType.Frame,
+        };
+
+        get().capturedMedia.set(name, frameState);
+
+        return frameState;
+      },
+
+      useMedia: (name, type) => {
         const state = get().capturedMedia.get(name);
-        if (state?.type !== CapturedMediaType.Clip) {
+        if (!state || (type !== CapturedMediaType.Any && state.type !== type)) {
           return undefined;
         }
 
@@ -217,7 +221,7 @@ export const useStore = create<Store>()(
 
         clearTimeout(state.releaseTimeoutId);
 
-        return state;
+        return state as any;
       },
       releaseMedia: (media) => {
         if (!media) {

@@ -4,7 +4,7 @@ import { useStore } from "../../hooks/useStore";
 import { Button } from "../Button";
 import { CheckIcon, RotateCwIcon, XIcon } from "lucide-react";
 import clsx from "clsx";
-import { Field, Note, NotificationType } from "../../types";
+import { CapturedMediaType, Field, Note, NotificationType } from "../../types";
 import { FieldElement } from "./FieldElement";
 import { invoke } from "@tauri-apps/api/core";
 import { handleError } from "../../utils";
@@ -30,7 +30,7 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
   const showNotification = useStore((state) => state.showNotification);
   const setDeck = useStore((state) => state.setDeck);
   const newMediaNames = useStore((state) => state.newMediaNames);
-  const useClip = useStore((state) => state.useClip);
+  const useMedia = useStore((state) => state.useMedia);
   const releaseMedia = useStore((state) => state.releaseMedia);
 
   const selectedNote = useStore((state) => state.selectedNote);
@@ -80,21 +80,8 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
 
     setSavingNote(true);
 
-    // get set of new names
-    // do useMedia for each name
-    // map blobs to arrayBuffers
-
-    // send new note, file names and array buffers to rust
-    // in rust, convert buffers to base64 and save to anki with new names
-    // find and replace old names with new names
-    // finally save the new note and send it back to FE
-
-    // on FE receive the note
-    // release the used media
-    // update editNote (since filenames updated)
-
     const uniqueNames = Array.from(new Set(newMediaNames));
-    const newMedia = uniqueNames.map(useClip);
+    const newMedia = uniqueNames.map((v) => useMedia(v, CapturedMediaType.Any));
     const filePromises = newMedia
       .filter((media) => !!media)
       .map(async (media) => ({

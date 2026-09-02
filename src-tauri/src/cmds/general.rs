@@ -89,3 +89,40 @@ pub async fn clip_capture(
         Ok(tauri::ipc::Response::new(output.stdout))
     }
 }
+
+#[tauri::command]
+pub async fn frame_capture(
+    video_path: String,
+    timestamp: f64,
+) -> Result<tauri::ipc::Response, String> {
+    let output = std::process::Command::new("ffmpeg")
+        .args([
+            "-ss",
+            &format!("{}ms", timestamp),
+            "-i",
+            &video_path,
+            "-vf",
+            "scale=-1:720",
+            "-frames:v",
+            "1",
+            "-q:v",
+            "4",
+            "-f",
+            "image2pipe",
+            "-",
+        ])
+        .output()
+        .err_msg()?;
+
+    let code = output
+        .status
+        .code()
+        .ok_or("Missing exit code".to_string())
+        .err_msg()?;
+
+    if code != 0 {
+        Err(String::from_utf8(output.stderr).err_msg()?)
+    } else {
+        Ok(tauri::ipc::Response::new(output.stdout))
+    }
+}

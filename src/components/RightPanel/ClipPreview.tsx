@@ -1,22 +1,26 @@
-import { ClipState, useStore } from "../../hooks/useStore";
+import { useStore } from "../../hooks/useStore";
 import { PlayIcon } from "lucide-react";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { useEffect, useState } from "react";
+import { CapturedMediaType, ClipState } from "../../types";
 
 type Props = { element: string; fileName: string };
 
 export const ClipPreview = ({ element, fileName }: Props) => {
   const anki = useStore((state) => state.anki);
-  const playPreviewAudio = useStore((state) => state.playPreviewAudio);
-  const useClip = useStore((state) => state.useClip);
+
+  const useMedia = useStore((state) => state.useMedia);
   const releaseMedia = useStore((state) => state.releaseMedia);
+
   const addNewMediaName = useStore((state) => state.addNewMediaName);
   const removeNewMediaName = useStore((state) => state.removeNewMediaName);
+
+  const playPreviewAudio = useStore((state) => state.playPreviewAudio);
 
   const [clipState, setClipState] = useState<ClipState>();
 
   useEffect(() => {
-    const state = useClip(fileName);
+    const state = useMedia(fileName, CapturedMediaType.Clip);
 
     setClipState(state);
     addNewMediaName(state?.name);

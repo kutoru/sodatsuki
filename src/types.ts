@@ -46,3 +46,29 @@ export type VideoFileState = {
   path: string;
   name: string;
 };
+
+export type CapturedMediaState = {
+  videoPath: string;
+  name: string;
+  blob: Blob;
+  src: string;
+  rc: number;
+  releaseTimeoutId?: number;
+};
+
+export enum CapturedMediaType {
+  Clip,
+  Frame,
+  Any,
+}
+
+export type ClipState = CapturedMediaState & {
+  start: number;
+  end: number;
+  type: CapturedMediaType.Clip;
+};
+
+export type FrameState = CapturedMediaState & {
+  timestamp: number;
+  type: CapturedMediaType.Frame;
+};

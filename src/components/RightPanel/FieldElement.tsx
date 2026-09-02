@@ -1,13 +1,14 @@
 import { JSX, memo, useEffect, useState } from "react";
 import { Button } from "../Button";
-import { FileVolumeIcon, PencilIcon } from "lucide-react";
+import { FileImageIcon, FileVolumeIcon, PencilIcon } from "lucide-react";
 import clsx from "clsx";
 import { useCodeEditor } from "../../hooks/useCodeEditor";
 import { Field } from "../../types";
 import { useStore } from "../../hooks/useStore";
-import { convertFileSrc } from "@tauri-apps/api/core";
-import { ScreenshotPreview } from "./ScreenshotPreview";
+import { convertFileSrc, invoke } from "@tauri-apps/api/core";
+import { FramePreview } from "./FramePreview";
 import { ClipPreview } from "./ClipPreview";
+import { handleError } from "../../utils";
 
 type Props = {
   noteId: number;
@@ -29,9 +30,17 @@ const splitStringInHalf = (value: string, separator: string) => {
 export const FieldElement = memo(
   ({ noteId, field, fieldValue, setFieldValue, fieldDiffers }: Props) => {
     const anki = useStore((state) => state.anki);
+
     const currentClipName = useStore((state) => state.currentClipName);
+    const videoHandle = useStore((state) => state.videoHandle);
+    const videoFile = useStore((state) => state.videoFile);
+
+    const addFrame = useStore((state) => state.addFrame);
+    const releaseMedia = useStore((state) => state.releaseMedia);
 
     const [expanded, setExpanded] = useState(false);
+
+    const [capturingFrame, setCapturingFrame] = useState(false);
 
     const { editorParent } = useCodeEditor(field, fieldValue, setFieldValue);
 
@@ -84,9 +93,7 @@ export const FieldElement = memo(
         }
 
         if (element.startsWith("<")) {
-          parts.push(
-            <ScreenshotPreview key={parts.length} fileName={fileName} />,
-          );
+          parts.push(<FramePreview key={parts.length} fileName={fileName} />);
         }
 
         if (element.startsWith("[")) {
@@ -114,6 +121,55 @@ export const FieldElement = memo(
       return parts;
     };
 
+    const addCurrentClip = () => {
+      if (!currentClipName) {
+        return;
+      }
+
+      const element = `[sound:${currentClipName}]`;
+
+      if (fieldValue) {
+        setFieldValue(fieldValue + "\n<br>\n" + element);
+      } else {
+        setFieldValue(element);
+      }
+    };
+
+    const captureFrame = () => {
+      if (!videoFile || !videoHandle) {
+        return;
+      }
+
+      setCapturingFrame(true);
+
+      const videoPath = videoFile.path;
+      const timestamp = videoHandle.getTime();
+
+      invoke<ArrayBuffer>("frame_capture", {
+        videoPath,
+        timestamp,
+      })
+        .then((arrayBuffer) => {
+          const frameState = addFrame({
+            videoPath,
+            timestamp,
+            arrayBuffer,
+          });
+
+          const element = `<img src="${frameState.name}">`;
+
+          if (fieldValue) {
+            setFieldValue(fieldValue + "\n<br>\n" + element);
+          } else {
+            setFieldValue(element);
+          }
+
+          releaseMedia(frameState);
+        })
+        .catch(handleError())
+        .finally(() => setCapturingFrame(false));
+    };
+
     return (
       <div className="flex flex-col">
         <div className="flex flex-row items-center">
@@ -129,18 +185,21 @@ export const FieldElement = memo(
 
           {field === "Sentence Audio" && (
             <Button
-              onClick={() => {
-                const element = `[sound:${currentClipName}]`;
-                if (fieldValue) {
-                  setFieldValue(fieldValue + "\n<br>\n" + element);
-                } else {
-                  setFieldValue(element);
-                }
-              }}
+              onClick={addCurrentClip}
               className="w-8 p-2 pe-0"
               disabled={!currentClipName}
             >
               <FileVolumeIcon className="size-full" />
+            </Button>
+          )}
+
+          {field === "Image_URI" && (
+            <Button
+              onClick={captureFrame}
+              className="w-8 p-2 pe-0"
+              disabled={!videoHandle || capturingFrame}
+            >
+              <FileImageIcon className="size-full" />
             </Button>
           )}
 
