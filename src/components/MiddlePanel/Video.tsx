@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 import { useStore } from "../../hooks/useStore";
 
 // expected filename: 2025 10 28 07 36 41...
-const getVideoStartTime = (filename: string) => {
+const getVideoStartTime = (filename: string, tzOffset: number) => {
   const year = filename.slice(0, 4);
   const month = filename.slice(5, 7);
   const day = filename.slice(8, 10);
@@ -14,7 +14,7 @@ const getVideoStartTime = (filename: string) => {
   const date = new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}`);
   const ms = date.getTime();
 
-  return isNaN(ms) ? undefined : ms;
+  return isNaN(ms) ? undefined : ms + tzOffset * 60 * 60 * 1000;
 };
 
 const getVideoEndTime = (
@@ -31,16 +31,10 @@ const getVideoEndTime = (
 export const Video = () => {
   const videoFile = useStore((state) => state.videoFile);
   const setVideoHandle = useStore((state) => state.setVideoHandle);
+  const tzOffset = useStore((state) => state.tzOffset);
+  const setVideoVolume = useStore((state) => state.setVideoVolume);
 
   const videoElement = useRef<HTMLVideoElement>(null);
-
-  useEffect(() => {
-    if (!videoElement.current) {
-      return;
-    }
-
-    videoElement.current.volume = 0.2;
-  }, []);
 
   useEffect(() => {
     const video = videoElement.current;
@@ -48,28 +42,10 @@ export const Video = () => {
       return;
     }
 
-    if (!videoFile) {
-      video.src = "";
-      setVideoHandle(undefined);
+    video.volume = useStore.getState().videoVolume;
 
-      return;
-    }
-
-    const onLoadedMetadata = () => {
-      const start = getVideoStartTime(videoFile.name);
-      const end = getVideoEndTime(start, video);
-
-      setVideoHandle({
-        duration: video.duration * 1000,
-        getTime: () => {
-          return video.currentTime * 1000;
-        },
-        setTime: (ms) => {
-          video.currentTime = ms / 1000;
-        },
-        start,
-        end,
-      });
+    const onVolumeChange = () => {
+      setVideoVolume(video.volume);
     };
 
     const onWheel = (e: WheelEvent) => {
@@ -86,12 +62,49 @@ export const Video = () => {
       }
     };
 
-    video.addEventListener("loadedmetadata", onLoadedMetadata);
+    video.addEventListener("volumechange", onVolumeChange);
     video.addEventListener("wheel", onWheel);
 
     return () => {
-      video.removeEventListener("loadedmetadata", onLoadedMetadata);
+      video.removeEventListener("volumechange", onVolumeChange);
       video.removeEventListener("wheel", onWheel);
+    };
+  }, []);
+
+  useEffect(() => {
+    const video = videoElement.current;
+    if (!video) {
+      return;
+    }
+
+    if (!videoFile) {
+      video.src = "";
+      setVideoHandle(undefined);
+
+      return;
+    }
+
+    const onLoadedMetadata = () => {
+      const start = getVideoStartTime(videoFile.name, tzOffset);
+      const end = getVideoEndTime(start, video);
+
+      setVideoHandle({
+        duration: video.duration * 1000,
+        getTime: () => {
+          return video.currentTime * 1000;
+        },
+        setTime: (ms) => {
+          video.currentTime = ms / 1000;
+        },
+        start,
+        end,
+      });
+    };
+
+    video.addEventListener("loadedmetadata", onLoadedMetadata);
+
+    return () => {
+      video.removeEventListener("loadedmetadata", onLoadedMetadata);
     };
   }, [videoFile]);
 

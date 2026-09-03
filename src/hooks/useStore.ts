@@ -58,6 +58,14 @@ type Store = {
   videoHandle?: VideoHandle;
   setVideoHandle: (videoHandle?: VideoHandle) => void;
 
+  // TODO: make configurable
+  tzOffset: number;
+
+  videoVolume: number;
+  setVideoVolume: (volume: number) => void;
+  audioVolume: number;
+  setAudioVolume: (volume: number) => void;
+
   dateFilter: DateFilterState;
   setDateFilter: (updater: (prev: DateFilterState) => DateFilterState) => void;
 
@@ -141,6 +149,13 @@ export const useStore = create<Store>()(
 
       videoHandle: undefined,
       setVideoHandle: (videoHandle) => set({ videoHandle }),
+
+      tzOffset: 4,
+
+      videoVolume: 0.2,
+      setVideoVolume: (volume) => set({ videoVolume: volume }),
+      audioVolume: 0.2,
+      setAudioVolume: (volume) => set({ audioVolume: volume }),
 
       dateFilter: { applyStart: true, applyEnd: true },
       setDateFilter: (updater) =>
@@ -251,6 +266,9 @@ export const useStore = create<Store>()(
       partialize: (state) => ({
         deckName: state.deckName,
         videoFile: state.videoFile,
+        tzOffset: state.tzOffset,
+        videoVolume: state.videoVolume,
+        audioVolume: state.audioVolume,
         dateFilter: state.dateFilter,
       }),
     },

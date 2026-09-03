@@ -88,7 +88,6 @@ pub async fn clip_capture(
     end: f64,
 ) -> Result<tauri::ipc::Response, String> {
     // TODO: consider https://docs.rs/async-process/latest/async_process/
-    // TODO: add normalization/compression "-af loudnorm=I=-21:TP=-2:LRA=10,volume=-6dB"
     let output = std::process::Command::new("ffmpeg")
         .args([
             "-ss",
@@ -103,6 +102,8 @@ pub async fn clip_capture(
             "22050",
             "-b:a",
             "96k",
+            "-af",
+            "dynaudnorm=f=50:g=31:s=9:b=true:m=30,volume=-9dB",
             "-acodec",
             "libmp3lame",
             "-f",

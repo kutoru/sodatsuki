@@ -7,13 +7,15 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "../Button";
-import { ClipState, useStore } from "../../hooks/useStore";
+import { useStore } from "../../hooks/useStore";
 import { invoke } from "@tauri-apps/api/core";
 import { handleError } from "../../utils";
+import { ClipState } from "../../types";
 
 export const Clip = () => {
   const videoFile = useStore((state) => state.videoFile);
   const videoHandle = useStore((state) => state.videoHandle);
+  const setAudioVolume = useStore((state) => state.setAudioVolume);
   const setCurrentClipName = useStore((state) => state.setCurrentClipName);
   const addClip = useStore((state) => state.addClip);
   const releaseMedia = useStore((state) => state.releaseMedia);
@@ -58,9 +60,22 @@ export const Clip = () => {
   };
 
   useEffect(() => {
-    if (audioElement.current) {
-      audioElement.current.volume = 0.2;
+    const audio = audioElement.current;
+    if (!audio) {
+      return;
     }
+
+    audio.volume = useStore.getState().audioVolume;
+
+    const onVolumeChange = () => {
+      setAudioVolume(audio.volume);
+    };
+
+    audio.addEventListener("volumechange", onVolumeChange);
+
+    return () => {
+      audio.removeEventListener("volumechange", onVolumeChange);
+    };
   }, []);
 
   useEffect(() => {
