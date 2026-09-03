@@ -19,10 +19,21 @@ export const FramePreview = ({ fileName }: Props) => {
 
   const [frameState, setFrameState] = useState<FrameState>();
 
-  const openFile = (path: string) => {
-    invoke("file_open", { path })
+  const openFrame = () => {
+    const invokeFunction = frameState?.src ? openData : openFile;
+
+    invokeFunction()
       .then(() => showNotification(NotificationType.Success))
       .catch(handleError());
+  };
+
+  const openData = async () => {
+    const data = await frameState!.blob.arrayBuffer();
+    return invoke("data_open", { data });
+  };
+
+  const openFile = () => {
+    return invoke("file_open", { path });
   };
 
   useEffect(() => {
@@ -42,7 +53,7 @@ export const FramePreview = ({ fileName }: Props) => {
 
   return (
     <button
-      onClick={() => openFile(path)}
+      onClick={openFrame}
       className="w-full max-w-80 cursor-pointer"
       title={fileName}
     >

@@ -1,14 +1,14 @@
-use std::{
-    collections::HashMap,
-    time::{SystemTime, UNIX_EPOCH},
-};
+use std::collections::HashMap;
 
 use base64::Engine;
 use serde_json::json;
 
-use crate::types::{
-    AnkiFetchDeckResult, AnkiFetchStatusResult, AnkiResponse, CapturedMedia, Config, FullNote,
-    Http, Note, ResultExt, Status,
+use crate::{
+    cmds::get_unix_ms,
+    types::{
+        AnkiFetchDeckResult, AnkiFetchStatusResult, AnkiResponse, CapturedMedia, Config, FullNote,
+        Http, Note, ResultExt, Status,
+    },
 };
 
 async fn call_anki<T>(http: &Http<'_>, config: &Config<'_>, action: &str) -> Result<T, String>
@@ -60,13 +60,6 @@ where
         Some(r) => Ok(r),
         None => Err(response.error.unwrap_or("Empty Anki error".to_string())),
     }
-}
-
-fn get_unix_ms() -> u128 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .expect("SystemTime error")
-        .as_millis()
 }
 
 #[tauri::command]

@@ -21,6 +21,7 @@ pub fn run() {
             cmds::copy_to_clipboard,
             cmds::video_select,
             cmds::file_open,
+            cmds::data_open,
             cmds::clip_capture,
             cmds::frame_capture,
         ])

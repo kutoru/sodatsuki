@@ -1,9 +1,18 @@
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
+
 use tauri::{AppHandle, Manager};
 use tauri_plugin_clipboard_manager::ClipboardExt;
 use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_opener::OpenerExt;
 
 use crate::types::{ResultExt, VideoSelectResult};
+
+pub fn get_unix_ms() -> u128 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("SystemTime error")
+        .as_millis()
+}
 
 #[tauri::command]
 pub async fn copy_to_clipboard(app: AppHandle, text: String) -> Result<(), String> {
@@ -43,6 +52,32 @@ pub async fn video_select(app: AppHandle) -> Result<VideoSelectResult, String> {
 
 #[tauri::command]
 pub async fn file_open(app: AppHandle, path: String) -> Result<(), String> {
+    app.opener().open_path(path, None::<&str>).err_msg()
+}
+
+#[tauri::command]
+pub async fn data_open(app: AppHandle, data: Vec<u8>) -> Result<(), String> {
+    let dir = app.path().temp_dir().err_msg()?;
+    let name = format!("sodatsuki-{}-temp.jpg", get_unix_ms());
+
+    let pathbuf = dir.join(name);
+    let path = pathbuf
+        .to_str()
+        .ok_or("Could not conver path to str".to_string())
+        .err_msg()?;
+
+    std::fs::write(path, data).err_msg()?;
+
+    let path_clone = path.to_string();
+    tokio::task::spawn(async move {
+        tokio::time::sleep(Duration::from_millis(10_000)).await;
+        let result = std::fs::remove_file(path_clone);
+
+        if let Err(err) = result {
+            println!("Could not delete temp file: {:?}", err);
+        }
+    });
+
     app.opener().open_path(path, None::<&str>).err_msg()
 }
 
