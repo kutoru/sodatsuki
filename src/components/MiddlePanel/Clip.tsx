@@ -71,12 +71,26 @@ export const Clip = () => {
       setAudioVolume(audio.volume);
     };
 
+    const onFocus = () => {
+      audio.blur();
+    };
+
     audio.addEventListener("volumechange", onVolumeChange);
+    audio.addEventListener("focus", onFocus);
 
     return () => {
       audio.removeEventListener("volumechange", onVolumeChange);
+      audio.removeEventListener("focus", onFocus);
     };
   }, []);
+
+  useEffect(() => {
+    if (!audioElement.current?.src) {
+      return;
+    }
+
+    audioElement.current.play();
+  }, [clipState]);
 
   useEffect(() => {
     setClipTime({ start: 0, end: 0 });

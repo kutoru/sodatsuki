@@ -62,12 +62,40 @@ export const Video = () => {
       }
     };
 
+    const onDocumentKeyDown = (e: KeyboardEvent) => {
+      const focusedElement = document.activeElement;
+      const inputFocused = focusedElement?.tagName === "TEXTAREA";
+
+      if (inputFocused) {
+        if (e.key === "Escape") {
+          const input = document.activeElement as HTMLInputElement;
+          input.blur();
+        }
+
+        return;
+      }
+
+      if (e.key === " ") {
+        e.preventDefault();
+
+        if (video.src) {
+          if (video.paused) {
+            video.play();
+          } else {
+            video.pause();
+          }
+        }
+      }
+    };
+
     video.addEventListener("volumechange", onVolumeChange);
     video.addEventListener("wheel", onWheel);
+    document.addEventListener("keydown", onDocumentKeyDown);
 
     return () => {
       video.removeEventListener("volumechange", onVolumeChange);
       video.removeEventListener("wheel", onWheel);
+      document.removeEventListener("keydown", onDocumentKeyDown);
     };
   }, []);
 
@@ -78,9 +106,6 @@ export const Video = () => {
     }
 
     if (!videoFile) {
-      video.src = "";
-      setVideoHandle(undefined);
-
       return;
     }
 
@@ -105,6 +130,7 @@ export const Video = () => {
 
     return () => {
       video.removeEventListener("loadedmetadata", onLoadedMetadata);
+      setVideoHandle(undefined);
     };
   }, [videoFile]);
 
@@ -112,7 +138,7 @@ export const Video = () => {
     <video
       ref={videoElement}
       className="size-full"
-      src={videoFile?.path && convertFileSrc(videoFile?.path)}
+      src={videoFile?.path && convertFileSrc(videoFile.path)}
       controls
     />
   );

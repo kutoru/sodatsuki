@@ -69,3 +69,7 @@ audio.active,
 audio.active::-webkit-media-controls-panel {
   background-color: var(--color-emerald-950);
 }
+
+button {
+  outline: none;
+}
