@@ -52,12 +52,8 @@ export const FramePreview = ({ fileName }: Props) => {
   const src = frameState?.src ?? convertFileSrc(path);
 
   return (
-    <button
-      onClick={openFrame}
-      className="w-full max-w-80 cursor-pointer"
-      title={fileName}
-    >
-      <img src={src} className="size-full" />
+    <button onClick={openFrame} className="cursor-pointer" title={fileName}>
+      <img src={src} className="max-h-40" />
     </button>
   );
 };
