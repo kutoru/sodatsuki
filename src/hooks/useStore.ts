@@ -72,6 +72,11 @@ type Store = {
   currentClipName: string | undefined;
   setCurrentClipName: (clipName: string) => void;
 
+  clipTime: { start: number; end: number };
+  setClipTime: (
+    clipTimeOrUpdater: ValueOrUpdaterArg<{ start: number; end: number }>,
+  ) => void;
+
   notificationState: { shown: boolean; type: NotificationType };
   showNotification: (type: NotificationType) => void;
   hideNotification: () => void;
@@ -163,6 +168,12 @@ export const useStore = create<Store>()(
 
       currentClipName: undefined,
       setCurrentClipName: (clipName) => set({ currentClipName: clipName }),
+
+      clipTime: { start: 0, end: 0 },
+      setClipTime: (clipTimeOrUpdater) =>
+        typeof clipTimeOrUpdater === "function"
+          ? set((state) => ({ clipTime: clipTimeOrUpdater(state.clipTime) }))
+          : set({ clipTime: clipTimeOrUpdater }),
 
       notificationState: { shown: false, type: NotificationType.Success },
       showNotification: (type) =>

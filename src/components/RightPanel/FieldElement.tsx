@@ -170,6 +170,36 @@ export const FieldElement = memo(
         .finally(() => setCapturingFrame(false));
     };
 
+    const execOcr = () => {
+      const videoPath = useStore.getState().videoFile?.path;
+      const timestamp = useStore.getState().videoHandle?.getTime?.();
+
+      invoke<string>("exec_ocr", { videoPath, timestamp })
+        .then((result) => {
+          if (fieldValue) {
+            setFieldValue(fieldValue + "\n<br>\n" + result);
+          } else {
+            setFieldValue(result);
+          }
+        })
+        .catch(handleError());
+    };
+
+    const execTranscribe = async () => {
+      const videoPath = useStore.getState().videoFile?.path;
+      const { start, end } = useStore.getState().clipTime;
+
+      invoke<string>("exec_transcribe", { videoPath, start, end })
+        .then((result) => {
+          if (fieldValue) {
+            setFieldValue(fieldValue + "\n<br>\n" + result);
+          } else {
+            setFieldValue(result);
+          }
+        })
+        .catch(handleError());
+    };
+
     return (
       <div className="flex flex-col">
         <div className="flex flex-row items-center">
@@ -200,6 +230,18 @@ export const FieldElement = memo(
               disabled={!videoHandle || capturingFrame}
             >
               <FileImageIcon className="size-full" />
+            </Button>
+          )}
+
+          {field === "Sentence" && (
+            <Button onClick={execTranscribe} className="w-10 p-2 px-0">
+              TRAN
+            </Button>
+          )}
+
+          {field === "Sentence" && (
+            <Button onClick={execOcr} className="w-10 p-2 px-0">
+              OCR
             </Button>
           )}
 

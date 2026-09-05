@@ -20,10 +20,8 @@ export const Clip = () => {
   const addClip = useStore((state) => state.addClip);
   const releaseMedia = useStore((state) => state.releaseMedia);
 
-  const [clipTime, setClipTime] = useState<{
-    start: number;
-    end: number;
-  }>({ start: 0, end: 0 });
+  const clipTime = useStore((state) => state.clipTime);
+  const setClipTime = useStore((state) => state.setClipTime);
 
   const [clipState, setClipState] = useState<ClipState>();
 

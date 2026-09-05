@@ -30,6 +30,8 @@ pub fn run() {
             cmds::frame_capture,
             cmds::init_ocr,
             cmds::init_transcribe,
+            cmds::exec_ocr,
+            cmds::exec_transcribe,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
