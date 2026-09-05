@@ -165,7 +165,7 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
             <CheckIcon className="size-full" />
           </Button>
 
-          <div className="h-6 w-1 flex-none rounded-full bg-separator shadow-sm" />
+          <Separator orientation="vertical" />
 
           <Button
             onClick={() => setSelectedNote(undefined)}

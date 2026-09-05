@@ -11,6 +11,7 @@ pub type Http<'a> = tauri::State<'a, reqwest::Client>;
 pub type Ocr<'a> = tauri::State<'a, tauri::async_runtime::Mutex<OcrManager>>;
 pub type Transcribe<'a> = tauri::State<'a, tauri::async_runtime::Mutex<TranscribeManager>>;
 
+#[allow(dead_code)]
 #[derive(serde::Serialize, Clone)]
 pub enum Status {
     Online,

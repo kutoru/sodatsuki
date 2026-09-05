@@ -1,4 +1,4 @@
-import { Ref, useEffect, useState } from "react";
+import { Ref, useState } from "react";
 import { Separator } from "../Separator";
 import { Video } from "./Video";
 import { VideoSelector } from "./VideoSelector";
@@ -9,6 +9,7 @@ import { Status } from "../../types";
 import clsx from "clsx";
 import { Button } from "../Button";
 import { RefreshCcwIcon } from "lucide-react";
+import { handleError } from "../../utils";
 
 type Props = {
   middlePanel: Ref<HTMLDivElement>;
@@ -19,14 +20,21 @@ export const MiddlePanel = ({ middlePanel, blurFilter }: Props) => {
   const [ocrStatus, setOcrStatus] = useState(Status.Offline);
   const [transcribeStatus, setTranscribeStatus] = useState(Status.Offline);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      invoke<Status>("status_ocr").then(setOcrStatus);
-      invoke<Status>("status_transcribe").then(setTranscribeStatus);
-    }, 500);
+  const initOcr = () => {
+    setOcrStatus(Status.Loading);
 
-    return () => clearInterval(interval);
-  }, []);
+    invoke("init_ocr")
+      .then(() => setOcrStatus(Status.Online))
+      .catch(handleError(() => setOcrStatus(Status.Offline)));
+  };
+
+  const initTranscribe = () => {
+    setTranscribeStatus(Status.Loading);
+
+    invoke("init_transcribe")
+      .then(() => setTranscribeStatus(Status.Online))
+      .catch(handleError(() => setTranscribeStatus(Status.Offline)));
+  };
 
   return (
     <div ref={middlePanel} className="flex flex-1 flex-col gap-3">
@@ -46,7 +54,7 @@ export const MiddlePanel = ({ middlePanel, blurFilter }: Props) => {
 
         <Separator />
 
-        <div className="flex flex-row">
+        <div className="flex flex-row items-center">
           <div className="flex flex-1 flex-row items-center">
             <div
               className={clsx(
@@ -64,10 +72,16 @@ export const MiddlePanel = ({ middlePanel, blurFilter }: Props) => {
               OCR
             </div>
 
-            <Button className="p-2.5" disabled>
+            <Button
+              onClick={initOcr}
+              className="p-2.5"
+              disabled={ocrStatus === Status.Loading}
+            >
               <RefreshCcwIcon className="size-full" />
             </Button>
           </div>
+
+          <Separator orientation="vertical" />
 
           <div className="flex flex-1 flex-row items-center">
             <div
@@ -86,11 +100,17 @@ export const MiddlePanel = ({ middlePanel, blurFilter }: Props) => {
               Transcribe
             </div>
 
-            <Button className="p-2.5" disabled>
+            <Button
+              onClick={initTranscribe}
+              className="p-2.5"
+              disabled={transcribeStatus === Status.Loading}
+            >
               <RefreshCcwIcon className="size-full" />
             </Button>
           </div>
         </div>
+
+        <Separator />
       </div>
     </div>
   );

@@ -1,5 +1,15 @@
 use crate::types::{Ocr, OcrManager, ResultExt, Status, Transcribe, TranscribeManager};
 
+async fn python_attach<F>(f: F) -> Result<(), String>
+where
+    F: FnOnce(pyo3::Python) -> pyo3::PyResult<()> + Send + 'static,
+{
+    tauri::async_runtime::spawn(async { pyo3::Python::attach(f) })
+        .await
+        .err_msg()?
+        .err_msg()
+}
+
 impl OcrManager {
     pub fn new() -> Self {
         Self {
@@ -7,29 +17,29 @@ impl OcrManager {
         }
     }
 
-    pub fn init(&mut self) -> Result<(), String> {
-        pyo3::Python::initialize();
+    fn init(&mut self) -> Result<(), String> {
+        self.status = Status::Offline;
 
-        let result = pyo3::Python::attach(|py| -> pyo3::PyResult<()> {
+        // pyo3::Python::initialize();
+
+        pyo3::Python::attach(|py| {
             py.run(
                 cr#"
 import easyocr
 reader = easyocr.Reader(lang_list=["ja"], gpu=True)
-            "#,
+                "#,
                 None,
                 None,
             )
         })
-        .err_msg();
+        .err_msg()?;
 
-        if result.is_ok() {
-            self.status = Status::Online;
-        }
+        self.status = Status::Online;
 
-        result
+        Ok(())
     }
 
-    pub fn ocr(&self, image: &[u8]) -> Result<String, String> {
+    fn ocr(&self, image: &[u8]) -> Result<String, String> {
         Err("not implemented".into())
     }
 }
@@ -41,51 +51,41 @@ impl TranscribeManager {
         }
     }
 
-    pub fn init(&mut self) -> Result<(), String> {
-        pyo3::Python::initialize();
+    fn init(&mut self) -> Result<(), String> {
+        self.status = Status::Offline;
 
-        let result = pyo3::Python::attach(|py| -> pyo3::PyResult<()> {
+        // pyo3::Python::initialize();
+
+        pyo3::Python::attach(|py| {
             py.run(
                 cr#"
 import whisper
 whisper_model = whisper.load_model(name="turbo", device="cuda")
-            "#,
+                "#,
                 None,
                 None,
             )
         })
-        .err_msg();
+        .err_msg()?;
 
-        if result.is_ok() {
-            self.status = Status::Online;
-        }
+        self.status = Status::Online;
 
-        result
+        Ok(())
     }
 
-    pub fn transcribe(&self, audio: &[u8]) -> Result<String, String> {
+    async fn transcribe(&self, audio: &[u8]) -> Result<String, String> {
         Err("not implemented".into())
     }
 }
 
-// #[tauri::command]
-// pub async fn python_init(python: &Python<'_>) -> Result<(), String> {
-//     let python = python.lock().await;
-//     python.init()
-// }
-
 #[tauri::command]
-pub fn status_ocr(ocr: Ocr<'_>) -> Status {
-    match ocr.try_lock() {
-        Ok(ocr) => ocr.status.clone(),
-        Err(_) => Status::Loading,
-    }
+pub async fn init_ocr(ocr: Ocr<'_>) -> Result<(), String> {
+    let mut ocr = ocr.lock().await;
+    ocr.init()
 }
 
 #[tauri::command]
-pub fn status_transcribe(transcribe: Transcribe<'_>) -> Status {
-    match transcribe.try_lock() {
-        Ok(transcribe) => transcribe.status.clone(),
-        Err(_) => Status::Loading,
-    }
+pub async fn init_transcribe(transcribe: Transcribe<'_>) -> Result<(), String> {
+    let mut transcribe = transcribe.lock().await;
+    transcribe.init()
 }

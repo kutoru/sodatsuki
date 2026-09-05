@@ -91,7 +91,7 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
 
     invoke<AnkiState>("anki_fetch_status")
       .then(setAnki)
-      .catch(handleError(() => setAnki({ status: Status.Offline })));
+      .catch(handleError(() => setAnki({ status: Status.Offline }), false));
   };
 
   const loadDeck = (deckName: string) => {
