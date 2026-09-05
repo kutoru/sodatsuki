@@ -1,3 +1,5 @@
+use crate::types::{OcrManager, TranscribeManager};
+
 pub struct ConfigInner {
     pub anki_host: String,
     pub anki_connect_port: i32,
@@ -6,6 +8,8 @@ pub struct ConfigInner {
 
 pub type Config<'a> = tauri::State<'a, tauri::async_runtime::Mutex<ConfigInner>>;
 pub type Http<'a> = tauri::State<'a, reqwest::Client>;
+pub type Ocr<'a> = tauri::State<'a, tauri::async_runtime::Mutex<OcrManager>>;
+pub type Transcribe<'a> = tauri::State<'a, tauri::async_runtime::Mutex<TranscribeManager>>;
 
 #[derive(serde::Serialize, Clone)]
 pub enum Status {

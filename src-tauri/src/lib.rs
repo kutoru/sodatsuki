@@ -1,4 +1,5 @@
 mod cmds;
+mod python_init;
 mod types;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -7,12 +8,17 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_clipboard_manager::init())
+        .plugin(python_init::init())
         .manage(reqwest::Client::new())
         .manage(tauri::async_runtime::Mutex::new(types::ConfigInner {
             anki_host: "http://127.0.0.1".to_owned(),
             anki_connect_port: 8765,
             anki_custom_port: 8766,
         }))
+        .manage(tauri::async_runtime::Mutex::new(types::OcrManager::new()))
+        .manage(tauri::async_runtime::Mutex::new(
+            types::TranscribeManager::new(),
+        ))
         .invoke_handler(tauri::generate_handler![
             cmds::anki_fetch_status,
             cmds::anki_fetch_deck,
@@ -24,6 +30,8 @@ pub fn run() {
             cmds::data_open,
             cmds::clip_capture,
             cmds::frame_capture,
+            cmds::status_ocr,
+            cmds::status_transcribe,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

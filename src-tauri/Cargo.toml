@@ -15,6 +15,7 @@ name = "sodatsuki_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
+dotenv = "0.15.0"
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
@@ -27,3 +28,4 @@ tauri-plugin-dialog = "2"
 tauri-plugin-opener = "2"
 base64 = "0.23.1"
 tokio = "1.53.1"
+pyo3 = "0.29.2"
