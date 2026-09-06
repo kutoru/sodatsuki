@@ -11,10 +11,9 @@ import {
   Note,
   NotificationType,
   Status,
+  ValueOrUpdater,
   VideoFileState,
 } from "../types";
-
-type ValueOrUpdaterArg<T> = T | ((prev: T) => T);
 
 type VideoHandle = {
   duration: number;
@@ -40,13 +39,13 @@ type Store = {
   setDeckName: (deckName: string) => void;
 
   deck?: DeckState;
-  setDeck: (deckOrUpdater: ValueOrUpdaterArg<DeckState | undefined>) => void;
+  setDeck: (deckOrUpdater: ValueOrUpdater<DeckState | undefined>) => void;
 
   selectedNote?: Note;
   setSelectedNote: (note?: Note) => void;
 
   editNote?: Note;
-  setEditNote: (noteOrUpdater: ValueOrUpdaterArg<Note | undefined>) => void;
+  setEditNote: (noteOrUpdater: ValueOrUpdater<Note | undefined>) => void;
 
   newMediaNames: string[];
   addNewMediaName: (name?: string) => void;
@@ -60,11 +59,17 @@ type Store = {
 
   // TODO: make configurable
   tzOffset: number;
+  autoInitPython: boolean;
 
   videoVolume: number;
   setVideoVolume: (volume: number) => void;
   audioVolume: number;
   setAudioVolume: (volume: number) => void;
+
+  ocrStatus: Status;
+  setOcrStatus: (status: Status) => void;
+  transcribeStatus: Status;
+  setTranscribeStatus: (status: Status) => void;
 
   dateFilter: DateFilterState;
   setDateFilter: (updater: (prev: DateFilterState) => DateFilterState) => void;
@@ -74,7 +79,7 @@ type Store = {
 
   clipTime: { start: number; end: number };
   setClipTime: (
-    clipTimeOrUpdater: ValueOrUpdaterArg<{ start: number; end: number }>,
+    clipTimeOrUpdater: ValueOrUpdater<{ start: number; end: number }>,
   ) => void;
 
   notificationState: { shown: boolean; type: NotificationType };
@@ -156,11 +161,17 @@ export const useStore = create<Store>()(
       setVideoHandle: (videoHandle) => set({ videoHandle }),
 
       tzOffset: 4,
+      autoInitPython: false,
 
       videoVolume: 0.2,
       setVideoVolume: (volume) => set({ videoVolume: volume }),
       audioVolume: 0.2,
       setAudioVolume: (volume) => set({ audioVolume: volume }),
+
+      ocrStatus: Status.Offline,
+      setOcrStatus: (status) => set({ ocrStatus: status }),
+      transcribeStatus: Status.Offline,
+      setTranscribeStatus: (status) => set({ transcribeStatus: status }),
 
       dateFilter: { applyStart: true, applyEnd: true },
       setDateFilter: (updater) =>
@@ -269,7 +280,7 @@ export const useStore = create<Store>()(
           URL.revokeObjectURL(state.src);
           delete (state as any).src;
           delete (state as any).blob;
-        }, 300_000);
+        }, 60_000);
       },
     }),
     {
@@ -278,6 +289,7 @@ export const useStore = create<Store>()(
         deckName: state.deckName,
         videoFile: state.videoFile,
         tzOffset: state.tzOffset,
+        autoInitPython: state.autoInitPython,
         videoVolume: state.videoVolume,
         audioVolume: state.audioVolume,
         dateFilter: state.dateFilter,

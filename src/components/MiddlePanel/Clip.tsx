@@ -99,7 +99,10 @@ export const Clip = () => {
   const endAligns = pathAligns && clipTime.end === clipState.end;
   const clipAligns = startAligns && endAligns;
 
-  const canCapture = !!videoFile?.path && clipTime.start < clipTime.end;
+  const canCapture =
+    !!videoFile?.path &&
+    clipTime.start < clipTime.end &&
+    clipTime.end - clipTime.start <= 300_000;
 
   return (
     <div className="flex flex-row items-center p-2">

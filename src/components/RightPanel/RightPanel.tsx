@@ -4,7 +4,13 @@ import { useStore } from "../../hooks/useStore";
 import { Button } from "../Button";
 import { CheckIcon, RotateCwIcon, XIcon } from "lucide-react";
 import clsx from "clsx";
-import { CapturedMediaType, Field, Note, NotificationType } from "../../types";
+import {
+  CapturedMediaType,
+  Field,
+  Note,
+  NotificationType,
+  ValueOrUpdater,
+} from "../../types";
 import { FieldElement } from "./FieldElement";
 import { invoke } from "@tauri-apps/api/core";
 import { handleError } from "../../utils";
@@ -15,7 +21,10 @@ type Props = {
   blurFilter: { backdropFilter: string };
 };
 
-type FieldSetters = Record<Field, (value: string) => void>;
+type FieldSetters = Record<
+  Field,
+  (valueOrUpdater: ValueOrUpdater<string>) => void
+>;
 
 const relevantFields: Field[] = [
   "Meaning",
@@ -44,13 +53,16 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
   const editNoteFieldUpdaters = useMemo<FieldSetters>(
     () =>
       relevantFields.reduce((setters, field) => {
-        setters[field] = (value) =>
+        setters[field] = (valueOrUpdater) =>
           setEditNote((prev) => {
             if (!prev) {
               return prev;
             }
 
-            prev.fields[field] = value;
+            prev.fields[field] =
+              typeof valueOrUpdater === "function"
+                ? valueOrUpdater(prev.fields[field])
+                : valueOrUpdater;
 
             return { ...prev };
           });

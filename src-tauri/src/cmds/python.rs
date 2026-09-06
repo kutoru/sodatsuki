@@ -120,17 +120,25 @@ def transcribe(buffer):
 #[tauri::command]
 pub async fn init_ocr(ocr: Ocr<'_>) -> Result<(), String> {
     let mut ocr = ocr.lock().await;
-    ocr.init()
+
+    match ocr.status {
+        Status::Online => Ok(()),
+        _ => ocr.init(),
+    }
 }
 
 #[tauri::command]
 pub async fn init_transcribe(transcribe: Transcribe<'_>) -> Result<(), String> {
     let mut transcribe = transcribe.lock().await;
-    transcribe.init()
+
+    match transcribe.status {
+        Status::Online => Ok(()),
+        _ => transcribe.init(),
+    }
 }
 
 #[tauri::command]
-pub async fn exec_ocr(ocr: Ocr<'_>, video_path: String, timestamp: f64) -> Result<String, String> {
+pub async fn run_ocr(ocr: Ocr<'_>, video_path: String, timestamp: f64) -> Result<String, String> {
     let output = std::process::Command::new("ffmpeg")
         .args([
             "-ss",
@@ -142,7 +150,7 @@ pub async fn exec_ocr(ocr: Ocr<'_>, video_path: String, timestamp: f64) -> Resul
             "-frames:v",
             "1",
             "-q:v",
-            "2",
+            "1",
             "-f",
             "image2pipe",
             "-",
@@ -165,7 +173,7 @@ pub async fn exec_ocr(ocr: Ocr<'_>, video_path: String, timestamp: f64) -> Resul
 }
 
 #[tauri::command]
-pub async fn exec_transcribe(
+pub async fn run_transcribe(
     transcribe: Transcribe<'_>,
     video_path: String,
     start: f64,

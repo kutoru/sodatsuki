@@ -72,3 +72,5 @@ export type FrameState = CapturedMediaState & {
   timestamp: number;
   type: CapturedMediaType.Frame;
 };
+
+export type ValueOrUpdater<T> = T | ((prev: T) => T);

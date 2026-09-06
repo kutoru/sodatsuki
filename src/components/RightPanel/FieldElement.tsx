@@ -1,20 +1,24 @@
 import { JSX, memo, useEffect, useState } from "react";
 import { Button } from "../Button";
-import { FileImageIcon, FileVolumeIcon, PencilIcon } from "lucide-react";
+import { PencilIcon } from "lucide-react";
 import clsx from "clsx";
 import { useCodeEditor } from "../../hooks/useCodeEditor";
-import { Field } from "../../types";
+import { Field, ValueOrUpdater } from "../../types";
 import { useStore } from "../../hooks/useStore";
-import { convertFileSrc, invoke } from "@tauri-apps/api/core";
+import { convertFileSrc } from "@tauri-apps/api/core";
 import { FramePreview } from "./FramePreview";
 import { ClipPreview } from "./ClipPreview";
-import { handleError } from "../../utils";
+import { ButtonOcr } from "./ButtonOcr";
+import { ButtonTranscribe } from "./ButtonTranscribe";
+import { ButtonCaptureFrame } from "./ButtonCaptureFrame";
+import { ButtonAddClip } from "./ButtonAddClip";
+import { ButtonRecordAudio } from "./ButtonRecordAudio";
 
 type Props = {
   noteId: number;
   field: Field;
   fieldValue: string;
-  setFieldValue: (fieldValue: string) => void;
+  setFieldValue: (valueOrUpdater: ValueOrUpdater<string>) => void;
   fieldDiffers: boolean;
 };
 
@@ -31,16 +35,7 @@ export const FieldElement = memo(
   ({ noteId, field, fieldValue, setFieldValue, fieldDiffers }: Props) => {
     const anki = useStore((state) => state.anki);
 
-    const currentClipName = useStore((state) => state.currentClipName);
-    const videoHandle = useStore((state) => state.videoHandle);
-    const videoFile = useStore((state) => state.videoFile);
-
-    const addFrame = useStore((state) => state.addFrame);
-    const releaseMedia = useStore((state) => state.releaseMedia);
-
     const [expanded, setExpanded] = useState(false);
-
-    const [capturingFrame, setCapturingFrame] = useState(false);
 
     const { editorParent } = useCodeEditor(field, fieldValue, setFieldValue);
 
@@ -121,84 +116,8 @@ export const FieldElement = memo(
       return parts;
     };
 
-    const addCurrentClip = () => {
-      if (!currentClipName) {
-        return;
-      }
-
-      const element = `[sound:${currentClipName}]`;
-
-      if (fieldValue) {
-        setFieldValue(fieldValue + "\n<br>\n" + element);
-      } else {
-        setFieldValue(element);
-      }
-    };
-
-    const captureFrame = () => {
-      if (!videoFile || !videoHandle) {
-        return;
-      }
-
-      setCapturingFrame(true);
-
-      const videoPath = videoFile.path;
-      const timestamp = videoHandle.getTime();
-
-      invoke<ArrayBuffer>("frame_capture", {
-        videoPath,
-        timestamp,
-      })
-        .then((arrayBuffer) => {
-          const frameState = addFrame({
-            videoPath,
-            timestamp,
-            arrayBuffer,
-          });
-
-          const element = `<img src="${frameState.name}">`;
-
-          if (fieldValue) {
-            setFieldValue(fieldValue + "\n<br>\n" + element);
-          } else {
-            setFieldValue(element);
-          }
-
-          releaseMedia(frameState);
-        })
-        .catch(handleError())
-        .finally(() => setCapturingFrame(false));
-    };
-
-    const execOcr = () => {
-      const videoPath = useStore.getState().videoFile?.path;
-      const timestamp = useStore.getState().videoHandle?.getTime?.();
-
-      invoke<string>("exec_ocr", { videoPath, timestamp })
-        .then((result) => {
-          if (fieldValue) {
-            setFieldValue(fieldValue + "\n<br>\n" + result);
-          } else {
-            setFieldValue(result);
-          }
-        })
-        .catch(handleError());
-    };
-
-    const execTranscribe = async () => {
-      const videoPath = useStore.getState().videoFile?.path;
-      const { start, end } = useStore.getState().clipTime;
-
-      invoke<string>("exec_transcribe", { videoPath, start, end })
-        .then((result) => {
-          if (fieldValue) {
-            setFieldValue(fieldValue + "\n<br>\n" + result);
-          } else {
-            setFieldValue(result);
-          }
-        })
-        .catch(handleError());
-    };
+    const appendFieldValue = (value: string) =>
+      setFieldValue((prev) => (prev ? prev + "\n<br>\n" + value : value));
 
     return (
       <div className="flex flex-col">
@@ -213,39 +132,24 @@ export const FieldElement = memo(
             {fieldDiffers && " *"}
           </div>
 
+          {field === "Audio" && <ButtonRecordAudio />}
           {field === "Sentence Audio" && (
-            <Button
-              onClick={addCurrentClip}
-              className="w-8 p-2 pe-0"
-              disabled={!currentClipName}
-            >
-              <FileVolumeIcon className="size-full" />
-            </Button>
+            <ButtonAddClip appendFieldValue={appendFieldValue} />
           )}
-
           {field === "Image_URI" && (
-            <Button
-              onClick={captureFrame}
-              className="w-8 p-2 pe-0"
-              disabled={!videoHandle || capturingFrame}
-            >
-              <FileImageIcon className="size-full" />
-            </Button>
+            <ButtonCaptureFrame appendFieldValue={appendFieldValue} />
           )}
-
           {field === "Sentence" && (
-            <Button onClick={execTranscribe} className="w-10 p-2 px-0">
-              TRAN
-            </Button>
+            <ButtonTranscribe appendFieldValue={appendFieldValue} />
           )}
-
           {field === "Sentence" && (
-            <Button onClick={execOcr} className="w-10 p-2 px-0">
-              OCR
-            </Button>
+            <ButtonOcr appendFieldValue={appendFieldValue} />
           )}
 
-          <Button onClick={() => setExpanded(!expanded)} className="p-2">
+          <Button
+            onClick={() => setExpanded(!expanded)}
+            className="w-9 p-2 ps-1"
+          >
             <PencilIcon className="size-full" />
           </Button>
         </div>
