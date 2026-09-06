@@ -14,6 +14,24 @@ pub fn get_unix_ms() -> u128 {
         .as_millis()
 }
 
+pub fn ffmpeg(args: &[&str]) -> Result<Vec<u8>, String> {
+    let output = std::process::Command::new("ffmpeg")
+        .args(args)
+        .output()
+        .err_msg()?;
+
+    let code = output
+        .status
+        .code()
+        .ok_or("Missing exit code".to_string())?;
+
+    if code != 0 {
+        return Err(String::from_utf8(output.stderr).err_msg()?);
+    }
+
+    Ok(output.stdout)
+}
+
 #[tauri::command]
 pub async fn copy_to_clipboard(app: AppHandle, text: String) -> Result<(), String> {
     app.clipboard().write_text(text).err_msg()
@@ -87,43 +105,29 @@ pub async fn clip_capture(
     start: f64,
     end: f64,
 ) -> Result<tauri::ipc::Response, String> {
-    // TODO: consider https://docs.rs/async-process/latest/async_process/
-    let output = std::process::Command::new("ffmpeg")
-        .args([
-            "-ss",
-            &format!("{}ms", start),
-            "-t",
-            &format!("{}ms", end - start),
-            "-i",
-            &video_path,
-            "-ac",
-            "1",
-            "-ar",
-            "22050",
-            "-b:a",
-            "96k",
-            "-af",
-            "dynaudnorm=f=50:g=31:b=true:m=30,volume=-9dB",
-            "-acodec",
-            "libmp3lame",
-            "-f",
-            "mp3",
-            "-",
-        ])
-        .output()
-        .err_msg()?;
+    let clip = ffmpeg(&[
+        "-ss",
+        &format!("{}ms", start),
+        "-t",
+        &format!("{}ms", end - start),
+        "-i",
+        &video_path,
+        "-ac",
+        "1",
+        "-ar",
+        "22050",
+        "-b:a",
+        "96k",
+        "-af",
+        "dynaudnorm=f=50:g=31:b=true:m=30,volume=-9dB",
+        "-acodec",
+        "libmp3lame",
+        "-f",
+        "mp3",
+        "-",
+    ])?;
 
-    let code = output
-        .status
-        .code()
-        .ok_or("Missing exit code".to_string())
-        .err_msg()?;
-
-    if code != 0 {
-        Err(String::from_utf8(output.stderr).err_msg()?)
-    } else {
-        Ok(tauri::ipc::Response::new(output.stdout))
-    }
+    Ok(tauri::ipc::Response::new(clip))
 }
 
 #[tauri::command]
@@ -131,34 +135,21 @@ pub async fn frame_capture(
     video_path: String,
     timestamp: f64,
 ) -> Result<tauri::ipc::Response, String> {
-    let output = std::process::Command::new("ffmpeg")
-        .args([
-            "-ss",
-            &format!("{}ms", timestamp),
-            "-i",
-            &video_path,
-            "-vf",
-            "scale=-1:720",
-            "-frames:v",
-            "1",
-            "-q:v",
-            "4",
-            "-f",
-            "image2pipe",
-            "-",
-        ])
-        .output()
-        .err_msg()?;
+    let frame = ffmpeg(&[
+        "-ss",
+        &format!("{}ms", timestamp),
+        "-i",
+        &video_path,
+        "-vf",
+        "scale=-1:720",
+        "-frames:v",
+        "1",
+        "-q:v",
+        "4",
+        "-f",
+        "image2pipe",
+        "-",
+    ])?;
 
-    let code = output
-        .status
-        .code()
-        .ok_or("Missing exit code".to_string())
-        .err_msg()?;
-
-    if code != 0 {
-        Err(String::from_utf8(output.stderr).err_msg()?)
-    } else {
-        Ok(tauri::ipc::Response::new(output.stdout))
-    }
+    Ok(tauri::ipc::Response::new(frame))
 }

@@ -1,6 +1,9 @@
 use pyo3::types::{PyAnyMethods, PyDict, PyDictMethods};
 
-use crate::types::{Ocr, OcrManager, ResultExt, Status, Transcribe, TranscribeManager};
+use crate::{
+    cmds::ffmpeg,
+    types::{Ocr, OcrManager, ResultExt, Status, Transcribe, TranscribeManager},
+};
 
 impl OcrManager {
     pub fn new() -> Self {
@@ -12,13 +15,15 @@ impl OcrManager {
     fn init(&mut self) -> Result<(), String> {
         self.status = Status::Offline;
 
-        // pyo3::Python::initialize();
-
         pyo3::Python::attach(|py| {
             py.run(
                 cr#"
 import easyocr
 reader = easyocr.Reader(lang_list=["ja"], gpu=True)
+
+def ocr(buffer):
+    result = reader.readtext(image=buffer, detail=0)
+    return result
                 "#,
                 None,
                 None,
@@ -33,22 +38,14 @@ reader = easyocr.Reader(lang_list=["ja"], gpu=True)
 
     fn ocr(&self, image: &[u8]) -> Result<String, String> {
         pyo3::Python::attach(|py| -> pyo3::PyResult<String> {
-            let reader = py.eval(c"reader", None, None)?;
+            let ocr = py.eval(c"ocr", None, None)?;
 
             let kwargs = PyDict::new(py);
-            kwargs.set_item("image", image)?;
-            kwargs.set_item("detail", 0)?;
+            kwargs.set_item("buffer", image)?;
 
-            let results: Vec<String> = reader
-                .call_method("readtext", (), Some(&kwargs))?
-                .cast_into()?
-                .extract()?;
+            let results: Vec<String> = ocr.call((), Some(&kwargs))?.extract()?;
 
-            println!("results: {:?} {:?}", results.len(), results);
-
-            let joined = results.join("");
-
-            Ok(joined)
+            Ok(results.join(""))
         })
         .err_msg()
     }
@@ -64,14 +61,20 @@ impl TranscribeManager {
     fn init(&mut self) -> Result<(), String> {
         self.status = Status::Offline;
 
-        // pyo3::Python::initialize();
-
         pyo3::Python::attach(|py| {
             py.run(
                 cr#"
 import numpy as np
 import whisper
 whisper_model = whisper.load_model(name="turbo", device="cuda")
+
+def transcribe(buffer):
+    audio = np.frombuffer(buffer=buffer, dtype=np.float32)
+    result = whisper_model.transcribe(audio=audio, language="ja", task="transcribe")
+
+    segments = result["segments"]
+    result = [item["text"] for item in segments]
+    return result
                 "#,
                 None,
                 None,
@@ -86,20 +89,6 @@ whisper_model = whisper.load_model(name="turbo", device="cuda")
 
     fn transcribe(&self, audio: &[u8]) -> Result<String, String> {
         pyo3::Python::attach(|py| -> pyo3::PyResult<String> {
-            py.run(
-                cr#"
-def transcribe(buffer):
-    audio = np.frombuffer(buffer=buffer, dtype=np.float32)
-    result = whisper_model.transcribe(audio=audio, language="ja", task="transcribe")
-
-    segments = result["segments"]
-    result = [item["text"] for item in segments]
-    return result
-            "#,
-                None,
-                None,
-            )?;
-
             let transcribe = py.eval(c"transcribe", None, None)?;
 
             let kwargs = PyDict::new(py);
@@ -107,11 +96,7 @@ def transcribe(buffer):
 
             let results: Vec<String> = transcribe.call((), Some(&kwargs))?.extract()?;
 
-            println!("results: {:?} {:?}", results.len(), results);
-
-            let joined = results.join("");
-
-            Ok(joined)
+            Ok(results.join("").replace(" ", ""))
         })
         .err_msg()
     }
@@ -139,37 +124,24 @@ pub async fn init_transcribe(transcribe: Transcribe<'_>) -> Result<(), String> {
 
 #[tauri::command]
 pub async fn run_ocr(ocr: Ocr<'_>, video_path: String, timestamp: f64) -> Result<String, String> {
-    let output = std::process::Command::new("ffmpeg")
-        .args([
-            "-ss",
-            &format!("{}ms", timestamp),
-            "-i",
-            &video_path,
-            "-vf",
-            "scale=-1:1080",
-            "-frames:v",
-            "1",
-            "-q:v",
-            "1",
-            "-f",
-            "image2pipe",
-            "-",
-        ])
-        .output()
-        .err_msg()?;
-
-    let code = output
-        .status
-        .code()
-        .ok_or("Missing exit code".to_string())
-        .err_msg()?;
-
-    if code != 0 {
-        return Err(String::from_utf8(output.stderr).err_msg()?);
-    }
+    let image = ffmpeg(&[
+        "-ss",
+        &format!("{}ms", timestamp),
+        "-i",
+        &video_path,
+        "-vf",
+        "scale=-1:1080",
+        "-frames:v",
+        "1",
+        "-q:v",
+        "1",
+        "-f",
+        "image2pipe",
+        "-",
+    ])?;
 
     let ocr = ocr.lock().await;
-    ocr.ocr(&output.stdout)
+    ocr.ocr(&image)
 }
 
 #[tauri::command]
@@ -179,37 +151,24 @@ pub async fn run_transcribe(
     start: f64,
     end: f64,
 ) -> Result<String, String> {
-    let output = std::process::Command::new("ffmpeg")
-        .args([
-            "-ss",
-            &format!("{}ms", start),
-            "-t",
-            &format!("{}ms", end - start),
-            "-i",
-            &video_path,
-            "-ac",
-            "1",
-            "-ar",
-            "16000",
-            "-acodec",
-            "pcm_f32le",
-            "-f",
-            "f32le",
-            "-",
-        ])
-        .output()
-        .err_msg()?;
-
-    let code = output
-        .status
-        .code()
-        .ok_or("Missing exit code".to_string())
-        .err_msg()?;
-
-    if code != 0 {
-        return Err(String::from_utf8(output.stderr).err_msg()?);
-    }
+    let audio = ffmpeg(&[
+        "-ss",
+        &format!("{}ms", start),
+        "-t",
+        &format!("{}ms", end - start),
+        "-i",
+        &video_path,
+        "-ac",
+        "1",
+        "-ar",
+        "16000",
+        "-acodec",
+        "pcm_f32le",
+        "-f",
+        "f32le",
+        "-",
+    ])?;
 
     let transcribe = transcribe.lock().await;
-    transcribe.transcribe(&output.stdout)
+    transcribe.transcribe(&audio)
 }
