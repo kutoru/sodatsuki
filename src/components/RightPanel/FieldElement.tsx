@@ -142,9 +142,7 @@ export const FieldElement = memo(
           {field === "Sentence" && (
             <ButtonTranscribe appendFieldValue={appendFieldValue} />
           )}
-          {field === "Sentence" && (
-            <ButtonOcr appendFieldValue={appendFieldValue} />
-          )}
+          {field === "Sentence" && <ButtonOcr />}
 
           <Button
             onClick={() => setExpanded(!expanded)}

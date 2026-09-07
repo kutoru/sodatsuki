@@ -5,6 +5,7 @@ import { VideoSelector } from "./VideoSelector";
 import { DateFilter } from "./DateFilter";
 import { Clip } from "./Clip";
 import { PythonStatus } from "./PythonStatus";
+import { OcrMaskEditor } from "./OcrMaskEditor";
 
 type Props = {
   middlePanel: Ref<HTMLDivElement>;
@@ -14,12 +15,13 @@ type Props = {
 export const MiddlePanel = ({ middlePanel, blurFilter }: Props) => {
   return (
     <div ref={middlePanel} className="flex flex-1 flex-col gap-3">
-      <div className="aspect-video flex-none shadow-even shadow-black">
+      <div className="relative aspect-video flex-none shadow-even shadow-black">
         <Video />
+        <OcrMaskEditor />
       </div>
 
       <div
-        className="flex-1 bg-white/3 shadow-even shadow-black"
+        className="flex-1 overflow-auto bg-white/3 shadow-even shadow-black"
         style={blurFilter}
       >
         <VideoSelector />

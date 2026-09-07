@@ -1,6 +1,7 @@
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { useEffect, useRef } from "react";
 import { useStore } from "../../hooks/useStore";
+import clsx from "clsx";
 
 // expected filename: 2025 10 28 07 36 41...
 const getVideoStartTime = (filename: string, tzOffset: number) => {
@@ -33,6 +34,7 @@ export const Video = () => {
   const setVideoHandle = useStore((state) => state.setVideoHandle);
   const tzOffset = useStore((state) => state.tzOffset);
   const setVideoVolume = useStore((state) => state.setVideoVolume);
+  const editingOcrMask = useStore((state) => state.editingOcrMask);
 
   const videoElement = useRef<HTMLVideoElement>(null);
 
@@ -137,9 +139,9 @@ export const Video = () => {
   return (
     <video
       ref={videoElement}
-      className="size-full"
+      className={clsx("absolute size-full", editingOcrMask && "z-20")}
       src={videoFile?.path && convertFileSrc(videoFile.path)}
-      controls
+      controls={!editingOcrMask}
     />
   );
 };

@@ -2,7 +2,7 @@ use pyo3::types::{PyAnyMethods, PyDict, PyDictMethods};
 
 use crate::{
     cmds::ffmpeg,
-    types::{Ocr, OcrManager, ResultExt, Status, Transcribe, TranscribeManager},
+    types::{Ocr, OcrManager, OcrMask, ResultExt, Status, Transcribe, TranscribeManager},
 };
 
 impl OcrManager {
@@ -123,14 +123,22 @@ pub async fn init_transcribe(transcribe: Transcribe<'_>) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub async fn run_ocr(ocr: Ocr<'_>, video_path: String, timestamp: f64) -> Result<String, String> {
+pub async fn run_ocr(
+    ocr: Ocr<'_>,
+    video_path: String,
+    timestamp: f64,
+    mask: OcrMask,
+) -> Result<String, String> {
     let image = ffmpeg(&[
         "-ss",
         &format!("{}ms", timestamp),
         "-i",
         &video_path,
         "-vf",
-        "scale=-1:1080",
+        &format!(
+            "crop=in_w*{}:in_h*{}:in_w*{}:in_h*{}",
+            mask.width, mask.height, mask.x, mask.y,
+        ),
         "-frames:v",
         "1",
         "-q:v",

@@ -83,6 +83,7 @@ export const DateFilter = () => {
           }))
         }
         className="p-2"
+        disabled={!videoHandle}
       >
         <FunnelIcon className="size-full" />
       </Button>

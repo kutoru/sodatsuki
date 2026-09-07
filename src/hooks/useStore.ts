@@ -71,6 +71,11 @@ type Store = {
   transcribeStatus: Status;
   setTranscribeStatus: (status: Status) => void;
 
+  editingOcrMask: boolean;
+  setEditingOcrMask: (editingOcrMask: boolean) => void;
+  runningOcr: boolean;
+  setRunningOcr: (runningOcr: boolean) => void;
+
   dateFilter: DateFilterState;
   setDateFilter: (updater: (prev: DateFilterState) => DateFilterState) => void;
 
@@ -172,6 +177,11 @@ export const useStore = create<Store>()(
       setOcrStatus: (status) => set({ ocrStatus: status }),
       transcribeStatus: Status.Offline,
       setTranscribeStatus: (status) => set({ transcribeStatus: status }),
+
+      editingOcrMask: false,
+      setEditingOcrMask: (editingOcrMask) => set({ editingOcrMask }),
+      runningOcr: false,
+      setRunningOcr: (runningOcr) => set({ runningOcr }),
 
       dateFilter: { applyStart: true, applyEnd: true },
       setDateFilter: (updater) =>
