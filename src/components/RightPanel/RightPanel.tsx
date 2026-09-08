@@ -4,7 +4,7 @@ import { useStore } from "../../hooks/useStore";
 import { Button } from "../Button";
 import { CheckIcon, RotateCwIcon, XIcon } from "lucide-react";
 import clsx from "clsx";
-import { Field, Note, NotificationType, ValueOrUpdater } from "../../types";
+import { Field, Note, NotificationType } from "../../types";
 import { FieldElement } from "./FieldElement";
 import { invoke } from "@tauri-apps/api/core";
 import { handleError } from "../../utils";
@@ -15,10 +15,7 @@ type Props = {
   blurFilter: { backdropFilter: string };
 };
 
-type FieldSetters = Record<
-  Field,
-  (valueOrUpdater: ValueOrUpdater<string>) => void
->;
+type FieldSetters = Record<Field, (value: string) => void>;
 
 const relevantFields: Field[] = [
   "Meaning",
@@ -53,10 +50,7 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
               return prev;
             }
 
-            prev.fields[field] =
-              typeof valueOrUpdater === "function"
-                ? valueOrUpdater(prev.fields[field])
-                : valueOrUpdater;
+            prev.fields[field] = valueOrUpdater;
 
             return { ...prev };
           });

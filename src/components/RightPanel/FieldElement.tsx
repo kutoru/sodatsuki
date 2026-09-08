@@ -3,7 +3,7 @@ import { Button } from "../Button";
 import { PencilIcon } from "lucide-react";
 import clsx from "clsx";
 import { useCodeEditor } from "../../hooks/useCodeEditor";
-import { Field, ValueOrUpdater } from "../../types";
+import { Field } from "../../types";
 import { useStore } from "../../hooks/useStore";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { FramePreview } from "./FramePreview";
@@ -18,7 +18,7 @@ type Props = {
   noteId: number;
   field: Field;
   fieldValue: string;
-  setFieldValue: (valueOrUpdater: ValueOrUpdater<string>) => void;
+  setFieldValue: (value: string) => void;
   fieldDiffers: boolean;
 };
 
@@ -116,9 +116,6 @@ export const FieldElement = memo(
       return parts;
     };
 
-    const appendFieldValue = (value: string) =>
-      setFieldValue((prev) => (prev ? prev + "\n<br>\n" + value : value));
-
     return (
       <div className="flex flex-col">
         <div className="flex flex-row items-center">
@@ -133,15 +130,9 @@ export const FieldElement = memo(
           </div>
 
           {field === "Audio" && <ButtonRecordAudio />}
-          {field === "Sentence Audio" && (
-            <ButtonAddClip appendFieldValue={appendFieldValue} />
-          )}
-          {field === "Image_URI" && (
-            <ButtonCaptureFrame appendFieldValue={appendFieldValue} />
-          )}
-          {field === "Sentence" && (
-            <ButtonTranscribe appendFieldValue={appendFieldValue} />
-          )}
+          {field === "Sentence Audio" && <ButtonAddClip />}
+          {field === "Image_URI" && <ButtonCaptureFrame />}
+          {field === "Sentence" && <ButtonTranscribe />}
           {field === "Sentence" && <ButtonOcr />}
 
           <Button

@@ -3,77 +3,93 @@ import { Button } from "../Button";
 import { useRef, useState } from "react";
 import clsx from "clsx";
 import { useStore } from "../../hooks/useStore";
-import { NotificationType } from "../../types";
+import { handleError } from "../../utils";
 
 export const ButtonRecordAudio = () => {
-  const showNotification = useStore((state) => state.showNotification);
+  const appendEditNoteField = useStore((state) => state.appendEditNoteField);
+  const playPreviewAudio = useStore((state) => state.playPreviewAudio);
 
   const addMedia = useStore((state) => state.addMedia);
   const releaseMedia = useStore((state) => state.releaseMedia);
 
-  const [startedAt, setStartedAt] = useState(0);
-  const [updatedAt, setUpdatedAt] = useState(0);
+  const [loading, setLoading] = useState(false);
   const [recording, setRecording] = useState(false);
 
   const mediaRecorder = useRef<MediaRecorder>(null);
-  const chunks = useRef<Blob[]>([]);
+  const countSpan = useRef<HTMLSpanElement>(null);
+  const interval = useRef<number>(undefined);
 
+  // TODO: rewrite in Rust (for example with https://github.com/RustAudio/cpal)
   const startRecording = async () => {
-    await initMediaRecorder();
+    try {
+      await initMediaRecorder();
+    } catch (err) {
+      handleError()(err);
+      return;
+    }
 
-    if (mediaRecorder.current) {
-      setRecording(true);
+    if (mediaRecorder.current && !loading) {
       mediaRecorder.current.start();
+
+      setRecording(true);
+
+      const start = Date.now();
+      interval.current = setInterval(() => {
+        if (countSpan.current) {
+          const diff = Date.now() - start;
+
+          countSpan.current.innerHTML = `${Math.floor(
+            diff / 1000,
+          )}.${Math.floor((diff % 1000) / 100)}`;
+        }
+      }, 100);
     }
   };
 
   const endRecording = () => {
-    mediaRecorder.current?.stop();
+    if (mediaRecorder.current && !loading) {
+      setLoading(true);
+      mediaRecorder.current.stop();
+    }
   };
 
-  // https://developer.mozilla.org/en-US/docs/Web/API/MediaStream_Recording_API/Using_the_MediaStream_Recording_API
+  // TODO: add cleanup?
   const initMediaRecorder = async () => {
     if (mediaRecorder.current) {
       return;
     }
 
-    let stream: MediaStream;
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const recorder = new MediaRecorder(stream, {
+      audioBitsPerSecond: 96_000,
+    });
 
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    } catch (err) {
-      // https://github.com/tauri-apps/tauri/issues/4434
-      // https://github.com/tauri-apps/tauri/issues/5042#issuecomment-2269455318
-      showNotification(NotificationType.Error);
-      console.log("Could not get stream", err);
-      return;
-    }
-
-    const onStart = () => {
-      setStartedAt(Date.now());
-      setUpdatedAt(Date.now());
-    };
+    let chunks: Blob[] = [];
 
     const onDataAvailable = (e: BlobEvent) => {
-      chunks.current.push(e.data);
-      setUpdatedAt(Date.now());
+      chunks.push(e.data);
     };
 
     const onStop = () => {
-      // create blob
-      // ensure mp3 format and reasonable bitrate
-      // add media
-      // append [sound:...] to current media field
-      // clear current chunks and release media
+      // TODO: convert to mpeg & compress
+      const type = chunks[0]?.type;
+      const blob = new Blob(chunks, type ? { type } : undefined);
 
+      chunks = [];
+      clearInterval(interval.current);
+
+      const media = addMedia(blob);
+      playPreviewAudio(media.src);
+
+      const element = `[sound:${media.name}]`;
+      appendEditNoteField("Audio", element);
+
+      releaseMedia(media);
+
+      setLoading(false);
       setRecording(false);
-
-      chunks.current = [];
     };
 
-    const recorder = new MediaRecorder(stream);
-
-    recorder.addEventListener("start", onStart);
     recorder.addEventListener("dataavailable", onDataAvailable);
     recorder.addEventListener("stop", onStop);
 
@@ -82,9 +98,7 @@ export const ButtonRecordAudio = () => {
 
   return (
     <>
-      {recording && (
-        <span>{Math.round((updatedAt - startedAt) / 100) / 10}</span>
-      )}
+      {recording && <span ref={countSpan} />}
 
       <Button
         onClick={recording ? endRecording : startRecording}

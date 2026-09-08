@@ -2,12 +2,9 @@ import { FileVolumeIcon } from "lucide-react";
 import { Button } from "../Button";
 import { useStore } from "../../hooks/useStore";
 
-type Props = {
-  appendFieldValue: (value: string) => void;
-};
-
-export const ButtonAddClip = ({ appendFieldValue }: Props) => {
+export const ButtonAddClip = () => {
   const currentClipName = useStore((state) => state.currentClipName);
+  const appendEditNoteField = useStore((state) => state.appendEditNoteField);
 
   const addCurrentClip = () => {
     if (!currentClipName) {
@@ -15,7 +12,7 @@ export const ButtonAddClip = ({ appendFieldValue }: Props) => {
     }
 
     const element = `[sound:${currentClipName}]`;
-    appendFieldValue(element);
+    appendEditNoteField("Sentence Audio", element);
   };
 
   return (

@@ -6,14 +6,11 @@ import { handleError } from "../../utils";
 import { useState } from "react";
 import { Status } from "../../types";
 
-type Props = {
-  appendFieldValue: (value: string) => void;
-};
-
-export const ButtonTranscribe = ({ appendFieldValue }: Props) => {
+export const ButtonTranscribe = () => {
   const videoFile = useStore((state) => state.videoFile);
   const clipTime = useStore((state) => state.clipTime);
   const transcribeStatus = useStore((state) => state.transcribeStatus);
+  const appendEditNoteField = useStore((state) => state.appendEditNoteField);
 
   const [runningTranscribe, setRunningTranscribe] = useState(false);
 
@@ -24,7 +21,7 @@ export const ButtonTranscribe = ({ appendFieldValue }: Props) => {
     const { start, end } = clipTime;
 
     invoke<string>("run_transcribe", { videoPath, start, end })
-      .then(appendFieldValue)
+      .then((value) => appendEditNoteField("Sentence", value))
       .catch(handleError())
       .finally(() => setRunningTranscribe(false));
   };

@@ -103,7 +103,7 @@ export const InnerNoteElement = memo(
   ({ note, index, isActive, digitWidth }: InnerNoteElementProps) => {
     const setSelectedNote = useStore((state) => state.setSelectedNote);
     const showNotification = useStore((state) => state.showNotification);
-    const setEditNote = useStore((state) => state.setEditNote);
+    const appendEditNoteField = useStore((state) => state.appendEditNoteField);
     const videoHandle = useStore((state) => state.videoHandle);
 
     const canSetTime =
@@ -169,19 +169,7 @@ export const InnerNoteElement = memo(
                       return;
                     }
 
-                    setEditNote((prev) => {
-                      if (!prev) {
-                        return undefined;
-                      }
-
-                      if (prev.fields[field]) {
-                        prev.fields[field] += "\n<br>\n";
-                      }
-
-                      prev.fields[field] += note.fields[field];
-
-                      return { ...prev };
-                    });
+                    appendEditNoteField(field, note.fields[field]);
                   }}
                   className={clsx(
                     "absolute bottom-0 left-0 z-10 h-12 w-full flex-1 rounded-b-sm py-2 drop-shadow-even transition-all select-none hover:-bottom-2",

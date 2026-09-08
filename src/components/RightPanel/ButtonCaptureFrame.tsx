@@ -5,13 +5,10 @@ import { invoke } from "@tauri-apps/api/core";
 import { useState } from "react";
 import { handleError } from "../../utils";
 
-type Props = {
-  appendFieldValue: (value: string) => void;
-};
-
-export const ButtonCaptureFrame = ({ appendFieldValue }: Props) => {
+export const ButtonCaptureFrame = () => {
   const videoHandle = useStore((state) => state.videoHandle);
   const videoFile = useStore((state) => state.videoFile);
+  const appendEditNoteField = useStore((state) => state.appendEditNoteField);
 
   const addMedia = useStore((state) => state.addMedia);
   const releaseMedia = useStore((state) => state.releaseMedia);
@@ -37,7 +34,7 @@ export const ButtonCaptureFrame = ({ appendFieldValue }: Props) => {
         const frameState = addMedia(blob);
 
         const element = `<img src="${frameState.name}">`;
-        appendFieldValue(element);
+        appendEditNoteField("Image_URI", element);
 
         releaseMedia(frameState);
       })

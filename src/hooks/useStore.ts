@@ -36,6 +36,7 @@ type Store = {
 
   editNote?: Note;
   setEditNote: (noteOrUpdater: ValueOrUpdater<Note | undefined>) => void;
+  appendEditNoteField: (field: Field, value: string) => void;
 
   newMediaNames: string[];
   addNewMediaName: (name?: string) => void;
@@ -119,6 +120,20 @@ export const useStore = create<Store>()(
         typeof noteOrUpdater === "function"
           ? set((state) => ({ editNote: noteOrUpdater(state.editNote) }))
           : set({ editNote: noteOrUpdater }),
+      appendEditNoteField: (field, value) =>
+        set((state) => {
+          const prev = state.editNote;
+          if (!prev) {
+            return {};
+          }
+
+          const prevValue = prev.fields[field];
+          prev.fields[field] = prevValue
+            ? prevValue + "\n<br>\n" + value
+            : value;
+
+          return { editNote: { ...prev } };
+        }),
 
       newMediaNames: [],
       addNewMediaName: (name) => {
