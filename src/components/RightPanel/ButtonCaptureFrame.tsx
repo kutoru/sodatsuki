@@ -13,7 +13,7 @@ export const ButtonCaptureFrame = ({ appendFieldValue }: Props) => {
   const videoHandle = useStore((state) => state.videoHandle);
   const videoFile = useStore((state) => state.videoFile);
 
-  const addFrame = useStore((state) => state.addFrame);
+  const addMedia = useStore((state) => state.addMedia);
   const releaseMedia = useStore((state) => state.releaseMedia);
 
   const [capturingFrame, setCapturingFrame] = useState(false);
@@ -33,11 +33,8 @@ export const ButtonCaptureFrame = ({ appendFieldValue }: Props) => {
       timestamp,
     })
       .then((arrayBuffer) => {
-        const frameState = addFrame({
-          videoPath,
-          timestamp,
-          arrayBuffer,
-        });
+        const blob = new Blob([arrayBuffer]);
+        const frameState = addMedia(blob);
 
         const element = `<img src="${frameState.name}">`;
         appendFieldValue(element);

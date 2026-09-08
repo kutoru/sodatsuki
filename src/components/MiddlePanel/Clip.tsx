@@ -10,27 +10,32 @@ import { Button } from "../Button";
 import { useStore } from "../../hooks/useStore";
 import { invoke } from "@tauri-apps/api/core";
 import { handleError } from "../../utils";
-import { ClipState } from "../../types";
+import { MediaState } from "../../types";
 
 export const Clip = () => {
   const videoFile = useStore((state) => state.videoFile);
   const videoHandle = useStore((state) => state.videoHandle);
   const setAudioVolume = useStore((state) => state.setAudioVolume);
   const setCurrentClipName = useStore((state) => state.setCurrentClipName);
-  const addClip = useStore((state) => state.addClip);
+  const addMedia = useStore((state) => state.addMedia);
   const releaseMedia = useStore((state) => state.releaseMedia);
 
   const clipTime = useStore((state) => state.clipTime);
   const setClipTime = useStore((state) => state.setClipTime);
 
-  const [clipState, setClipState] = useState<ClipState>();
+  const [clipState, setClipState] = useState<{
+    media: MediaState;
+    videoPath: string;
+    start: number;
+    end: number;
+  }>();
 
   const [capturing, setCapturing] = useState(false);
 
   const audioElement = useRef<HTMLAudioElement>(null);
 
   const captureClip = () => {
-    const prevClipState = clipState;
+    const prevMediaState = clipState?.media;
 
     const videoPath = videoFile?.path;
     const start = clipTime.start;
@@ -44,13 +49,20 @@ export const Clip = () => {
 
     invoke<ArrayBuffer>("clip_capture", { videoPath, start, end })
       .then((arrayBuffer) => {
-        const newClipState = addClip({ videoPath, start, end, arrayBuffer });
-        setClipState(newClipState);
+        const blob = new Blob([arrayBuffer]);
+        const mediaState = addMedia(blob);
 
-        setCurrentClipName(newClipState.name);
+        setClipState({
+          media: mediaState,
+          videoPath,
+          start,
+          end,
+        });
 
-        if (prevClipState) {
-          releaseMedia(prevClipState);
+        setCurrentClipName(mediaState.name);
+
+        if (prevMediaState) {
+          releaseMedia(prevMediaState);
         }
       })
       .catch(handleError())
@@ -170,7 +182,7 @@ export const Clip = () => {
             "size-full transition-colors",
             videoHandle && "active",
           )}
-          src={clipState?.src}
+          src={clipState?.media.src}
           controls
         />
 

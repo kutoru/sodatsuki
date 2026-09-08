@@ -2,12 +2,10 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import {
   AnkiState,
-  CapturedMediaType,
-  ClipState,
+  MediaState,
   DateFilterState,
   DeckState,
   Field,
-  FrameState,
   Note,
   NotificationType,
   Status,
@@ -22,14 +20,6 @@ type VideoHandle = {
   start?: number;
   end?: number;
 };
-
-type UseMediaReturnType<T> = T extends CapturedMediaType.Clip
-  ? ClipState
-  : T extends CapturedMediaType.Frame
-    ? FrameState
-    : ClipState | FrameState;
-
-let capturedMediaCounter = 0;
 
 type Store = {
   anki: AnkiState;
@@ -98,24 +88,12 @@ type Store = {
   previewAudioData?: { src: string };
   playPreviewAudio: (src: string) => void;
 
-  capturedMedia: Map<string, ClipState | FrameState>;
-  addClip: (clip: {
-    videoPath: string;
-    start: number;
-    end: number;
-    arrayBuffer: ArrayBuffer;
-  }) => ClipState;
-  addFrame: (frame: {
-    videoPath: string;
-    timestamp: number;
-    arrayBuffer: ArrayBuffer;
-  }) => FrameState;
+  capturedMedia: Map<string, MediaState>;
+  capturedMediaCounter: number;
 
-  useMedia: <T extends CapturedMediaType>(
-    name: string,
-    type: T,
-  ) => UseMediaReturnType<T> | undefined;
-  releaseMedia: (media: ClipState | FrameState | undefined) => void;
+  addMedia: (blob: Blob) => MediaState;
+  useMedia: (name: string) => MediaState | undefined;
+  releaseMedia: (media: MediaState | undefined) => void;
 };
 
 export const useStore = create<Store>()(
@@ -218,49 +196,29 @@ export const useStore = create<Store>()(
       playPreviewAudio: (src) => set({ previewAudioData: { src } }),
 
       capturedMedia: new Map(),
-      addClip: ({ videoPath, start, end, arrayBuffer }) => {
-        const blob = new Blob([arrayBuffer]);
-        const src = URL.createObjectURL(blob);
-        const name = `ref-${++capturedMediaCounter}.mp3`;
+      capturedMediaCounter: 0,
 
-        const clipState: ClipState = {
-          videoPath,
-          start,
-          end,
+      addMedia: (blob) => {
+        const mediaCount = get().capturedMediaCounter + 1;
+        set({ capturedMediaCounter: mediaCount });
+
+        const src = URL.createObjectURL(blob);
+        const name = `ref-${mediaCount}.mp3`;
+
+        const clipState: MediaState = {
           name,
           blob,
           src,
           rc: 1,
-          type: CapturedMediaType.Clip,
         };
 
         get().capturedMedia.set(name, clipState);
 
         return clipState;
       },
-      addFrame: ({ videoPath, timestamp, arrayBuffer }) => {
-        const blob = new Blob([arrayBuffer]);
-        const src = URL.createObjectURL(blob);
-        const name = `ref-${++capturedMediaCounter}.jpg`;
-
-        const frameState: FrameState = {
-          videoPath,
-          timestamp,
-          name,
-          blob,
-          src,
-          rc: 1,
-          type: CapturedMediaType.Frame,
-        };
-
-        get().capturedMedia.set(name, frameState);
-
-        return frameState;
-      },
-
-      useMedia: (name, type) => {
+      useMedia: (name) => {
         const state = get().capturedMedia.get(name);
-        if (!state || (type !== CapturedMediaType.Any && state.type !== type)) {
+        if (!state) {
           return undefined;
         }
 

@@ -1,7 +1,7 @@
 import { useStore } from "../../hooks/useStore";
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { handleError } from "../../utils";
-import { CapturedMediaType, FrameState, NotificationType } from "../../types";
+import { MediaState, NotificationType } from "../../types";
 import { useEffect, useState } from "react";
 
 type Props = { fileName: string };
@@ -17,7 +17,7 @@ export const FramePreview = ({ fileName }: Props) => {
 
   const showNotification = useStore((state) => state.showNotification);
 
-  const [frameState, setFrameState] = useState<FrameState>();
+  const [frameState, setFrameState] = useState<MediaState>();
 
   const openFrame = () => {
     const invokeFunction = frameState?.src ? openData : openFile;
@@ -37,7 +37,7 @@ export const FramePreview = ({ fileName }: Props) => {
   };
 
   useEffect(() => {
-    const state = useMedia(fileName, CapturedMediaType.Frame);
+    const state = useMedia(fileName);
 
     setFrameState(state);
     addNewMediaName(state?.name);
