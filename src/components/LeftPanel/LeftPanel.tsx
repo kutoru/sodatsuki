@@ -64,6 +64,7 @@ const getDigitWidth = (notesLength: number) => {
 
 export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
   const dateFilter = useStore((state) => state.dateFilter);
+  const ankiAddress = useStore((state) => state.ankiAddress);
 
   const anki = useStore((state) => state.anki);
   const setAnki = useStore((state) => state.setAnki);
@@ -89,7 +90,7 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
     setShowDecks(false);
     setAnki({ status: Status.Loading });
 
-    invoke<AnkiState>("anki_fetch_status")
+    invoke<AnkiState>("anki_fetch_status", { address: ankiAddress })
       .then(setAnki)
       .catch(handleError(() => setAnki({ status: Status.Offline }), false));
   };
@@ -99,6 +100,7 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
     lastLoadedDeck.current = Date.now();
 
     invoke<DeckState>("anki_fetch_deck", {
+      address: ankiAddress,
       deck: deckName,
       startTimestamp: dateFilter.applyStart ? dateFilter.start : undefined,
       endTimestamp: dateFilter.applyEnd ? dateFilter.end : undefined,

@@ -2,7 +2,7 @@ import { AudioLinesIcon } from "lucide-react";
 import { Button } from "../Button";
 import { useStore } from "../../hooks/useStore";
 import { invoke } from "@tauri-apps/api/core";
-import { handleError } from "../../utils";
+import { applyPythonOutputTransform, handleError } from "../../utils";
 import { useState } from "react";
 import { Status } from "../../types";
 
@@ -20,8 +20,10 @@ export const ButtonTranscribe = () => {
     const videoPath = videoFile?.path;
     const { start, end } = clipTime;
 
-    invoke<string>("run_transcribe", { videoPath, start, end })
-      .then((value) => appendEditNoteField("Sentence", value))
+    invoke<string[]>("run_transcribe", { videoPath, start, end })
+      .then((value) =>
+        appendEditNoteField("Sentence", applyPythonOutputTransform(value)),
+      )
       .catch(handleError())
       .finally(() => setRunningTranscribe(false));
   };

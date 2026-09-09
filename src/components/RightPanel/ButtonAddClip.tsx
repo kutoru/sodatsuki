@@ -4,10 +4,11 @@ import { useStore } from "../../hooks/useStore";
 
 export const ButtonAddClip = () => {
   const currentClipName = useStore((state) => state.currentClipName);
+  const clipAligns = useStore((state) => state.clipAligns);
   const appendEditNoteField = useStore((state) => state.appendEditNoteField);
 
   const addCurrentClip = () => {
-    if (!currentClipName) {
+    if (!currentClipName || !clipAligns) {
       return;
     }
 
@@ -19,7 +20,7 @@ export const ButtonAddClip = () => {
     <Button
       onClick={addCurrentClip}
       className="w-9 p-2 pe-1"
-      disabled={!currentClipName}
+      disabled={!currentClipName || !clipAligns}
     >
       <FileVolumeIcon className="size-full" />
     </Button>

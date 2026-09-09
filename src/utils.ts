@@ -12,3 +12,14 @@ export const handleError =
 
     callback?.();
   };
+
+export const applyPythonOutputTransform = (value: string[]): string => {
+  const trans = useStore.getState().pythonOutputTransform;
+
+  let out = value.join(trans.joinChar);
+  Object.entries(trans.replaceChars).forEach(([s, r]) => {
+    out = out.replace(new RegExp("\\" + s, "g"), r);
+  });
+
+  return out;
+};

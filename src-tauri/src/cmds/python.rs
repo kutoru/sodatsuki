@@ -36,16 +36,15 @@ def ocr(buffer):
         Ok(())
     }
 
-    fn ocr(&self, image: &[u8]) -> Result<String, String> {
-        pyo3::Python::attach(|py| -> pyo3::PyResult<String> {
+    fn ocr(&self, image: &[u8]) -> Result<Vec<String>, String> {
+        pyo3::Python::attach(|py| -> pyo3::PyResult<Vec<String>> {
             let ocr = py.eval(c"ocr", None, None)?;
 
             let kwargs = PyDict::new(py);
             kwargs.set_item("buffer", image)?;
 
-            let results: Vec<String> = ocr.call((), Some(&kwargs))?.extract()?;
-
-            Ok(results.join(""))
+            let results = ocr.call((), Some(&kwargs))?.extract()?;
+            Ok(results)
         })
         .err_msg()
     }
@@ -87,16 +86,15 @@ def transcribe(buffer):
         Ok(())
     }
 
-    fn transcribe(&self, audio: &[u8]) -> Result<String, String> {
-        pyo3::Python::attach(|py| -> pyo3::PyResult<String> {
+    fn transcribe(&self, audio: &[u8]) -> Result<Vec<String>, String> {
+        pyo3::Python::attach(|py| -> pyo3::PyResult<Vec<String>> {
             let transcribe = py.eval(c"transcribe", None, None)?;
 
             let kwargs = PyDict::new(py);
             kwargs.set_item("buffer", audio)?;
 
-            let results: Vec<String> = transcribe.call((), Some(&kwargs))?.extract()?;
-
-            Ok(results.join("").replace(" ", ""))
+            let results = transcribe.call((), Some(&kwargs))?.extract()?;
+            Ok(results)
         })
         .err_msg()
     }
@@ -128,7 +126,7 @@ pub async fn run_ocr(
     video_path: String,
     timestamp: f64,
     mask: OcrMask,
-) -> Result<String, String> {
+) -> Result<Vec<String>, String> {
     let image = ffmpeg(&[
         "-ss",
         &format!("{}ms", timestamp),
@@ -158,7 +156,7 @@ pub async fn run_transcribe(
     video_path: String,
     start: f64,
     end: f64,
-) -> Result<String, String> {
+) -> Result<Vec<String>, String> {
     let audio = ffmpeg(&[
         "-ss",
         &format!("{}ms", start),

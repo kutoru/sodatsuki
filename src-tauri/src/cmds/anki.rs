@@ -6,21 +6,21 @@ use serde_json::json;
 use crate::{
     cmds::get_unix_ms,
     types::{
-        AnkiFetchDeckResult, AnkiFetchStatusResult, AnkiResponse, CapturedMedia, Config, FullNote,
-        Http, Note, ResultExt, Status,
+        AnkiAddress, AnkiFetchDeckResult, AnkiFetchStatusResult, AnkiResponse, CapturedMedia,
+        FullNote, Http, Note, ResultExt, Status,
     },
 };
 
-async fn call_anki<T>(http: &Http<'_>, config: &Config<'_>, action: &str) -> Result<T, String>
+async fn call_anki<T>(http: &Http<'_>, address: &AnkiAddress, action: &str) -> Result<T, String>
 where
     T: serde::de::DeserializeOwned + std::fmt::Debug,
 {
-    call_anki_with_params(http, config, action, json!({})).await
+    call_anki_with_params(http, address, action, json!({})).await
 }
 
 async fn call_anki_with_params<T>(
     http: &Http<'_>,
-    config: &Config<'_>,
+    address: &AnkiAddress,
     action: &str,
     params: serde_json::Value,
 ) -> Result<T, String>
@@ -28,14 +28,13 @@ where
     T: serde::de::DeserializeOwned + std::fmt::Debug,
 {
     let http: &reqwest::Client = http.inner();
-    let config = config.lock().await;
 
     let port = match action {
-        "noteIdsBetweenDates" => config.anki_custom_port,
-        _ => config.anki_connect_port,
+        "noteIdsBetweenDates" => address.custom_port,
+        _ => address.connect_port,
     };
 
-    let url = format!("{}:{}", config.anki_host, port);
+    let url = format!("{}:{}", address.host, port);
     let body = json!({
         "action": action,
         "version": 5,
@@ -65,10 +64,10 @@ where
 #[tauri::command]
 pub async fn anki_fetch_status(
     http: Http<'_>,
-    config: Config<'_>,
+    address: AnkiAddress,
 ) -> Result<AnkiFetchStatusResult, String> {
-    let media_path = call_anki(&http, &config, "getMediaDirPath").await?;
-    let decks: HashMap<String, i64> = call_anki(&http, &config, "deckNamesAndIds").await?;
+    let media_path = call_anki(&http, &address, "getMediaDirPath").await?;
+    let decks: HashMap<String, i64> = call_anki(&http, &address, "deckNamesAndIds").await?;
 
     let mut deck_names: Vec<String> = decks.into_keys().collect();
     deck_names.sort();
@@ -83,14 +82,14 @@ pub async fn anki_fetch_status(
 #[tauri::command]
 pub async fn anki_fetch_deck(
     http: Http<'_>,
-    config: Config<'_>,
+    address: AnkiAddress,
     deck: String,
     start_timestamp: Option<u128>,
     end_timestamp: Option<u128>,
 ) -> Result<AnkiFetchDeckResult, String> {
     let all_note_ids: Vec<i64> = call_anki_with_params(
         &http,
-        &config,
+        &address,
         "findNotes",
         json!({
             "query": format!("deck:{}", deck),
@@ -102,7 +101,7 @@ pub async fn anki_fetch_deck(
 
     let filtered_note_ids: Vec<i64> = call_anki_with_params(
         &http,
-        &config,
+        &address,
         "noteIdsBetweenDates",
         json!({
             "deck": deck,
@@ -116,7 +115,7 @@ pub async fn anki_fetch_deck(
 
     let notes: Vec<FullNote> = call_anki_with_params(
         &http,
-        &config,
+        &address,
         "notesInfo",
         json!({
             "notes": filtered_note_ids,
@@ -142,12 +141,12 @@ pub async fn anki_fetch_deck(
 #[tauri::command]
 pub async fn anki_open_note(
     http: Http<'_>,
-    config: Config<'_>,
+    address: AnkiAddress,
     note_id: i64,
 ) -> Result<(), String> {
     let _card_ids: Vec<i64> = call_anki_with_params(
         &http,
-        &config,
+        &address,
         "guiBrowse",
         json!({
             "query": format!("nid:{}", note_id),
@@ -161,7 +160,7 @@ pub async fn anki_open_note(
 #[tauri::command]
 pub async fn anki_save_note(
     http: Http<'_>,
-    config: Config<'_>,
+    address: AnkiAddress,
     mut note: Note,
     files: Vec<CapturedMedia>,
 ) -> Result<Note, String> {
@@ -183,7 +182,7 @@ pub async fn anki_save_note(
 
         let result = call_anki_with_params::<String>(
             &http,
-            &config,
+            &address,
             "storeMediaFile",
             json!({
                 "filename": &new_name,
@@ -206,7 +205,7 @@ pub async fn anki_save_note(
 
     let result = call_anki_with_params::<()>(
         &http,
-        &config,
+        &address,
         "updateNoteFields",
         json!({
             "note": note,

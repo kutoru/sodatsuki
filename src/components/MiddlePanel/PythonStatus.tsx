@@ -9,7 +9,8 @@ import { handleError } from "../../utils";
 import { useStore } from "../../hooks/useStore";
 
 export const PythonStatus = () => {
-  const autoInitPython = useStore((state) => state.autoInitPython);
+  const autoInitOcr = useStore((state) => state.autoInitOcr);
+  const autoInitTranscribe = useStore((state) => state.autoInitTranscribe);
 
   const ocrStatus = useStore((state) => state.ocrStatus);
   const setOcrStatus = useStore((state) => state.setOcrStatus);
@@ -41,8 +42,11 @@ export const PythonStatus = () => {
   };
 
   useEffect(() => {
-    if (autoInitPython) {
+    if (autoInitOcr) {
       initOcr();
+    }
+
+    if (autoInitTranscribe) {
       initTranscribe();
     }
   }, []);

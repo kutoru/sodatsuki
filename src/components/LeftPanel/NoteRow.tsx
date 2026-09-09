@@ -105,6 +105,7 @@ export const InnerNoteElement = memo(
     const showNotification = useStore((state) => state.showNotification);
     const appendEditNoteField = useStore((state) => state.appendEditNoteField);
     const videoHandle = useStore((state) => state.videoHandle);
+    const ankiAddress = useStore((state) => state.ankiAddress);
 
     const canSetTime =
       !!videoHandle?.start &&
@@ -119,7 +120,7 @@ export const InnerNoteElement = memo(
     };
 
     const openNoteInAnki = () => {
-      invoke("anki_open_note", { noteId: note.id })
+      invoke("anki_open_note", { address: ankiAddress, noteId: note.id })
         .then(() => showNotification(NotificationType.Success))
         .catch(handleError());
     };

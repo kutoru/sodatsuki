@@ -23,6 +23,8 @@ export const Clip = () => {
   const clipTime = useStore((state) => state.clipTime);
   const setClipTime = useStore((state) => state.setClipTime);
 
+  const setClipAligns = useStore((state) => state.setClipAligns);
+
   const [clipState, setClipState] = useState<{
     media: MediaState;
     videoPath: string;
@@ -110,6 +112,10 @@ export const Clip = () => {
   const startAligns = pathAligns && clipTime.start === clipState.start;
   const endAligns = pathAligns && clipTime.end === clipState.end;
   const clipAligns = startAligns && endAligns;
+
+  useEffect(() => {
+    setClipAligns(clipAligns);
+  }, [clipAligns]);
 
   const canCapture =
     !!videoFile?.path &&

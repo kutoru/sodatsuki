@@ -2,7 +2,7 @@ import clsx from "clsx";
 import { useStore } from "../../hooks/useStore";
 import { useEffect, useRef } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { handleError } from "../../utils";
+import { applyPythonOutputTransform, handleError } from "../../utils";
 
 export const OcrMaskEditor = () => {
   const videoFile = useStore((state) => state.videoFile);
@@ -27,8 +27,10 @@ export const OcrMaskEditor = () => {
     const videoPath = videoFile?.path;
     const timestamp = videoHandle?.getTime();
 
-    invoke<string>("run_ocr", { videoPath, timestamp, mask })
-      .then((value) => appendEditNoteField("Sentence", value))
+    invoke<string[]>("run_ocr", { videoPath, timestamp, mask })
+      .then((value) =>
+        appendEditNoteField("Sentence", applyPythonOutputTransform(value)),
+      )
       .catch(handleError())
       .finally(() => setRunningOcr(false));
   };

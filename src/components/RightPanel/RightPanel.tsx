@@ -29,6 +29,8 @@ const relevantFields: Field[] = [
 export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
   const showNotification = useStore((state) => state.showNotification);
   const setDeck = useStore((state) => state.setDeck);
+  const ankiAddress = useStore((state) => state.ankiAddress);
+
   const newMediaNames = useStore((state) => state.newMediaNames);
   const useMedia = useStore((state) => state.useMedia);
   const releaseMedia = useStore((state) => state.releaseMedia);
@@ -91,7 +93,11 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
 
     const files = await Promise.all(filePromises);
 
-    invoke<Note>("anki_save_note", { note: editNote, files })
+    invoke<Note>("anki_save_note", {
+      address: ankiAddress,
+      note: editNote,
+      files,
+    })
       .then((savedNote) => {
         setSelectedNote(savedNote);
         setEditNote(structuredClone(savedNote));

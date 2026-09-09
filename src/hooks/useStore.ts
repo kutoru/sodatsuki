@@ -50,7 +50,19 @@ type Store = {
 
   // TODO: make configurable
   tzOffset: number;
-  autoInitPython: boolean;
+  autoInitOcr: boolean;
+  autoInitTranscribe: boolean;
+
+  pythonOutputTransform: {
+    joinChar: string;
+    replaceChars: Record<string, string>;
+  };
+
+  ankiAddress: {
+    host: string;
+    connectPort: number;
+    customPort: number;
+  };
 
   videoVolume: number;
   setVideoVolume: (volume: number) => void;
@@ -77,6 +89,9 @@ type Store = {
   setClipTime: (
     clipTimeOrUpdater: ValueOrUpdater<{ start: number; end: number }>,
   ) => void;
+
+  clipAligns: boolean;
+  setClipAligns: (clipAligns: boolean) => void;
 
   notificationState: { shown: boolean; type: NotificationType };
   showNotification: (type: NotificationType) => void;
@@ -159,7 +174,25 @@ export const useStore = create<Store>()(
       setVideoHandle: (videoHandle) => set({ videoHandle }),
 
       tzOffset: 4,
-      autoInitPython: false,
+      autoInitOcr: true,
+      autoInitTranscribe: false,
+
+      pythonOutputTransform: {
+        joinChar: "",
+        replaceChars: {
+          " ": "　",
+          ".": "。",
+          ",": "、",
+          "!": "！",
+          "?": "？",
+        },
+      },
+
+      ankiAddress: {
+        host: "http://127.0.0.1",
+        connectPort: 8765,
+        customPort: 8766,
+      },
 
       videoVolume: 0.2,
       setVideoVolume: (volume) => set({ videoVolume: volume }),
@@ -188,6 +221,9 @@ export const useStore = create<Store>()(
         typeof clipTimeOrUpdater === "function"
           ? set((state) => ({ clipTime: clipTimeOrUpdater(state.clipTime) }))
           : set({ clipTime: clipTimeOrUpdater }),
+
+      clipAligns: false,
+      setClipAligns: (clipAligns) => set({ clipAligns }),
 
       notificationState: { shown: false, type: NotificationType.Success },
       showNotification: (type) =>
@@ -271,8 +307,6 @@ export const useStore = create<Store>()(
       partialize: (state) => ({
         deckName: state.deckName,
         videoFile: state.videoFile,
-        tzOffset: state.tzOffset,
-        autoInitPython: state.autoInitPython,
         videoVolume: state.videoVolume,
         audioVolume: state.audioVolume,
         dateFilter: state.dateFilter,
