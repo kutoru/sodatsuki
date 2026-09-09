@@ -20,3 +20,5 @@ Useful links:
 - https://codemirror.net/5/
 - https://ffmpeg.org/ffmpeg-all.html
 - https://pyo3.rs
+- https://github.com/JaidedAI/EasyOCR
+- https://github.com/openai/whisper
