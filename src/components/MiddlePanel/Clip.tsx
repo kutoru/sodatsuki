@@ -52,7 +52,7 @@ export const Clip = () => {
     invoke<ArrayBuffer>("clip_capture", { videoPath, start, end })
       .then((arrayBuffer) => {
         const blob = new Blob([arrayBuffer]);
-        const mediaState = addMedia(blob);
+        const mediaState = addMedia(blob, "mp3");
 
         setClipState({
           media: mediaState,

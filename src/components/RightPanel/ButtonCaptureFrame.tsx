@@ -31,7 +31,7 @@ export const ButtonCaptureFrame = () => {
     })
       .then((arrayBuffer) => {
         const blob = new Blob([arrayBuffer]);
-        const frameState = addMedia(blob);
+        const frameState = addMedia(blob, "jpg");
 
         const element = `<img src="${frameState.name}">`;
         appendEditNoteField("Image_URI", element);

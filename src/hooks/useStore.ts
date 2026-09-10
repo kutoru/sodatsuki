@@ -107,7 +107,7 @@ type Store = {
   capturedMedia: Map<string, MediaState>;
   capturedMediaCounter: number;
 
-  addMedia: (blob: Blob) => MediaState;
+  addMedia: (blob: Blob, type: MediaState["type"]) => MediaState;
   useMedia: (name: string) => MediaState | undefined;
   releaseMedia: (media: MediaState | undefined) => void;
 };
@@ -249,17 +249,18 @@ export const useStore = create<Store>()(
       capturedMedia: new Map(),
       capturedMediaCounter: 0,
 
-      addMedia: (blob) => {
+      addMedia: (blob, type) => {
         const mediaCount = get().capturedMediaCounter + 1;
         set({ capturedMediaCounter: mediaCount });
 
         const src = URL.createObjectURL(blob);
-        const name = `ref-${mediaCount}.mp3`;
+        const name = `ref-${mediaCount}.${type}`;
 
         const clipState: MediaState = {
           name,
           blob,
           src,
+          type,
           rc: 1,
         };
 
@@ -275,7 +276,7 @@ export const useStore = create<Store>()(
 
         state.rc += 1;
 
-        clearTimeout(state.releaseTimeoutId);
+        clearTimeout(state.releaseTimeout);
 
         return state as any;
       },
@@ -294,7 +295,7 @@ export const useStore = create<Store>()(
           return;
         }
 
-        state.releaseTimeoutId = setTimeout(() => {
+        state.releaseTimeout = setTimeout(() => {
           get().capturedMedia.delete(state.name);
           URL.revokeObjectURL(state.src);
           delete (state as any).src;

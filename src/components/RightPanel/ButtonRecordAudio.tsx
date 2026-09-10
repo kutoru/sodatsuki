@@ -73,12 +73,12 @@ export const ButtonRecordAudio = () => {
     const onStop = () => {
       // TODO: convert to mpeg & compress
       const type = chunks[0]?.type;
-      const blob = new Blob(chunks, type ? { type } : undefined);
+      const blob = new Blob(chunks, { type });
 
       chunks = [];
       clearInterval(interval.current);
 
-      const media = addMedia(blob);
+      const media = addMedia(blob, "weba");
       playPreviewAudio(media.src);
 
       const element = `[sound:${media.name}]`;

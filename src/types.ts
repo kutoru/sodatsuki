@@ -52,7 +52,8 @@ export type MediaState = {
   blob: Blob;
   src: string;
   rc: number;
-  releaseTimeoutId?: number;
+  type: "mp3" | "jpg" | "weba";
+  releaseTimeout?: number;
 };
 
 export type ValueOrUpdater<T> = T | ((prev: T) => T);
