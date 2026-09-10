@@ -58,7 +58,7 @@ export const ButtonFormatMeaning = () => {
   const canFormat = editNote?.fields["Meaning"].startsWith("<");
 
   return (
-    <Button onClick={format} className="p-2" disabled={!canFormat}>
+    <Button onClick={format} className="p-2 pe-1" disabled={!canFormat}>
       <SquareSplitVerticalIcon className="size-full" />
     </Button>
   );
