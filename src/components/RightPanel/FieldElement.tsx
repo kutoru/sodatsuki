@@ -13,6 +13,8 @@ import { ButtonTranscribe } from "./ButtonTranscribe";
 import { ButtonCaptureFrame } from "./ButtonCaptureFrame";
 import { ButtonAddClip } from "./ButtonAddClip";
 import { ButtonRecordAudio } from "./ButtonRecordAudio";
+import { ButtonFormatReading } from "./ButtonFormatReading";
+import { ButtonFormatMeaning } from "./ButtonFormatMeaning";
 
 type Props = {
   noteId: number;
@@ -129,11 +131,13 @@ export const FieldElement = memo(
             {fieldDiffers && " *"}
           </div>
 
+          {field === "Meaning" && <ButtonFormatMeaning />}
+          {field === "Reading" && <ButtonFormatReading />}
           {field === "Audio" && <ButtonRecordAudio />}
-          {field === "Sentence Audio" && <ButtonAddClip />}
-          {field === "Image_URI" && <ButtonCaptureFrame />}
           {field === "Sentence" && <ButtonTranscribe />}
           {field === "Sentence" && <ButtonOcr />}
+          {field === "Sentence Audio" && <ButtonAddClip />}
+          {field === "Image_URI" && <ButtonCaptureFrame />}
 
           <Button
             onClick={() => setExpanded(!expanded)}

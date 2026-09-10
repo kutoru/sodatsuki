@@ -4,8 +4,8 @@ import { useStore } from "./useStore";
 export const usePanelResize = () => {
   const refreshCodeEditors = useStore((state) => state.refreshCodeEditors);
   const getRefreshCodeEditorsDebounced = () => {
-    const delay = 100;
-    let lastRefreshed = 0;
+    const delay = 250;
+    let lastRefreshed = Date.now();
     let timeout: number | undefined;
 
     return () => {

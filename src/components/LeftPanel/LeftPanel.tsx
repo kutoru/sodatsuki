@@ -84,7 +84,7 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
   const [digitWidth, setDigitWidth] = useState(0);
 
   const noteList = useListRef(null);
-  const lastLoadedDeck = useRef(0);
+  const lastLoadedDeck = useRef(Date.now());
 
   const loadAnki = () => {
     setShowDecks(false);
