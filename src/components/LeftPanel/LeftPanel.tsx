@@ -102,26 +102,14 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
     setLoadingDeck(true);
     lastLoadedDeck.current = Date.now();
 
-    invoke<DeckState>("anki_fetch_deck", {
+    invoke<DeckState>("anki_get_deck", {
       ankiAddress,
       deck: deckName,
       startTimestamp: dateFilter.applyStart ? dateFilter.start : undefined,
       endTimestamp: dateFilter.applyEnd ? dateFilter.end : undefined,
     })
       .then((newDeck) => {
-        const sameName = deck?.name === newDeck.name;
-        let scrollUp = true;
-
-        if (sameName) {
-          const diff = Math.abs(deck.notes.length - newDeck.notes.length);
-          if (diff <= 3) {
-            scrollUp = false;
-          }
-        }
-
-        if (scrollUp) {
-          noteList.current?.element?.scrollTo({ top: 0 });
-        }
+        noteList.current?.element?.scrollTo({ top: 0 });
 
         setDigitWidth(getDigitWidth(newDeck.notes.length));
         setDeck(newDeck);

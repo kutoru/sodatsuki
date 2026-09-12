@@ -2,14 +2,14 @@ use std::collections::HashMap;
 
 #[derive(serde::Serialize, Clone, serde::Deserialize, std::fmt::Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct AnkiFetchStatusResult {
+pub struct AnkiGetInitialResult {
     pub media_path: String,
     pub decks: Vec<String>,
 }
 
-#[derive(serde::Serialize, Clone)]
+#[derive(serde::Serialize, Clone, serde::Deserialize, std::fmt::Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct AnkiFetchDeckResult {
+pub struct AnkiGetDeckResult {
     pub name: String,
     pub total_notes: i32,
     pub notes: Vec<Note>,
@@ -19,18 +19,6 @@ pub struct AnkiFetchDeckResult {
 pub struct Note {
     pub id: i64,
     pub fields: HashMap<String, String>,
-}
-
-#[derive(std::fmt::Debug, serde::Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct FullNote {
-    pub note_id: i64,
-    pub fields: HashMap<String, FullField>,
-}
-
-#[derive(std::fmt::Debug, serde::Deserialize)]
-pub struct FullField {
-    pub value: String,
 }
 
 #[derive(serde::Deserialize, std::fmt::Debug)]

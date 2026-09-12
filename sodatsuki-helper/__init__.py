@@ -18,6 +18,7 @@ import inspect
 import os
 import aqt
 from aqt.qt import QTimer
+from anki.utils import ids2str
 
 
 from .web import format_exception_reply, format_success_reply
@@ -71,9 +72,64 @@ class SodatsukiHelper:
             "decks": [x.name for x in aqt.mw.col.decks.all_names_and_ids()],
         }
 
+    def get_deck(self, deck=None, start=None, end=None):
+        if deck is None:
+            raise Exception("invalid params")
+
+        deck = aqt.mw.col.decks.by_name(deck)
+        related_deck_ids = aqt.mw.col.decks.deck_and_child_ids(deck["id"])
+
+        total_notes = aqt.mw.col.db.scalar(
+            f"""
+                SELECT COUNT() FROM notes
+                WHERE EXISTS (
+                    SELECT 1 FROM cards WHERE cards.nid = notes.id AND cards.did IN {ids2str(related_deck_ids)}
+                )
+            """,
+        )
+
+        relevant_note_ids = aqt.mw.col.db.list(
+            f"""
+                SELECT notes.id FROM notes
+                WHERE notes.id BETWEEN COALESCE(?, notes.id) AND COALESCE(?, notes.id)
+                AND EXISTS (
+                    SELECT 1 FROM cards WHERE cards.nid = notes.id AND cards.did IN {ids2str(related_deck_ids)}
+                ) ORDER BY notes.id ASC
+            """,
+            start,
+            end,
+        )
+
+        notes = []
+
+        for id in relevant_note_ids:
+            note = aqt.mw.col.get_note(id)
+            model = note.note_type()
+
+            fields = {}
+
+            for field in model["flds"]:
+                name = field["name"]
+                ord = field["ord"]
+
+                fields[name] = note.fields[ord]
+
+            notes.append(
+                {
+                    "id": id,
+                    "fields": fields,
+                }
+            )
+
+        return {
+            "name": deck["name"],
+            "totalNotes": total_notes,
+            "notes": notes,
+        }
+
     def open_note(self, noteId=None):
         if noteId is None:
-            raise Exception("Invalid params")
+            raise Exception("invalid params")
 
         browser = aqt.dialogs.open("Browser", aqt.mw)
         browser.activateWindow()

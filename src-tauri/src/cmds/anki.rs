@@ -4,8 +4,7 @@ use serde_json::json;
 use crate::{
     cmds::get_unix_ms,
     types::{
-        AnkiFetchDeckResult, AnkiFetchStatusResult, AnkiResponse, CapturedMedia, FullNote, Http,
-        Note, ResultExt,
+        AnkiGetDeckResult, AnkiGetInitialResult, AnkiResponse, CapturedMedia, Http, Note, ResultExt,
     },
 };
 
@@ -56,67 +55,29 @@ where
 pub async fn anki_get_initial(
     http: Http<'_>,
     anki_address: String,
-) -> Result<AnkiFetchStatusResult, String> {
+) -> Result<AnkiGetInitialResult, String> {
     call_anki(&http, &anki_address, "get_initial").await
 }
 
 #[tauri::command]
-pub async fn anki_fetch_deck(
+pub async fn anki_get_deck(
     http: Http<'_>,
     anki_address: String,
     deck: String,
     start_timestamp: Option<u128>,
     end_timestamp: Option<u128>,
-) -> Result<AnkiFetchDeckResult, String> {
-    let all_note_ids: Vec<i64> = call_anki_with_params(
+) -> Result<AnkiGetDeckResult, String> {
+    call_anki_with_params(
         &http,
         &anki_address,
-        "findNotes",
-        json!({
-            "query": format!("deck:{}", deck),
-        }),
-    )
-    .await?;
-
-    let total_notes = all_note_ids.len() as i32;
-
-    let filtered_note_ids: Vec<i64> = call_anki_with_params(
-        &http,
-        &anki_address,
-        "noteIdsBetweenDates",
+        "get_deck",
         json!({
             "deck": deck,
-            "start": start_timestamp.unwrap_or(0),
-            "end": end_timestamp.unwrap_or_else(|| {
-                get_unix_ms()
-            }),
+            "start": start_timestamp,
+            "end": end_timestamp,
         }),
     )
-    .await?;
-
-    let notes: Vec<FullNote> = call_anki_with_params(
-        &http,
-        &anki_address,
-        "notesInfo",
-        json!({
-            "notes": filtered_note_ids,
-        }),
-    )
-    .await?;
-
-    let formatted_notes = notes
-        .into_iter()
-        .map(|note| Note {
-            id: note.note_id,
-            fields: note.fields.into_iter().map(|(k, v)| (k, v.value)).collect(),
-        })
-        .collect();
-
-    Ok(AnkiFetchDeckResult {
-        name: deck,
-        total_notes: total_notes,
-        notes: formatted_notes,
-    })
+    .await
 }
 
 #[tauri::command]
@@ -128,7 +89,7 @@ pub async fn anki_open_note(
     call_anki_with_params(
         &http,
         &anki_address,
-        "guiBrowse",
+        "open_note",
         json!({
             "noteId": note_id,
         }),
