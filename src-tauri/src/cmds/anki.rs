@@ -4,7 +4,8 @@ use serde_json::json;
 use crate::{
     cmds::get_unix_ms,
     types::{
-        AnkiGetDeckResult, AnkiGetInitialResult, AnkiResponse, CapturedMedia, Http, Note, ResultExt,
+        AnkiGetDeckResult, AnkiGetInitialResult, AnkiResponse, CapturedMedia, DupeNote, Http, Note,
+        ResultExt,
     },
 };
 
@@ -81,17 +82,17 @@ pub async fn anki_get_deck(
 }
 
 #[tauri::command]
-pub async fn anki_open_note(
+pub async fn anki_open_notes(
     http: Http<'_>,
     anki_address: String,
-    note_id: i64,
+    note_ids: Vec<i64>,
 ) -> Result<bool, String> {
     call_anki_with_params(
         &http,
         &anki_address,
-        "open_note",
+        "open_notes",
         json!({
-            "noteId": note_id,
+            "noteIds": note_ids,
         }),
     )
     .await
@@ -148,4 +149,21 @@ pub async fn anki_update_note(
     .await?;
 
     Ok(note)
+}
+
+#[tauri::command]
+pub async fn anki_get_dupes(
+    http: Http<'_>,
+    anki_address: String,
+    expression: String,
+) -> Result<Vec<DupeNote>, String> {
+    call_anki_with_params(
+        &http,
+        &anki_address,
+        "get_dupes",
+        json!({
+            "expression": expression,
+        }),
+    )
+    .await
 }

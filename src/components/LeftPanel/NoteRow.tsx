@@ -120,7 +120,7 @@ export const InnerNoteElement = memo(
     };
 
     const openNoteInAnki = () => {
-      invoke("anki_open_note", { ankiAddress, noteId: note.id })
+      invoke("anki_open_notes", { ankiAddress, noteIds: [note.id] })
         .then(() => showNotification(NotificationType.Success))
         .catch(handleError());
     };

@@ -57,3 +57,8 @@ export type MediaState = {
 };
 
 export type ValueOrUpdater<T> = T | ((prev: T) => T);
+
+export type DupeNote = {
+  id: number;
+  deck: string;
+};

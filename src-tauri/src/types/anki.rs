@@ -32,3 +32,9 @@ pub struct CapturedMedia {
     pub name: String,
     pub data: Vec<u8>,
 }
+
+#[derive(serde::Deserialize, std::fmt::Debug, serde::Serialize)]
+pub struct DupeNote {
+    pub id: i64,
+    pub deck: String,
+}

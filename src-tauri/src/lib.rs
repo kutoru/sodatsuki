@@ -15,8 +15,9 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             cmds::anki_get_initial,
             cmds::anki_get_deck,
-            cmds::anki_open_note,
+            cmds::anki_open_notes,
             cmds::anki_update_note,
+            cmds::anki_get_dupes,
             cmds::copy_to_clipboard,
             cmds::video_select,
             cmds::file_open,

@@ -6,6 +6,7 @@ import { DateFilter } from "./DateFilter";
 import { Clip } from "./Clip";
 import { PythonStatus } from "./PythonStatus";
 import { OcrMaskEditor } from "./OcrMaskEditor";
+import { DupeDisplay } from "./DupeDisplay";
 
 type Props = {
   middlePanel: Ref<HTMLDivElement>;
@@ -35,6 +36,8 @@ export const MiddlePanel = ({ middlePanel, blurFilter }: Props) => {
 
         <PythonStatus />
         <Separator />
+
+        <DupeDisplay />
       </div>
     </div>
   );

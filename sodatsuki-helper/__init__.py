@@ -41,8 +41,6 @@ class SodatsukiHelper:
         name = request.get("action", "")
         params = request.get("params", {})
 
-        print(name, params)
-
         try:
             method = None
 
@@ -155,17 +153,42 @@ class SodatsukiHelper:
 
         return True
 
-    def open_note(self, noteId=None):
-        if noteId is None:
+    def open_notes(self, noteIds=None):
+        if noteIds is None:
             raise Exception("invalid params")
 
         browser = aqt.dialogs.open("Browser", aqt.mw)
         browser.activateWindow()
 
-        browser.form.searchEdit.lineEdit().setText(f"nid:{noteId}")
+        browser.form.searchEdit.lineEdit().setText("nid:" + ",".join(map(str, noteIds)))
         browser.onSearchActivated()
 
         return True
+
+    def get_dupes(self, expression=None):
+        if expression is None:
+            raise Exception("invalid params")
+
+        dupe_ids = aqt.mw.col.db.all(
+            f"""
+                SELECT DISTINCT notes.id, cards.did
+                FROM notes
+                LEFT JOIN cards ON cards.nid = notes.id
+                WHERE notes.sfld = ?
+                ORDER BY notes.id DESC;
+            """,
+            expression,
+        )
+
+        results = [
+            {
+                "id": note_id,
+                "deck": aqt.mw.col.decks.name(deck_id),
+            }
+            for [note_id, deck_id] in dupe_ids
+        ]
+
+        return results
 
 
 sh = SodatsukiHelper()
