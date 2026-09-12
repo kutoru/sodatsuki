@@ -15,6 +15,7 @@
 
 
 import inspect
+import os
 import aqt
 from aqt.qt import QTimer
 
@@ -64,7 +65,13 @@ class SodatsukiHelper:
 
         return reply
 
-    def gui_browse_note(self, noteId=None):
+    def get_initial(self):
+        return {
+            "mediaPath": os.path.abspath(aqt.mw.col.media.dir()),
+            "decks": [x.name for x in aqt.mw.col.decks.all_names_and_ids()],
+        }
+
+    def open_note(self, noteId=None):
         if noteId is None:
             raise Exception("Invalid params")
 

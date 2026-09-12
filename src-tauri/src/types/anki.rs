@@ -1,20 +1,9 @@
 use std::collections::HashMap;
 
-use crate::types::Status;
-
-#[derive(serde::Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct AnkiAddress {
-    pub host: String,
-    pub connect_port: i32,
-    pub custom_port: i32,
-}
-
-#[derive(serde::Serialize, Clone)]
+#[derive(serde::Serialize, Clone, serde::Deserialize, std::fmt::Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct AnkiFetchStatusResult {
-    pub status: Status,
-    pub media_path: Option<String>,
+    pub media_path: String,
     pub decks: Vec<String>,
 }
 

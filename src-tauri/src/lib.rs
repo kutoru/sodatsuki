@@ -13,7 +13,7 @@ pub fn run() {
             types::TranscribeManager::new(),
         ))
         .invoke_handler(tauri::generate_handler![
-            cmds::anki_fetch_status,
+            cmds::anki_get_initial,
             cmds::anki_fetch_deck,
             cmds::anki_open_note,
             cmds::anki_save_note,

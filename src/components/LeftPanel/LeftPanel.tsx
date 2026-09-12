@@ -1,5 +1,5 @@
 import { Fragment, Ref, useEffect, useRef, useState } from "react";
-import { AnkiState, DeckState, Status } from "../../types";
+import { DeckState, Status } from "../../types";
 import { invoke } from "@tauri-apps/api/core";
 import { handleError } from "../../utils";
 import { BookMarkedIcon, ChevronRightIcon, RefreshCcwIcon } from "lucide-react";
@@ -90,8 +90,11 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
     setShowDecks(false);
     setAnki({ status: Status.Loading });
 
-    invoke<AnkiState>("anki_fetch_status", { address: ankiAddress })
-      .then(setAnki)
+    invoke<{
+      mediaPath: string;
+      decks: string[];
+    }>("anki_get_initial", { ankiAddress })
+      .then((result) => setAnki({ status: Status.Online, ...result }))
       .catch(handleError(() => setAnki({ status: Status.Offline }), false));
   };
 
@@ -100,7 +103,7 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
     lastLoadedDeck.current = Date.now();
 
     invoke<DeckState>("anki_fetch_deck", {
-      address: ankiAddress,
+      ankiAddress,
       deck: deckName,
       startTimestamp: dateFilter.applyStart ? dateFilter.start : undefined,
       endTimestamp: dateFilter.applyEnd ? dateFilter.end : undefined,

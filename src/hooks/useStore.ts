@@ -52,16 +52,11 @@ type Store = {
   tzOffset: number;
   autoInitOcr: boolean;
   autoInitTranscribe: boolean;
+  ankiAddress: string;
 
   pythonOutputTransform: {
     joinChar: string;
     replaceChars: Record<string, string>;
-  };
-
-  ankiAddress: {
-    host: string;
-    connectPort: number;
-    customPort: number;
   };
 
   videoVolume: number;
@@ -174,8 +169,9 @@ export const useStore = create<Store>()(
       setVideoHandle: (videoHandle) => set({ videoHandle }),
 
       tzOffset: 4,
-      autoInitOcr: true,
+      autoInitOcr: false,
       autoInitTranscribe: false,
+      ankiAddress: "http://127.0.0.1:8767",
 
       pythonOutputTransform: {
         joinChar: "",
@@ -186,12 +182,6 @@ export const useStore = create<Store>()(
           "!": "！",
           "?": "？",
         },
-      },
-
-      ankiAddress: {
-        host: "http://127.0.0.1",
-        connectPort: 8765,
-        customPort: 8766,
       },
 
       videoVolume: 0.2,

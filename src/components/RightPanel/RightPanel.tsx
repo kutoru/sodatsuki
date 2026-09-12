@@ -94,7 +94,7 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
     const files = await Promise.all(filePromises);
 
     invoke<Note>("anki_save_note", {
-      address: ankiAddress,
+      ankiAddress,
       note: editNote,
       files,
     })
