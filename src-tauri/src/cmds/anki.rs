@@ -98,7 +98,7 @@ pub async fn anki_open_note(
 }
 
 #[tauri::command]
-pub async fn anki_save_note(
+pub async fn anki_update_note(
     http: Http<'_>,
     anki_address: String,
     mut note: Note,
@@ -120,22 +120,16 @@ pub async fn anki_save_note(
 
         let data = base64::prelude::BASE64_STANDARD.encode(file.data);
 
-        let result = call_anki_with_params::<String>(
+        call_anki_with_params::<bool>(
             &http,
             &anki_address,
-            "storeMediaFile",
+            "store_media_file",
             json!({
                 "filename": &new_name,
                 "data": data,
             }),
         )
-        .await;
-
-        if let Err(err) = result {
-            if err != "Empty Anki error" {
-                return Err(err);
-            }
-        }
+        .await?;
 
         // TODO: implement safer replace
         for v in note.fields.values_mut() {
@@ -143,21 +137,15 @@ pub async fn anki_save_note(
         }
     }
 
-    let result = call_anki_with_params::<()>(
+    call_anki_with_params::<bool>(
         &http,
         &anki_address,
-        "updateNoteFields",
+        "update_note_fields",
         json!({
             "note": note,
         }),
     )
-    .await;
-
-    if let Err(err) = result {
-        if err != "Empty Anki error" {
-            return Err(err);
-        }
-    }
+    .await?;
 
     Ok(note)
 }

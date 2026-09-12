@@ -14,6 +14,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
+import base64
 import inspect
 import os
 import aqt
@@ -126,6 +127,33 @@ class SodatsukiHelper:
             "totalNotes": total_notes,
             "notes": notes,
         }
+
+    def store_media_file(self, filename=None, data=None):
+        if not (filename or data):
+            raise Exception("invalid params")
+
+        if aqt.mw.col.media.have(filename):
+            raise Exception("file already exists")
+
+        mediaData = base64.b64decode(data)
+
+        aqt.mw.col.media.write_data(filename, mediaData)
+
+        return True
+
+    def update_note_fields(self, note=None):
+        if note is None:
+            raise Exception("invalid params")
+
+        anki_note = aqt.mw.col.get_note(note["id"])
+
+        for name, value in note["fields"].items():
+            if name in anki_note:
+                anki_note[name] = value
+
+        aqt.mw.col.update_note(anki_note)
+
+        return True
 
     def open_note(self, noteId=None):
         if noteId is None:
