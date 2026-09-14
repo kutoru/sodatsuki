@@ -1,128 +1,171 @@
-use pyo3::types::{PyAnyMethods, PyDict, PyDictMethods};
+use std::io::Write;
 
 use crate::{
     cmds::ffmpeg,
-    types::{Ocr, OcrManager, OcrMask, ResultExt, Status, Transcribe, TranscribeManager},
+    types::{OcrMask, Process, Python, PythonManager, Status},
 };
 
-impl OcrManager {
+impl PythonManager {
     pub fn new() -> Self {
         Self {
             status: Status::Offline,
+            args: None,
+            process: None,
         }
     }
 
-    fn init(&mut self) -> Result<(), String> {
-        self.status = Status::Offline;
+    pub async fn init(&mut self, args: &[&str]) -> Result<(), String> {
+        let mut child = std::process::Command::new(args.first().unwrap())
+            .args(args.iter().skip(1))
+            .stdin(std::process::Stdio::piped())
+            .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::piped())
+            .spawn()
+            .unwrap();
 
-        pyo3::Python::attach(|py| {
-            py.run(
-                cr#"
-import easyocr
-reader = easyocr.Reader(lang_list=["ja"], gpu=True)
+        let stdin = child.stdin.take().unwrap();
+        let mut stdout = child.stdout.take().unwrap();
+        let mut stderr = child.stderr.take().unwrap();
 
-def ocr(buffer):
-    result = reader.readtext(image=buffer, detail=0)
-    return result
-                "#,
-                None,
-                None,
-            )
-        })
-        .err_msg()?;
+        let (stdout_tx, stdout_rx) = tokio::sync::watch::channel("".to_string());
+        let (stderr_tx, mut stderr_rx) = tokio::sync::watch::channel("".to_string());
 
+        let stdout_handle = tokio::task::spawn_blocking(move || {
+            while let Some(value) = read_until_nl(&mut stdout) {
+                println!("stdout: {:?}", value);
+
+                stdout_tx.send(value).unwrap();
+            }
+        });
+
+        let stderr_handle = tokio::task::spawn_blocking(move || {
+            while let Some(value) = read_until_nl(&mut stderr) {
+                println!("stderr: {:?}", value);
+
+                stderr_tx.send(value).unwrap();
+            }
+        });
+
+        stderr_rx.changed().await.unwrap();
+
+        {
+            let value = stderr_rx.borrow();
+            if *value != "READY" {
+                panic!("Process returned something other than READY: {:#?}", *value)
+            }
+        }
+
+        self.process = Some(Process {
+            child,
+            stdin,
+            stdout_rx,
+            stderr_rx,
+            stdout_handle,
+            stderr_handle,
+        });
+
+        self.args = Some(args.iter().map(|v| v.to_string()).collect());
         self.status = Status::Online;
 
         Ok(())
     }
 
-    fn ocr(&self, image: &[u8]) -> Result<Vec<String>, String> {
-        pyo3::Python::attach(|py| -> pyo3::PyResult<Vec<String>> {
-            let ocr = py.eval(c"ocr", None, None)?;
+    pub async fn run(&mut self, data: &[u8]) -> Result<Vec<String>, String> {
+        let process = self
+            .process
+            .as_mut()
+            .ok_or("Process is missing".to_string())?;
 
-            let kwargs = PyDict::new(py);
-            kwargs.set_item("buffer", image)?;
+        let header = (data.len() as u32).to_be_bytes();
+        process.stdin.write_all(&header).unwrap();
+        process.stdin.write_all(data).unwrap();
 
-            let results = ocr.call((), Some(&kwargs))?.extract()?;
-            Ok(results)
-        })
-        .err_msg()
+        process.stdout_rx.changed().await.unwrap();
+        let value = process.stdout_rx.borrow();
+
+        // TODO: parse the value with serde and return a proper Vec<String>
+
+        Ok([value.clone()].to_vec())
+    }
+
+    pub async fn kill(&mut self) -> Result<(), String> {
+        println!("killing");
+
+        let process = self
+            .process
+            .as_mut()
+            .ok_or("Process is missing".to_string())?;
+
+        process.child.kill().unwrap();
+
+        self.args = None;
+        self.status = Status::Offline;
+
+        let mut process = self.process.take().unwrap();
+
+        process.child.wait().unwrap();
+        process.stdout_handle.await.unwrap();
+        process.stderr_handle.await.unwrap();
+
+        println!("killed");
+
+        Ok(())
     }
 }
 
-impl TranscribeManager {
-    pub fn new() -> Self {
-        Self {
-            status: Status::Offline,
+impl Drop for PythonManager {
+    fn drop(&mut self) {
+        self.kill();
+    }
+}
+
+fn read_until_nl<T: std::io::Read>(proc: &mut T) -> Option<String> {
+    const CR: u8 = 0x000D;
+    const NL: u8 = 0x000A;
+
+    let mut value = String::new();
+    let mut buf = [0; 1];
+
+    loop {
+        proc.read_exact(&mut buf).ok()?;
+
+        match buf {
+            [CR] => continue,
+            [NL] => break,
+            [c] => value.push(c as char),
         }
     }
 
-    fn init(&mut self) -> Result<(), String> {
-        self.status = Status::Offline;
-
-        pyo3::Python::attach(|py| {
-            py.run(
-                cr#"
-import numpy as np
-import whisper
-whisper_model = whisper.load_model(name="turbo", device="cuda")
-
-def transcribe(buffer):
-    audio = np.frombuffer(buffer=buffer, dtype=np.float32)
-    result = whisper_model.transcribe(audio=audio, language="ja", task="transcribe")
-
-    segments = result["segments"]
-    result = [item["text"] for item in segments]
-    return result
-                "#,
-                None,
-                None,
-            )
-        })
-        .err_msg()?;
-
-        self.status = Status::Online;
-
-        Ok(())
-    }
-
-    fn transcribe(&self, audio: &[u8]) -> Result<Vec<String>, String> {
-        pyo3::Python::attach(|py| -> pyo3::PyResult<Vec<String>> {
-            let transcribe = py.eval(c"transcribe", None, None)?;
-
-            let kwargs = PyDict::new(py);
-            kwargs.set_item("buffer", audio)?;
-
-            let results = transcribe.call((), Some(&kwargs))?.extract()?;
-            Ok(results)
-        })
-        .err_msg()
-    }
+    Some(value)
 }
 
 #[tauri::command]
-pub async fn init_ocr(ocr: Ocr<'_>) -> Result<(), String> {
-    let mut ocr = ocr.lock().await;
+pub async fn init_ocr(python: Python<'_>, python_path: String) -> Result<(), String> {
+    let mut ocr = python.ocr.lock().await;
 
     match ocr.status {
         Status::Online => Ok(()),
-        _ => ocr.init(),
+        _ => ocr.init(&[&python_path, "./src/python/ocr.py"]).await,
     }
 }
 
 #[tauri::command]
-pub async fn init_transcribe(transcribe: Transcribe<'_>) -> Result<(), String> {
-    let mut transcribe = transcribe.lock().await;
+pub async fn init_transcribe(python: Python<'_>, python_path: String) -> Result<(), String> {
+    let mut transcribe = python.transcribe.lock().await;
 
     match transcribe.status {
         Status::Online => Ok(()),
-        _ => transcribe.init(),
+        _ => {
+            transcribe
+                .init(&[&python_path, "./src/python/transcribe.py"])
+                .await
+        }
     }
 }
 
 #[tauri::command]
 pub async fn run_ocr(
-    ocr: Ocr<'_>,
+    python: Python<'_>,
     video_path: String,
     timestamp: f64,
     mask: OcrMask,
@@ -146,13 +189,13 @@ pub async fn run_ocr(
         "-",
     ])?;
 
-    let ocr = ocr.lock().await;
-    ocr.ocr(&image)
+    let mut ocr = python.ocr.lock().await;
+    ocr.run(&image).await
 }
 
 #[tauri::command]
 pub async fn run_transcribe(
-    transcribe: Transcribe<'_>,
+    python: Python<'_>,
     video_path: String,
     start: f64,
     end: f64,
@@ -175,6 +218,6 @@ pub async fn run_transcribe(
         "-",
     ])?;
 
-    let transcribe = transcribe.lock().await;
-    transcribe.transcribe(&audio)
+    let mut transcribe = python.transcribe.lock().await;
+    transcribe.run(&audio).await
 }

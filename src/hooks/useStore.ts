@@ -53,6 +53,7 @@ type Store = {
   autoInitOcr: boolean;
   autoInitTranscribe: boolean;
   ankiAddress: string;
+  pythonPath: string;
 
   pythonOutputTransform: {
     joinChar: string;
@@ -172,6 +173,7 @@ export const useStore = create<Store>()(
       autoInitOcr: false,
       autoInitTranscribe: false,
       ankiAddress: "http://127.0.0.1:8767",
+      pythonPath: "../python-env/Scripts/python.exe",
 
       pythonOutputTransform: {
         joinChar: "",

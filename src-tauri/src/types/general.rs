@@ -1,8 +1,7 @@
-use crate::types::{OcrManager, TranscribeManager};
+use crate::types::PythonState;
 
 pub type Http<'a> = tauri::State<'a, reqwest::Client>;
-pub type Ocr<'a> = tauri::State<'a, tauri::async_runtime::Mutex<OcrManager>>;
-pub type Transcribe<'a> = tauri::State<'a, tauri::async_runtime::Mutex<TranscribeManager>>;
+pub type Python<'a> = tauri::State<'a, PythonState>;
 
 #[allow(dead_code)]
 #[derive(serde::Serialize, Clone)]

@@ -11,6 +11,7 @@ import { useStore } from "../../hooks/useStore";
 export const PythonStatus = () => {
   const autoInitOcr = useStore((state) => state.autoInitOcr);
   const autoInitTranscribe = useStore((state) => state.autoInitTranscribe);
+  const pythonPath = useStore((state) => state.pythonPath);
 
   const ocrStatus = useStore((state) => state.ocrStatus);
   const setOcrStatus = useStore((state) => state.setOcrStatus);
@@ -24,7 +25,7 @@ export const PythonStatus = () => {
 
     setOcrStatus(Status.Loading);
 
-    invoke("init_ocr")
+    invoke("init_ocr", { pythonPath })
       .then(() => setOcrStatus(Status.Online))
       .catch(handleError(() => setOcrStatus(Status.Offline)));
   };
@@ -36,7 +37,7 @@ export const PythonStatus = () => {
 
     setTranscribeStatus(Status.Loading);
 
-    invoke("init_transcribe")
+    invoke("init_transcribe", { pythonPath })
       .then(() => setTranscribeStatus(Status.Online))
       .catch(handleError(() => setTranscribeStatus(Status.Offline)));
   };
