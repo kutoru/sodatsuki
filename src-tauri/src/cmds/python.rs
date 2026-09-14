@@ -2,14 +2,14 @@ use std::io::Write;
 
 use crate::{
     cmds::ffmpeg,
-    types::{OcrMask, Process, Python, PythonManager, Status},
+    types::{ApiResponse, OcrMask, Process, Python, PythonManager, Status},
 };
 
 impl PythonManager {
-    pub fn new() -> Self {
+    pub fn new(label: String) -> Self {
         Self {
+            label,
             status: Status::Offline,
-            args: None,
             process: None,
         }
     }
@@ -30,17 +30,19 @@ impl PythonManager {
         let (stdout_tx, stdout_rx) = tokio::sync::watch::channel("".to_string());
         let (stderr_tx, mut stderr_rx) = tokio::sync::watch::channel("".to_string());
 
+        let lbl_clone = self.label.clone();
         let stdout_handle = tokio::task::spawn_blocking(move || {
             while let Some(value) = read_until_nl(&mut stdout) {
-                println!("stdout: {:?}", value);
+                println!("{} stdout: {:?}", lbl_clone, value);
 
                 stdout_tx.send(value).unwrap();
             }
         });
 
+        let lbl_clone = self.label.clone();
         let stderr_handle = tokio::task::spawn_blocking(move || {
             while let Some(value) = read_until_nl(&mut stderr) {
-                println!("stderr: {:?}", value);
+                println!("{} stderr: {:?}", lbl_clone, value);
 
                 stderr_tx.send(value).unwrap();
             }
@@ -64,7 +66,6 @@ impl PythonManager {
             stderr_handle,
         });
 
-        self.args = Some(args.iter().map(|v| v.to_string()).collect());
         self.status = Status::Online;
 
         Ok(())
@@ -83,14 +84,17 @@ impl PythonManager {
         process.stdout_rx.changed().await.unwrap();
         let value = process.stdout_rx.borrow();
 
-        // TODO: parse the value with serde and return a proper Vec<String>
+        let response: ApiResponse<Vec<String>> = serde_json::from_str(&value).unwrap();
 
-        Ok([value.clone()].to_vec())
+        match response.result {
+            Some(r) => Ok(r),
+            None => Err(response.error.unwrap_or("Empty python error".to_string())),
+        }
     }
 
+    // TODO: utilize for cleanup
+    #[allow(dead_code)]
     pub async fn kill(&mut self) -> Result<(), String> {
-        println!("killing");
-
         let process = self
             .process
             .as_mut()
@@ -98,7 +102,6 @@ impl PythonManager {
 
         process.child.kill().unwrap();
 
-        self.args = None;
         self.status = Status::Offline;
 
         let mut process = self.process.take().unwrap();
@@ -107,15 +110,7 @@ impl PythonManager {
         process.stdout_handle.await.unwrap();
         process.stderr_handle.await.unwrap();
 
-        println!("killed");
-
         Ok(())
-    }
-}
-
-impl Drop for PythonManager {
-    fn drop(&mut self) {
-        self.kill();
     }
 }
 

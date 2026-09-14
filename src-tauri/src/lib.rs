@@ -9,8 +9,10 @@ pub fn run() {
         .plugin(tauri_plugin_clipboard_manager::init())
         .manage(reqwest::Client::new())
         .manage(types::PythonState {
-            ocr: tauri::async_runtime::Mutex::new(types::PythonManager::new()),
-            transcribe: tauri::async_runtime::Mutex::new(types::PythonManager::new()),
+            ocr: tauri::async_runtime::Mutex::new(types::PythonManager::new("ocr".to_string())),
+            transcribe: tauri::async_runtime::Mutex::new(types::PythonManager::new(
+                "transcribe".to_string(),
+            )),
         })
         .invoke_handler(tauri::generate_handler![
             cmds::anki_get_initial,

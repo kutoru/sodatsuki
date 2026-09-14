@@ -17,6 +17,12 @@ pub struct VideoSelectResult {
     pub name: String,
 }
 
+#[derive(serde::Deserialize, std::fmt::Debug)]
+pub struct ApiResponse<T> {
+    pub result: Option<T>,
+    pub error: Option<String>,
+}
+
 pub trait ResultExt<T> {
     fn err_msg(self) -> Result<T, String>;
 }

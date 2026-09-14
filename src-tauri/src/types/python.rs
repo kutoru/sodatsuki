@@ -6,11 +6,12 @@ pub struct PythonState {
 }
 
 pub struct PythonManager {
+    pub label: String,
     pub status: Status,
-    pub args: Option<Vec<String>>,
     pub process: Option<Process>,
 }
 
+#[allow(dead_code)]
 pub struct Process {
     pub child: std::process::Child,
     pub stdin: std::process::ChildStdin,

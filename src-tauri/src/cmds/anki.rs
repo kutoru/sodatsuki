@@ -4,7 +4,7 @@ use serde_json::json;
 use crate::{
     cmds::get_unix_ms,
     types::{
-        AnkiGetDeckResult, AnkiGetInitialResult, AnkiResponse, CapturedMedia, DupeNote, Http, Note,
+        AnkiGetDeckResult, AnkiGetInitialResult, ApiResponse, CapturedMedia, DupeNote, Http, Note,
         ResultExt,
     },
 };
@@ -40,7 +40,7 @@ where
         .send()
         .await
         .err_msg()?
-        .json::<AnkiResponse<T>>()
+        .json::<ApiResponse<T>>()
         .await
         .err_msg()?;
 
