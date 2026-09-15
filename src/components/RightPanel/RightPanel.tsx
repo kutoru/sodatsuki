@@ -158,6 +158,7 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
   useEffect(() => {
     if (selectedNote && selectedNote.id !== editNote?.id) {
       setEditNote(structuredClone(selectedNote));
+      scrollContainer.current?.scrollTo({ top: 0, behavior: "instant" });
     }
   }, [selectedNote]);
 
