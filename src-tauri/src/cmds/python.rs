@@ -2,7 +2,7 @@ use std::io::Write;
 
 use crate::{
     cmds::ffmpeg,
-    types::{ApiResponse, OcrMask, Process, Python, PythonManager, Status},
+    types::{ApiResponse, OcrMask, Process, Python, PythonManager, ResultExt, Status},
 };
 
 impl PythonManager {
@@ -15,17 +15,20 @@ impl PythonManager {
     }
 
     pub async fn init(&mut self, args: &[&str]) -> Result<(), String> {
-        let mut child = std::process::Command::new(args.first().unwrap())
-            .args(args.iter().skip(1))
+        let program = args.first().ok_or("Empty python args".to_string())?;
+        let args = args.iter().skip(1);
+
+        let mut child = std::process::Command::new(program)
+            .args(args)
             .stdin(std::process::Stdio::piped())
             .stdout(std::process::Stdio::piped())
             .stderr(std::process::Stdio::piped())
             .spawn()
-            .unwrap();
+            .err_msg()?;
 
-        let stdin = child.stdin.take().unwrap();
-        let mut stdout = child.stdout.take().unwrap();
-        let mut stderr = child.stderr.take().unwrap();
+        let stdin = child.stdin.take().ok_or("No stdin".to_string())?;
+        let mut stdout = child.stdout.take().ok_or("No stdout".to_string())?;
+        let mut stderr = child.stderr.take().ok_or("No stderr".to_string())?;
 
         let (stdout_tx, stdout_rx) = tokio::sync::watch::channel("".to_string());
         let (stderr_tx, mut stderr_rx) = tokio::sync::watch::channel("".to_string());
@@ -33,22 +36,26 @@ impl PythonManager {
         let lbl_clone = self.label.clone();
         let stdout_handle = tokio::task::spawn_blocking(move || {
             while let Some(value) = read_until_nl(&mut stdout) {
-                println!("{} stdout: {:?}", lbl_clone, value);
+                // println!("{} stdout: {:?}", lbl_clone, value);
 
-                stdout_tx.send(value).unwrap();
+                if let Err(err) = stdout_tx.send(value) {
+                    println!("{} stdout: {:?}", lbl_clone, err);
+                };
             }
         });
 
         let lbl_clone = self.label.clone();
         let stderr_handle = tokio::task::spawn_blocking(move || {
             while let Some(value) = read_until_nl(&mut stderr) {
-                println!("{} stderr: {:?}", lbl_clone, value);
+                // println!("{} stderr: {:?}", lbl_clone, value);
 
-                stderr_tx.send(value).unwrap();
+                if let Err(err) = stderr_tx.send(value) {
+                    println!("{} stderr: {:?}", lbl_clone, err);
+                };
             }
         });
 
-        stderr_rx.changed().await.unwrap();
+        stderr_rx.changed().await.err_msg()?;
 
         {
             let value = stderr_rx.borrow();
@@ -78,13 +85,13 @@ impl PythonManager {
             .ok_or("Process is missing".to_string())?;
 
         let header = (data.len() as u32).to_be_bytes();
-        process.stdin.write_all(&header).unwrap();
-        process.stdin.write_all(data).unwrap();
+        process.stdin.write_all(&header).err_msg()?;
+        process.stdin.write_all(data).err_msg()?;
 
-        process.stdout_rx.changed().await.unwrap();
+        process.stdout_rx.changed().await.err_msg()?;
         let value = process.stdout_rx.borrow();
 
-        let response: ApiResponse<Vec<String>> = serde_json::from_str(&value).unwrap();
+        let response: ApiResponse<Vec<String>> = serde_json::from_str(&value).err_msg()?;
 
         match response.result {
             Some(r) => Ok(r),
@@ -92,7 +99,7 @@ impl PythonManager {
         }
     }
 
-    // TODO: utilize for cleanup
+    // TODO: run on app exit
     #[allow(dead_code)]
     pub async fn kill(&mut self) -> Result<(), String> {
         let process = self
@@ -100,15 +107,26 @@ impl PythonManager {
             .as_mut()
             .ok_or("Process is missing".to_string())?;
 
-        process.child.kill().unwrap();
+        process.child.kill().err_msg()?;
 
         self.status = Status::Offline;
 
-        let mut process = self.process.take().unwrap();
+        let cleanup = async {
+            let mut process = self
+                .process
+                .take()
+                .ok_or("Could not take process".to_string())?;
 
-        process.child.wait().unwrap();
-        process.stdout_handle.await.unwrap();
-        process.stderr_handle.await.unwrap();
+            process.child.wait().err_msg()?;
+            process.stdout_handle.await.err_msg()?;
+            process.stderr_handle.await.err_msg()?;
+
+            Ok::<(), String>(())
+        };
+
+        if let Err(err) = cleanup.await {
+            println!("Kill cleanup error: {:?}", err);
+        }
 
         Ok(())
     }
