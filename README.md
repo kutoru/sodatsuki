@@ -4,6 +4,8 @@ The app relies on the `sodatsuki-helper` custom Anki addon. The addon is based o
 
 # python
 
+Optional Ocr and Transcribe features require a Python interpreter with easyocr and whisper installed. The default setup is as follows:
+
 ```
 python -m venv python-env
 .\python-env\Scripts\pip.exe install easyocr==1.7.2 openai-whisper==20250625
@@ -17,7 +19,6 @@ Useful links:
 - https://lucide.dev/
 - https://codemirror.net/5/
 - https://ffmpeg.org/ffmpeg-all.html
-- https://pyo3.rs
 - https://github.com/JaidedAI/EasyOCR
 - https://github.com/openai/whisper
 - https://addon-docs.ankiweb.net/
