@@ -103,11 +103,7 @@ export const Video = () => {
 
   useEffect(() => {
     const video = videoElement.current;
-    if (!video) {
-      return;
-    }
-
-    if (!videoFile) {
+    if (!videoFile || !video) {
       return;
     }
 

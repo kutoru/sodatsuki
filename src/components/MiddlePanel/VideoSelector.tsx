@@ -11,7 +11,10 @@ export const VideoSelector = () => {
 
   const selectFile = () => {
     invoke<VideoFileState>("video_select")
-      .then(setVideoFile)
+      .then((file) => {
+        setVideoFile(undefined);
+        setTimeout(() => setVideoFile(file), 0);
+      })
       .catch(handleError());
   };
 

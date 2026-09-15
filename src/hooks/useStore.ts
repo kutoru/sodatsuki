@@ -43,7 +43,7 @@ type Store = {
   removeNewMediaName: (name?: string) => void;
 
   videoFile?: VideoFileState;
-  setVideoFile: (videoFile: VideoFileState) => void;
+  setVideoFile: (videoFile: VideoFileState | undefined) => void;
 
   videoHandle?: VideoHandle;
   setVideoHandle: (videoHandle?: VideoHandle) => void;
