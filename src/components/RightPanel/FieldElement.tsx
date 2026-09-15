@@ -1,4 +1,4 @@
-import { JSX, memo, useEffect, useState } from "react";
+import { JSX, memo, RefObject, useEffect, useState } from "react";
 import { Button } from "../Button";
 import { PencilIcon } from "lucide-react";
 import clsx from "clsx";
@@ -22,9 +22,10 @@ type Props = {
   fieldValue: string;
   setFieldValue: (value: string) => void;
   fieldDiffers: boolean;
+  scrollContainer: RefObject<HTMLDivElement | null>;
 };
 
-const splitStringInHalf = (value: string, separator: string) => {
+const splitStringInTwo = (value: string, separator: string) => {
   const index = value.indexOf(separator);
   if (index === -1) {
     return [value];
@@ -34,12 +35,23 @@ const splitStringInHalf = (value: string, separator: string) => {
 };
 
 export const FieldElement = memo(
-  ({ noteId, field, fieldValue, setFieldValue, fieldDiffers }: Props) => {
+  ({
+    noteId,
+    field,
+    fieldValue,
+    setFieldValue,
+    fieldDiffers,
+    scrollContainer,
+  }: Props) => {
     const anki = useStore((state) => state.anki);
 
     const [expanded, setExpanded] = useState(false);
 
-    const { editorParent } = useCodeEditor(field, fieldValue, setFieldValue);
+    const { editorParent, editor } = useCodeEditor(
+      field,
+      fieldValue,
+      setFieldValue,
+    );
 
     useEffect(() => {
       setExpanded(false);
@@ -77,7 +89,7 @@ export const FieldElement = memo(
           return;
         }
 
-        const [first, second] = splitStringInHalf(value, element);
+        const [first, second] = splitStringInTwo(value, element);
 
         if (first) {
           parts.push(
@@ -118,6 +130,51 @@ export const FieldElement = memo(
       return parts;
     };
 
+    const toggleExpanded = () => {
+      setExpanded(!expanded);
+    };
+
+    useEffect(() => {
+      const container = scrollContainer.current;
+      const parent = editorParent.current;
+
+      if (!expanded || !container || !parent) {
+        return;
+      }
+
+      const containerHeight = container.getBoundingClientRect().height;
+      const containerTop = container.offsetTop;
+      const parentTop = parent.offsetTop;
+      const target = parentTop - containerTop - containerHeight / 4;
+
+      container.scrollTo({ top: target, behavior: "smooth" });
+      editor.current?.setCursor(0, undefined, { scroll: false });
+
+      let timeout: number | undefined;
+      let prevPos = container.scrollTop;
+
+      const checkScroll = () => {
+        timeout = setTimeout(() => {
+          const currPos = scrollContainer.current?.scrollTop;
+          if (currPos === undefined) {
+            return;
+          }
+
+          if (currPos === prevPos) {
+            editor.current?.focus();
+            return;
+          }
+
+          prevPos = currPos;
+          checkScroll();
+        }, 100);
+      };
+
+      checkScroll();
+
+      return () => clearTimeout(timeout);
+    }, [expanded]);
+
     return (
       <div className="flex flex-col">
         <div className="flex flex-row items-center">
@@ -139,15 +196,16 @@ export const FieldElement = memo(
           {field === "Sentence Audio" && <ButtonAddClip />}
           {field === "Image_URI" && <ButtonCaptureFrame />}
 
-          <Button
-            onClick={() => setExpanded(!expanded)}
-            className="w-9 p-2 ps-1"
-          >
+          <Button onClick={toggleExpanded} className="w-9 p-2 ps-1">
             <PencilIcon className="size-full" />
           </Button>
         </div>
 
         <div
+          onContextMenu={(e) => {
+            e.preventDefault();
+            toggleExpanded();
+          }}
           className={clsx(
             "field-preview mx-2 rounded-md bg-white/5 p-1 wrap-break-word shadow-even shadow-black/25 transition-[border-radius]",
             !fieldValue.trim() && "text-gray-400/75 italic",

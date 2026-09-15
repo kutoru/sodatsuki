@@ -64,5 +64,5 @@ export const useCodeEditor = (
     }
   }, [fieldValue]);
 
-  return { editorParent: parent };
+  return { editorParent: parent, editor };
 };

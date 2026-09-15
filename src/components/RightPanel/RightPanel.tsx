@@ -1,4 +1,4 @@
-import { Ref, useEffect, useMemo, useState } from "react";
+import { Ref, useEffect, useMemo, useRef, useState } from "react";
 import { Separator } from "../Separator";
 import { useStore } from "../../hooks/useStore";
 import { Button } from "../Button";
@@ -40,6 +40,8 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
 
   const editNote = useStore((state) => state.editNote);
   const setEditNote = useStore((state) => state.setEditNote);
+
+  const scrollContainer = useRef<HTMLDivElement>(null);
 
   const [savingNote, setSavingNote] = useState(false);
 
@@ -185,6 +187,7 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
         <Separator />
 
         <div
+          ref={scrollContainer}
           className={clsx(
             "slim-scrollbar flex-1 overflow-auto pb-2 transition-opacity",
             !selectedNote && "pointer-events-none opacity-0 select-none",
@@ -199,6 +202,7 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
                 fieldValue={editNote.fields[field]}
                 setFieldValue={editNoteFieldUpdaters[field]}
                 fieldDiffers={editNoteDiffs[field]}
+                scrollContainer={scrollContainer}
               />
             ))}
         </div>
