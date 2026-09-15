@@ -21,6 +21,7 @@ type Props = {
   field: Field;
   fieldValue: string;
   setFieldValue: (value: string) => void;
+  resetField: () => void;
   fieldDiffers: boolean;
   scrollContainer: RefObject<HTMLDivElement | null>;
 };
@@ -40,6 +41,7 @@ export const FieldElement = memo(
     field,
     fieldValue,
     setFieldValue,
+    resetField,
     fieldDiffers,
     scrollContainer,
   }: Props) => {
@@ -205,6 +207,12 @@ export const FieldElement = memo(
           onContextMenu={(e) => {
             e.preventDefault();
             toggleExpanded();
+          }}
+          onMouseDown={(e) => {
+            if (e.button === 1) {
+              e.preventDefault();
+              resetField();
+            }
           }}
           className={clsx(
             "field-preview mx-2 rounded-md bg-white/5 p-1 wrap-break-word shadow-even shadow-black/25 transition-[border-radius]",

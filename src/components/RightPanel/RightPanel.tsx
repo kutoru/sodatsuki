@@ -16,6 +16,7 @@ type Props = {
 };
 
 type FieldSetters = Record<Field, (value: string) => void>;
+type FieldResetters = Record<Field, () => void>;
 
 const relevantFields: Field[] = [
   "Meaning",
@@ -48,13 +49,13 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
   const editNoteFieldUpdaters = useMemo<FieldSetters>(
     () =>
       relevantFields.reduce((setters, field) => {
-        setters[field] = (valueOrUpdater) =>
+        setters[field] = (value) =>
           setEditNote((prev) => {
             if (!prev) {
               return prev;
             }
 
-            prev.fields[field] = valueOrUpdater;
+            prev.fields[field] = value;
 
             return { ...prev };
           });
@@ -62,6 +63,25 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
         return setters;
       }, {} as FieldSetters),
     [],
+  );
+
+  const editNoteFieldResetters = useMemo<FieldResetters>(
+    () =>
+      relevantFields.reduce((resetters, field) => {
+        resetters[field] = () =>
+          setEditNote((prev) => {
+            if (!prev || !selectedNote) {
+              return prev;
+            }
+
+            prev.fields[field] = selectedNote.fields[field];
+
+            return { ...prev };
+          });
+
+        return resetters;
+      }, {} as FieldResetters),
+    [selectedNote],
   );
 
   const editNoteDiffs: Record<Field, boolean> = relevantFields.reduce(
@@ -76,6 +96,10 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
   );
 
   const hasDiff = !!Object.values(editNoteDiffs).find((v) => v);
+
+  const resetNote = () => {
+    setEditNote(structuredClone(selectedNote));
+  };
 
   const saveNote = async () => {
     if (!editNote) {
@@ -127,6 +151,10 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
       });
   };
 
+  const closeNote = () => {
+    setSelectedNote(undefined);
+  };
+
   useEffect(() => {
     if (selectedNote && selectedNote.id !== editNote?.id) {
       setEditNote(structuredClone(selectedNote));
@@ -146,11 +174,7 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
         style={blurFilter}
       >
         <div className="flex flex-row items-center">
-          <Button
-            onClick={() => setEditNote(structuredClone(selectedNote))}
-            className="p-2.5"
-            disabled={!hasDiff}
-          >
+          <Button onClick={resetNote} className="p-2.5" disabled={!hasDiff}>
             <RotateCwIcon className="size-full" />
           </Button>
 
@@ -175,11 +199,7 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
 
           <Separator orientation="vertical" />
 
-          <Button
-            onClick={() => setSelectedNote(undefined)}
-            className="p-2"
-            disabled={!selectedNote}
-          >
+          <Button onClick={closeNote} className="p-2" disabled={!selectedNote}>
             <XIcon className="size-full" />
           </Button>
         </div>
@@ -201,6 +221,7 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
                 field={field}
                 fieldValue={editNote.fields[field]}
                 setFieldValue={editNoteFieldUpdaters[field]}
+                resetField={editNoteFieldResetters[field]}
                 fieldDiffers={editNoteDiffs[field]}
                 scrollContainer={scrollContainer}
               />
