@@ -60,6 +60,7 @@ type Store = {
   autoInitTranscribe: boolean;
   ankiAddress: string;
   pythonPath: string;
+  autoApplyDateFilter: boolean;
 
   pythonOutputTransform: {
     joinChar: string;
@@ -80,7 +81,7 @@ type Store = {
   setRunningOcr: (runningOcr: boolean) => void;
 
   dateFilter: DateFilterState;
-  setDateFilter: (updater: (prev: DateFilterState) => DateFilterState) => void;
+  setDateFilter: (dateFilterOrUpdater: ValueOrUpdater<DateFilterState>) => void;
 
   currentClipName: string | undefined;
   setCurrentClipName: (clipName: string) => void;
@@ -183,6 +184,7 @@ export const useStore = create<Store>()(
       autoInitTranscribe: false,
       ankiAddress: "http://127.0.0.1:8767",
       pythonPath: "../python-env/Scripts/python.exe",
+      autoApplyDateFilter: true,
 
       pythonOutputTransform: {
         joinChar: "",
@@ -209,8 +211,12 @@ export const useStore = create<Store>()(
       setRunningOcr: (runningOcr) => set({ runningOcr }),
 
       dateFilter: { applyStart: true, applyEnd: true },
-      setDateFilter: (updater) =>
-        set((state) => ({ dateFilter: updater(state.dateFilter) })),
+      setDateFilter: (dateFilterOrUpdater) =>
+        typeof dateFilterOrUpdater === "function"
+          ? set((state) => ({
+              dateFilter: dateFilterOrUpdater(state.dateFilter),
+            }))
+          : set({ dateFilter: dateFilterOrUpdater }),
 
       currentClipName: undefined,
       setCurrentClipName: (clipName) => set({ currentClipName: clipName }),
@@ -306,7 +312,7 @@ export const useStore = create<Store>()(
       name: "storage",
       partialize: (state) => ({
         deckName: state.deckName,
-        videoFile: state.videoFile,
+        videoFile: state.videoFile && { ...state.videoFile, init: true },
         videoVolume: state.videoVolume,
         audioVolume: state.audioVolume,
         layout: state.layout,

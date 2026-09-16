@@ -31,10 +31,14 @@ const getVideoEndTime = (
 
 export const Video = () => {
   const videoFile = useStore((state) => state.videoFile);
-  const setVideoHandle = useStore((state) => state.setVideoHandle);
   const tzOffset = useStore((state) => state.tzOffset);
+  const setVideoHandle = useStore((state) => state.setVideoHandle);
+
   const setVideoVolume = useStore((state) => state.setVideoVolume);
   const editingOcrMask = useStore((state) => state.editingOcrMask);
+
+  const autoApplyDateFilter = useStore((state) => state.autoApplyDateFilter);
+  const setDateFilter = useStore((state) => state.setDateFilter);
 
   const videoElement = useRef<HTMLVideoElement>(null);
 
@@ -125,6 +129,15 @@ export const Video = () => {
         start,
         end,
       });
+
+      if (autoApplyDateFilter && !videoFile.init) {
+        setDateFilter({
+          applyStart: true,
+          applyEnd: true,
+          start,
+          end,
+        });
+      }
     };
 
     video.addEventListener("loadedmetadata", onLoadedMetadata);

@@ -75,12 +75,12 @@ export const DateFilter = () => {
 
       <Button
         onClick={() =>
-          setDateFilter(() => ({
+          setDateFilter({
             applyStart: true,
             applyEnd: true,
             start: videoHandle?.start,
             end: videoHandle?.end,
-          }))
+          })
         }
         className="p-2"
         disabled={!videoHandle}

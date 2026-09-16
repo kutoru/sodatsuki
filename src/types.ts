@@ -45,6 +45,7 @@ export enum NotificationType {
 export type VideoFileState = {
   path: string;
   name: string;
+  init?: boolean;
 };
 
 export type MediaState = {
