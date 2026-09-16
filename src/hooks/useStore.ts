@@ -48,6 +48,11 @@ type Store = {
   videoHandle?: VideoHandle;
   setVideoHandle: (videoHandle?: VideoHandle) => void;
 
+  videoVolume: number;
+  setVideoVolume: (volume: number) => void;
+  audioVolume: number;
+  setAudioVolume: (volume: number) => void;
+
   // TODO: make configurable
   tzOffset: number;
   autoInitOcr: boolean;
@@ -60,10 +65,8 @@ type Store = {
     replaceChars: Record<string, string>;
   };
 
-  videoVolume: number;
-  setVideoVolume: (volume: number) => void;
-  audioVolume: number;
-  setAudioVolume: (volume: number) => void;
+  layout: { left: number; right: number };
+  setLayout: (layout: { left: number; right: number }) => void;
 
   ocrStatus: Status;
   setOcrStatus: (status: Status) => void;
@@ -169,6 +172,11 @@ export const useStore = create<Store>()(
       videoHandle: undefined,
       setVideoHandle: (videoHandle) => set({ videoHandle }),
 
+      videoVolume: 0.2,
+      setVideoVolume: (volume) => set({ videoVolume: volume }),
+      audioVolume: 0.2,
+      setAudioVolume: (volume) => set({ audioVolume: volume }),
+
       tzOffset: 4,
       autoInitOcr: false,
       autoInitTranscribe: false,
@@ -186,10 +194,8 @@ export const useStore = create<Store>()(
         },
       },
 
-      videoVolume: 0.2,
-      setVideoVolume: (volume) => set({ videoVolume: volume }),
-      audioVolume: 0.2,
-      setAudioVolume: (volume) => set({ audioVolume: volume }),
+      layout: { left: 20, right: 20 },
+      setLayout: (layout) => set({ layout }),
 
       ocrStatus: Status.Offline,
       setOcrStatus: (status) => set({ ocrStatus: status }),
@@ -302,6 +308,7 @@ export const useStore = create<Store>()(
         videoFile: state.videoFile,
         videoVolume: state.videoVolume,
         audioVolume: state.audioVolume,
+        layout: state.layout,
         dateFilter: state.dateFilter,
       }),
     },

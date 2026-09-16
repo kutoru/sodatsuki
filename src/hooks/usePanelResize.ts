@@ -2,6 +2,9 @@ import { useLayoutEffect, useRef } from "react";
 import { useStore } from "./useStore";
 
 export const usePanelResize = () => {
+  const layout = useStore((state) => state.layout);
+  const setLayout = useStore((state) => state.setLayout);
+
   const refreshCodeEditors = useStore((state) => state.refreshCodeEditors);
   const getRefreshCodeEditorsDebounced = () => {
     const delay = 250;
@@ -41,31 +44,32 @@ export const usePanelResize = () => {
 
     const refreshCodeEditorsDebounced = getRefreshCodeEditorsDebounced();
 
-    let leftSize = 20;
-    let rightSize = 20;
-
-    lp.style.flexBasis = "20%";
-    mp.style.flexBasis = "60%";
-    rp.style.flexBasis = "20%";
+    let leftSize = layout.left;
+    let rightSize = layout.right;
 
     let leftDown = false;
     let rightDown = false;
 
-    const onLeftContext = (e: MouseEvent) => {
-      e.preventDefault();
-      leftSize = 20;
+    const refreshLayout = () => {
       lp.style.flexBasis = `${leftSize}%`;
-      mp.style.flexBasis = `${100 - leftSize - rightSize}%`;
-
-      refreshCodeEditorsDebounced();
-    };
-    const onRightContext = (e: MouseEvent) => {
-      e.preventDefault();
-      rightSize = 20;
       rp.style.flexBasis = `${rightSize}%`;
       mp.style.flexBasis = `${100 - leftSize - rightSize}%`;
 
+      setLayout({ left: leftSize, right: rightSize });
       refreshCodeEditorsDebounced();
+    };
+
+    const onLeftContext = (e: MouseEvent) => {
+      e.preventDefault();
+
+      leftSize = 20;
+      refreshLayout();
+    };
+    const onRightContext = (e: MouseEvent) => {
+      e.preventDefault();
+
+      rightSize = 20;
+      refreshLayout();
     };
 
     const onLeftDown = (e: MouseEvent) => {
@@ -89,20 +93,16 @@ export const usePanelResize = () => {
         const size = (e.clientX / window.innerWidth) * 100;
         const clamped = Math.min(Math.max(size, 10), 40);
         leftSize = clamped;
-        lp.style.flexBasis = `${leftSize}%`;
       }
 
       if (rightDown) {
         const size = (1 - e.clientX / window.innerWidth) * 100;
         const clamped = Math.min(Math.max(size, 10), 40);
         rightSize = clamped;
-        rp.style.flexBasis = `${rightSize}%`;
       }
 
       if (leftDown || rightDown) {
-        mp.style.flexBasis = `${100 - leftSize - rightSize}%`;
-
-        refreshCodeEditorsDebounced();
+        refreshLayout();
       }
     };
 
@@ -112,6 +112,8 @@ export const usePanelResize = () => {
     rr.addEventListener("mousedown", onRightDown);
     document.addEventListener("mouseup", onMouseUp);
     document.addEventListener("mousemove", onMouseMove);
+
+    refreshLayout();
 
     return () => {
       lr.removeEventListener("contextmenu", onLeftContext);
