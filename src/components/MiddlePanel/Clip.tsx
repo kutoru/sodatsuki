@@ -101,6 +101,7 @@ export const Clip = () => {
       return;
     }
 
+    videoHandle?.pause();
     audioElement.current.play();
   }, [clipState]);
 

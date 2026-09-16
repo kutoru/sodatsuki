@@ -119,6 +119,9 @@ export const Video = () => {
         setTime: (ms) => {
           video.currentTime = ms / 1000;
         },
+        pause: () => {
+          video.pause();
+        },
         start,
         end,
       });

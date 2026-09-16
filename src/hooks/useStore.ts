@@ -17,6 +17,7 @@ type VideoHandle = {
   duration: number;
   getTime: () => number;
   setTime: (ms: number) => void;
+  pause: () => void;
   start?: number;
   end?: number;
 };
