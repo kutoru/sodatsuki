@@ -50,7 +50,7 @@ export const DupeDisplay = () => {
     <>
       <div
         className={clsx(
-          "flex flex-row items-center transition-opacity",
+          "flex flex-row items-center justify-between transition-opacity",
           !show && "pointer-events-none opacity-0",
         )}
       >
@@ -58,15 +58,17 @@ export const DupeDisplay = () => {
           <StickyNotesIcon className="size-full" />
         </div>
 
-        <div className="line-clamp-1 flex-1 overflow-hidden text-center text-ellipsis">
-          <span className="text-amber-300 drop-shadow-even drop-shadow-amber-300">
-            {dupes.length - 1}:
-          </span>{" "}
-          {dupes
-            .filter((v) => v.id !== currId)
-            .map((v) => v.deck)
-            .join(", ")}
-        </div>
+        <a
+          onClick={openDupesInAnki}
+          className="group relative cursor-pointer select-none"
+        >
+          <div className="pointer-events-none absolute -bottom-0.5 h-0.5 w-full rounded-full bg-amber-500/90 shadow-even shadow-amber-500/90 transition group-hover:bg-amber-500 group-hover:shadow-amber-500 group-active:bg-amber-500/60 group-active:shadow-amber-500/60" />
+
+          <span className="line-clamp-1 drop-shadow-even drop-shadow-black transition group-hover:drop-shadow-white/50 group-active:text-gray-400">
+            <span className="font-bold">{dupes.length}: </span>
+            {dupes.map((v) => v.deck).join(", ")}
+          </span>
+        </a>
 
         <Button onClick={openDupesInAnki} className="p-2">
           <LogInIcon className="size-full rotate-180" />
