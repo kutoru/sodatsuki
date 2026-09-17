@@ -119,7 +119,7 @@ pub async fn clip_capture(
         "-b:a",
         "64k",
         "-af",
-        "dynaudnorm=f=50:g=31:b=true:m=30,volume=-9dB",
+        "dynaudnorm=f=50:g=15:b=true:m=30:s=15,volume=-9dB",
         "-acodec",
         "libmp3lame",
         "-f",
