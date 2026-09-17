@@ -7,6 +7,7 @@ import { Notification } from "./Notification";
 import { MiddlePanel } from "./MiddlePanel/MiddlePanel";
 import { RightPanel } from "./RightPanel/RightPanel";
 import { AudioPreview } from "./AudioPreview";
+import { Tooltip } from "./Tooltip";
 
 export const App = () => {
   const { leftPanel, middlePanel, rightPanel, leftResize, rightResize } =
@@ -57,6 +58,8 @@ export const App = () => {
       <Notification />
 
       <AudioPreview />
+
+      <Tooltip />
     </div>
   );
 };

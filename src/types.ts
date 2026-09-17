@@ -63,3 +63,9 @@ export type DupeNote = {
   id: number;
   deck: string;
 };
+
+export type TooltipState = {
+  text: string;
+  x: number;
+  y: number;
+};

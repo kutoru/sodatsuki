@@ -11,6 +11,7 @@ import {
   Status,
   ValueOrUpdater,
   VideoFileState,
+  TooltipState,
 } from "../types";
 
 type VideoHandle = {
@@ -97,6 +98,10 @@ type Store = {
   notificationState: { shown: boolean; type: NotificationType };
   showNotification: (type: NotificationType) => void;
   hideNotification: () => void;
+
+  tooltipState: TooltipState | undefined;
+  showTooltip: (tooltipState: TooltipState) => void;
+  hideTooltip: () => void;
 
   codeEditorRefreshCallbacks: Partial<Record<Field, () => void>>;
   setCodeEditorRefreshCallback: (
@@ -247,6 +252,10 @@ export const useStore = create<Store>()(
         set((state) => ({
           notificationState: { ...state.notificationState, shown: false },
         })),
+
+      tooltipState: undefined,
+      showTooltip: (tooltipState) => set({ tooltipState }),
+      hideTooltip: () => set({ tooltipState: undefined }),
 
       codeEditorRefreshCallbacks: {},
       setCodeEditorRefreshCallback: (field, callback) => {

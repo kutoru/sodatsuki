@@ -11,12 +11,13 @@ import {
 } from "lucide-react";
 import { Button } from "../Button";
 import { RowComponentProps } from "react-window";
-import { JSX, memo } from "react";
+import { JSX, memo, useRef } from "react";
 import { useStore } from "../../hooks/useStore";
 import { invoke } from "@tauri-apps/api/core";
 import { handleError } from "../../utils";
 import { Field, Note, NotificationType } from "../../types";
 import clsx from "clsx";
+import { useTooltip } from "../../hooks/useTooltip";
 
 const formatDuration = (ms: number): string => {
   const totalSeconds = Math.floor(ms / 1000);
@@ -127,6 +128,8 @@ export const InnerNoteElement = memo(
     const videoHandle = useStore((state) => state.videoHandle);
     const ankiAddress = useStore((state) => state.ankiAddress);
 
+    const timeButton = useRef<HTMLButtonElement>(null);
+
     const canSetTime =
       !!videoHandle?.start &&
       !!videoHandle?.end &&
@@ -137,6 +140,8 @@ export const InnerNoteElement = memo(
       !canSetTime || !prevNoteId
         ? ""
         : `+${formatDuration(note.id - prevNoteId)}`;
+
+    useTooltip(timeButton, sinceLastNote);
 
     const copyExpression = () => {
       invoke("copy_to_clipboard", { text: note.fields.Expression })
@@ -241,10 +246,10 @@ export const InnerNoteElement = memo(
           </Button>
 
           <Button
+            ref={timeButton}
             onClick={setVideoTime}
             className="w-8 py-2.5 ps-1.25 pe-1.25"
             disabled={!canSetTime}
-            title={sinceLastNote}
           >
             <ClockArrowRightIcon className="size-full" />
           </Button>
