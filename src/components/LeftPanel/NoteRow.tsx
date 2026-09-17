@@ -18,6 +18,17 @@ import { handleError } from "../../utils";
 import { Field, Note, NotificationType } from "../../types";
 import clsx from "clsx";
 
+const formatDuration = (ms: number): string => {
+  const totalSeconds = Math.floor(ms / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  return [hours, minutes, seconds]
+    .map((num) => String(num).padStart(2, "0"))
+    .join(":");
+};
+
 type Props = RowComponentProps<{
   notes: Note[];
   digitWidth: number;
@@ -27,6 +38,7 @@ export const NoteRow = ({ notes, digitWidth, index, style }: Props) => {
   const selectedNote = useStore((state) => state.selectedNote);
 
   const note = notes[index];
+  const prevNoteId = notes[index - 1]?.id;
 
   return (
     <div style={style} className="px-2 pt-2">
@@ -35,6 +47,7 @@ export const NoteRow = ({ notes, digitWidth, index, style }: Props) => {
         index={index}
         isActive={note.id === selectedNote?.id}
         digitWidth={digitWidth}
+        prevNoteId={prevNoteId}
       />
     </div>
   );
@@ -45,6 +58,7 @@ type InnerNoteElementProps = {
   index: number;
   isActive: boolean;
   digitWidth: number;
+  prevNoteId?: number;
 };
 
 const fieldList: { field: Field; icon: JSX.Element }[] = [
@@ -100,7 +114,13 @@ const getFieldStatus = (field: Field, value: string): FieldStatus => {
 };
 
 export const InnerNoteElement = memo(
-  ({ note, index, isActive, digitWidth }: InnerNoteElementProps) => {
+  ({
+    note,
+    index,
+    isActive,
+    digitWidth,
+    prevNoteId,
+  }: InnerNoteElementProps) => {
     const setSelectedNote = useStore((state) => state.setSelectedNote);
     const showNotification = useStore((state) => state.showNotification);
     const appendEditNoteField = useStore((state) => state.appendEditNoteField);
@@ -112,6 +132,11 @@ export const InnerNoteElement = memo(
       !!videoHandle?.end &&
       note.id > videoHandle.start &&
       note.id < videoHandle.end;
+
+    const sinceLastNote =
+      !canSetTime || !prevNoteId
+        ? ""
+        : `+${formatDuration(note.id - prevNoteId)}`;
 
     const copyExpression = () => {
       invoke("copy_to_clipboard", { text: note.fields.Expression })
@@ -219,6 +244,7 @@ export const InnerNoteElement = memo(
             onClick={setVideoTime}
             className="w-8 py-2.5 ps-1.25 pe-1.25"
             disabled={!canSetTime}
+            title={sinceLastNote}
           >
             <ClockArrowRightIcon className="size-full" />
           </Button>
