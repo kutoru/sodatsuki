@@ -11,6 +11,7 @@ export const ButtonTranscribe = () => {
   const clipTime = useStore((state) => state.clipTime);
   const transcribeStatus = useStore((state) => state.transcribeStatus);
   const appendEditNoteField = useStore((state) => state.appendEditNoteField);
+  const focusCodeEditor = useStore((state) => state.focusCodeEditor);
 
   const [runningTranscribe, setRunningTranscribe] = useState(false);
 
@@ -21,9 +22,10 @@ export const ButtonTranscribe = () => {
     const { start, end } = clipTime;
 
     invoke<string[]>("run_transcribe", { videoPath, start, end })
-      .then((value) =>
-        appendEditNoteField("Sentence", applyPythonOutputTransform(value)),
-      )
+      .then((value) => {
+        appendEditNoteField("Sentence", applyPythonOutputTransform(value));
+        focusCodeEditor("Sentence");
+      })
       .catch(handleError())
       .finally(() => setRunningTranscribe(false));
   };

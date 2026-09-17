@@ -54,6 +54,8 @@ export const useCodeEditor = (
 
     editor.current.on("change", change);
     editor.current.on("blur", blur);
+
+    // TODO: do codemirror cleanup on hook return
   }, []);
 
   useEffect(() => {

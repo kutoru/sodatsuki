@@ -99,8 +99,18 @@ type Store = {
   hideNotification: () => void;
 
   codeEditorRefreshCallbacks: Partial<Record<Field, () => void>>;
-  setCodeEditorRefreshCallback: (field: Field, callback: () => void) => void;
+  setCodeEditorRefreshCallback: (
+    field: Field,
+    callback: (() => void) | undefined,
+  ) => void;
   refreshCodeEditors: () => void;
+
+  codeEditorFocusCallbacks: Partial<Record<Field, () => void>>;
+  setCodeEditorFocusCallback: (
+    field: Field,
+    callback: (() => void) | undefined,
+  ) => void;
+  focusCodeEditor: (field: Field) => void;
 
   previewAudioData?: { src: string };
   playPreviewAudio: (src: string) => void;
@@ -244,8 +254,16 @@ export const useStore = create<Store>()(
       },
       refreshCodeEditors: () => {
         Object.values(get().codeEditorRefreshCallbacks).forEach(
-          (refreshCallback) => refreshCallback(),
+          (refreshCallback) => refreshCallback?.(),
         );
+      },
+
+      codeEditorFocusCallbacks: {},
+      setCodeEditorFocusCallback: (field, callback) => {
+        get().codeEditorFocusCallbacks[field] = callback;
+      },
+      focusCodeEditor: (field) => {
+        get().codeEditorFocusCallbacks[field]?.();
       },
 
       previewAudioData: undefined,

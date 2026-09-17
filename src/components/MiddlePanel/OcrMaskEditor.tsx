@@ -9,6 +9,7 @@ export const OcrMaskEditor = () => {
   const videoHandle = useStore((state) => state.videoHandle);
   const setRunningOcr = useStore((state) => state.setRunningOcr);
   const appendEditNoteField = useStore((state) => state.appendEditNoteField);
+  const focusCodeEditor = useStore((state) => state.focusCodeEditor);
 
   const editingOcrMask = useStore((state) => state.editingOcrMask);
   const setEditingOcrMask = useStore((state) => state.setEditingOcrMask);
@@ -28,9 +29,10 @@ export const OcrMaskEditor = () => {
     const timestamp = videoHandle?.getTime();
 
     invoke<string[]>("run_ocr", { videoPath, timestamp, mask })
-      .then((value) =>
-        appendEditNoteField("Sentence", applyPythonOutputTransform(value)),
-      )
+      .then((value) => {
+        appendEditNoteField("Sentence", applyPythonOutputTransform(value));
+        focusCodeEditor("Sentence");
+      })
       .catch(handleError())
       .finally(() => setRunningOcr(false));
   };

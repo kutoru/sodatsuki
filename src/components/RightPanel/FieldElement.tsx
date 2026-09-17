@@ -46,6 +46,9 @@ export const FieldElement = memo(
     scrollContainer,
   }: Props) => {
     const anki = useStore((state) => state.anki);
+    const setCodeEditorFocusCallback = useStore(
+      (state) => state.setCodeEditorFocusCallback,
+    );
 
     const [expanded, setExpanded] = useState(false);
 
@@ -54,10 +57,6 @@ export const FieldElement = memo(
       fieldValue,
       setFieldValue,
     );
-
-    useEffect(() => {
-      setExpanded(false);
-    }, [noteId]);
 
     const parseFieldForPreview = () => {
       if (!fieldValue) {
@@ -136,11 +135,11 @@ export const FieldElement = memo(
       setExpanded(!expanded);
     };
 
-    useEffect(() => {
+    const focusEditor = () => {
       const container = scrollContainer.current;
       const parent = editorParent.current;
 
-      if (!expanded || !container || !parent) {
+      if (!container || !parent) {
         return;
       }
 
@@ -175,6 +174,32 @@ export const FieldElement = memo(
       checkScroll();
 
       return () => clearTimeout(timeout);
+    };
+
+    useEffect(() => {
+      setExpanded(false);
+    }, [noteId]);
+
+    useEffect(() => {
+      setCodeEditorFocusCallback(field, () => {
+        if (!expanded) {
+          setExpanded(true);
+        } else {
+          setTimeout(focusEditor, 0);
+        }
+      });
+
+      return () => setCodeEditorFocusCallback(field, undefined);
+    }, [expanded]);
+
+    useEffect(() => {
+      if (!expanded) {
+        return;
+      }
+
+      const cleanup = focusEditor();
+
+      return cleanup;
     }, [expanded]);
 
     return (

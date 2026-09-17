@@ -5,6 +5,7 @@ import { useStore } from "../../hooks/useStore";
 export const ButtonFormatReading = () => {
   const editNote = useStore((state) => state.editNote);
   const setEditNote = useStore((state) => state.setEditNote);
+  const focusCodeEditor = useStore((state) => state.focusCodeEditor);
 
   const format = () => {
     const reading = editNote!.fields["Reading"];
@@ -26,6 +27,8 @@ export const ButtonFormatReading = () => {
 
       return { ...prev };
     });
+
+    focusCodeEditor("Reading");
   };
 
   const canFormat = editNote?.fields["Reading"].startsWith("<o");

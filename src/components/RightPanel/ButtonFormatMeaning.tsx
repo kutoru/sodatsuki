@@ -5,6 +5,7 @@ import { useStore } from "../../hooks/useStore";
 export const ButtonFormatMeaning = () => {
   const editNote = useStore((state) => state.editNote);
   const setEditNote = useStore((state) => state.setEditNote);
+  const focusCodeEditor = useStore((state) => state.focusCodeEditor);
 
   const format = () => {
     const meaning = editNote!.fields["Meaning"];
@@ -53,6 +54,8 @@ export const ButtonFormatMeaning = () => {
 
       return { ...prev };
     });
+
+    focusCodeEditor("Meaning");
   };
 
   const canFormat = editNote?.fields["Meaning"].startsWith("<");
