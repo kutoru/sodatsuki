@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { Button } from "../Button";
 import { RowComponentProps } from "react-window";
-import { JSX, memo, useRef } from "react";
+import { JSX, memo, useCallback } from "react";
 import { useStore } from "../../hooks/useStore";
 import { invoke } from "@tauri-apps/api/core";
 import { handleError } from "../../utils";
@@ -39,7 +39,6 @@ export const NoteRow = ({ notes, digitWidth, index, style }: Props) => {
   const selectedNote = useStore((state) => state.selectedNote);
 
   const note = notes[index];
-  const prevNoteId = notes[index - 1]?.id;
 
   return (
     <div style={style} className="px-2 pt-2">
@@ -48,7 +47,6 @@ export const NoteRow = ({ notes, digitWidth, index, style }: Props) => {
         index={index}
         isActive={note.id === selectedNote?.id}
         digitWidth={digitWidth}
-        prevNoteId={prevNoteId}
       />
     </div>
   );
@@ -59,7 +57,6 @@ type InnerNoteElementProps = {
   index: number;
   isActive: boolean;
   digitWidth: number;
-  prevNoteId?: number;
 };
 
 const fieldList: { field: Field; icon: JSX.Element }[] = [
@@ -115,20 +112,12 @@ const getFieldStatus = (field: Field, value: string): FieldStatus => {
 };
 
 export const InnerNoteElement = memo(
-  ({
-    note,
-    index,
-    isActive,
-    digitWidth,
-    prevNoteId,
-  }: InnerNoteElementProps) => {
+  ({ note, index, isActive, digitWidth }: InnerNoteElementProps) => {
     const setSelectedNote = useStore((state) => state.setSelectedNote);
     const showNotification = useStore((state) => state.showNotification);
     const appendEditNoteField = useStore((state) => state.appendEditNoteField);
     const videoHandle = useStore((state) => state.videoHandle);
     const ankiAddress = useStore((state) => state.ankiAddress);
-
-    const timeButton = useRef<HTMLButtonElement>(null);
 
     const canSetTime =
       !!videoHandle?.start &&
@@ -136,12 +125,17 @@ export const InnerNoteElement = memo(
       note.id > videoHandle.start &&
       note.id < videoHandle.end;
 
-    const sinceLastNote =
-      !canSetTime || !prevNoteId
-        ? ""
-        : `+${formatDuration(note.id - prevNoteId)}`;
+    const getTooltipText = useCallback(() => {
+      if (!canSetTime || !videoHandle.start) {
+        return "";
+      }
 
-    useTooltip(timeButton, sinceLastNote);
+      const duration = note.id - videoHandle.start - videoHandle.getTime();
+
+      return (duration < 0 ? "-" : "+") + formatDuration(Math.abs(duration));
+    }, [note, videoHandle]);
+
+    const timeButton = useTooltip<HTMLButtonElement>(getTooltipText);
 
     const copyExpression = () => {
       invoke("copy_to_clipboard", { text: note.fields.Expression })
@@ -171,12 +165,13 @@ export const InnerNoteElement = memo(
       >
         <div className="flex gap-1 px-1">
           {fieldList.map(({ field, icon }) => {
+            const fieldButton = useTooltip<HTMLButtonElement>(field);
             const status = getFieldStatus(field, note.fields[field]);
 
             return (
               <div key={note.id + field} className="relative h-2 flex-1">
                 <button
-                  title={field}
+                  ref={fieldButton}
                   onContextMenu={(e) => {
                     e.preventDefault();
                     e.currentTarget.classList.add(

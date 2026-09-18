@@ -3,6 +3,7 @@ import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { handleError } from "../../utils";
 import { MediaState, NotificationType } from "../../types";
 import { useEffect, useState } from "react";
+import { useTooltip } from "../../hooks/useTooltip";
 
 type Props = { fileName: string };
 
@@ -16,6 +17,8 @@ export const FramePreview = ({ fileName }: Props) => {
   const removeNewMediaName = useStore((state) => state.removeNewMediaName);
 
   const showNotification = useStore((state) => state.showNotification);
+
+  const previewButton = useTooltip<HTMLButtonElement>(fileName);
 
   const [frameState, setFrameState] = useState<MediaState>();
 
@@ -52,7 +55,7 @@ export const FramePreview = ({ fileName }: Props) => {
   const src = frameState?.src ?? convertFileSrc(path);
 
   return (
-    <button onClick={openFrame} className="cursor-pointer" title={fileName}>
+    <button ref={previewButton} onClick={openFrame} className="cursor-pointer">
       <img src={src} className="max-h-40" />
     </button>
   );

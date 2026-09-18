@@ -1,21 +1,24 @@
-import { RefObject, useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useStore } from "./useStore";
 
-export const useTooltip = (
-  element: RefObject<HTMLElement | null>,
-  text: string,
+export const useTooltip = <T extends HTMLElement>(
+  textOrGetter: string | (() => string),
 ) => {
   const showTooltip = useStore((state) => state.showTooltip);
+  const element = useRef<T>(null);
 
   useEffect(() => {
     const el = element.current;
-    if (!el || !text) {
+    if (!el || !textOrGetter) {
       return;
     }
 
     let timeout: number | undefined;
 
     const show = (pos: { x: number; y: number }) => {
+      const text =
+        typeof textOrGetter === "function" ? textOrGetter() : textOrGetter;
+
       showTooltip({
         text,
         x: pos.x,
@@ -41,5 +44,7 @@ export const useTooltip = (
 
       clearTimeout(timeout);
     };
-  }, [text]);
+  }, [textOrGetter]);
+
+  return element;
 };

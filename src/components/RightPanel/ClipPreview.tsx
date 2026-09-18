@@ -3,6 +3,7 @@ import { PlayIcon } from "lucide-react";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { useEffect, useState } from "react";
 import { MediaState } from "../../types";
+import { useTooltip } from "../../hooks/useTooltip";
 
 type Props = { element: string; fileName: string };
 
@@ -16,6 +17,8 @@ export const ClipPreview = ({ element, fileName }: Props) => {
   const removeNewMediaName = useStore((state) => state.removeNewMediaName);
 
   const playPreviewAudio = useStore((state) => state.playPreviewAudio);
+
+  const previewButton = useTooltip<HTMLButtonElement>(fileName);
 
   const [clipState, setClipState] = useState<MediaState>();
 
@@ -38,9 +41,9 @@ export const ClipPreview = ({ element, fileName }: Props) => {
     <span className="max-w-full">
       {element}
       <button
+        ref={previewButton}
         onClick={() => playPreviewAudio(src)}
         className="ms-1 size-5 cursor-pointer rounded-full bg-gray-500 p-1"
-        title={fileName}
       >
         <PlayIcon className="size-full" strokeWidth={3} />
       </button>
