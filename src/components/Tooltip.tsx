@@ -41,12 +41,15 @@ export const Tooltip = () => {
         const initX = tooltipState.x + 12;
         const initY = tooltipState.y + 12;
 
-        const overX = initX + size.width - window.innerWidth;
-        const overY = initY + size.height - window.innerHeight;
+        const revX = tooltipState.x - 12 - size.width;
+        const revY = tooltipState.y - size.height;
+
+        const xOver = initX + size.width > window.innerWidth;
+        const yOver = initY + size.height > window.innerHeight;
 
         return {
-          x: initX - Math.max(0, overX),
-          y: initY - Math.max(0, overY),
+          x: xOver ? revX : initX,
+          y: yOver ? revY : initY,
         };
       })();
 
