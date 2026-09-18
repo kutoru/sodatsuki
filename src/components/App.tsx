@@ -8,6 +8,7 @@ import { MiddlePanel } from "./MiddlePanel/MiddlePanel";
 import { RightPanel } from "./RightPanel/RightPanel";
 import { AudioPreview } from "./AudioPreview";
 import { Tooltip } from "./Tooltip";
+import { SelectHint } from "./SelectHint";
 
 export const App = () => {
   const { leftPanel, middlePanel, rightPanel, leftResize, rightResize } =
@@ -60,6 +61,8 @@ export const App = () => {
       <AudioPreview />
 
       <Tooltip />
+
+      <SelectHint />
     </div>
   );
 };

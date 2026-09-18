@@ -229,6 +229,7 @@ export const FieldElement = memo(
         </div>
 
         <div
+          id={`field-${field}`}
           onContextMenu={(e) => {
             e.preventDefault();
             toggleExpanded();

@@ -12,6 +12,7 @@ import {
   ValueOrUpdater,
   VideoFileState,
   TooltipState,
+  SelectHintState,
 } from "../types";
 
 type VideoHandle = {
@@ -102,6 +103,10 @@ type Store = {
   tooltipState: TooltipState | undefined;
   showTooltip: (tooltipState: TooltipState) => void;
   hideTooltip: () => void;
+
+  selectHintState: SelectHintState | undefined;
+  showSelectHint: (selectHintState: SelectHintState) => void;
+  hideSelectHint: () => void;
 
   codeEditorRefreshCallbacks: Partial<Record<Field, () => void>>;
   setCodeEditorRefreshCallback: (
@@ -258,6 +263,10 @@ export const useStore = create<Store>()(
       tooltipState: undefined,
       showTooltip: (tooltipState) => set({ tooltipState }),
       hideTooltip: () => set({ tooltipState: undefined }),
+
+      selectHintState: undefined,
+      showSelectHint: (selectHintState) => set({ selectHintState }),
+      hideSelectHint: () => set({ selectHintState: undefined }),
 
       codeEditorRefreshCallbacks: {},
       setCodeEditorRefreshCallback: (field, callback) => {

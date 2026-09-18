@@ -27,6 +27,46 @@ const relevantFields: Field[] = [
   "Image_URI",
 ];
 
+const setSelectHint = () => {
+  const showSelectHint = useStore.getState().showSelectHint;
+  const hideSelectHint = useStore.getState().hideSelectHint;
+
+  const selection = document.getSelection();
+  let startNode = selection?.anchorNode as HTMLElement | undefined | null;
+  let endNode = selection?.focusNode as HTMLElement | undefined | null;
+  const text = selection?.toString();
+
+  while (true) {
+    startNode = startNode?.parentElement;
+    if (!startNode || startNode?.id.startsWith("field-")) {
+      break;
+    }
+  }
+
+  while (true) {
+    endNode = endNode?.parentElement;
+    if (!endNode || endNode?.id.startsWith("field-")) {
+      break;
+    }
+  }
+
+  if (!selection || !startNode || startNode.id !== endNode?.id || !text) {
+    hideSelectHint();
+    return;
+  }
+
+  const rect = selection.getRangeAt(0).getBoundingClientRect();
+
+  showSelectHint({
+    field: startNode.id.split("-")[1] as Field,
+    text,
+    x: rect.x,
+    y: rect.y,
+    width: rect.width,
+    height: rect.height,
+  });
+};
+
 export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
   const showNotification = useStore((state) => state.showNotification);
   const setDeck = useStore((state) => state.setDeck);
@@ -41,6 +81,8 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
 
   const editNote = useStore((state) => state.editNote);
   const setEditNote = useStore((state) => state.setEditNote);
+
+  const hideSelectHint = useStore((state) => state.hideSelectHint);
 
   const scrollContainer = useRef<HTMLDivElement>(null);
 
@@ -161,6 +203,29 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
       scrollContainer.current?.scrollTo({ top: 0, behavior: "instant" });
     }
   }, [selectedNote]);
+
+  useEffect(() => {
+    const onMouseUp = () => {
+      setTimeout(setSelectHint, 0);
+    };
+
+    document.addEventListener("mouseup", onMouseUp);
+    return () => document.removeEventListener("mouseup", onMouseUp);
+  }, []);
+
+  useEffect(() => {
+    const cont = scrollContainer.current;
+    if (!cont) {
+      return;
+    }
+
+    const onScroll = () => {
+      hideSelectHint();
+    };
+
+    cont.addEventListener("scroll", onScroll);
+    return () => cont.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
     <>

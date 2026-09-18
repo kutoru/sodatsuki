@@ -69,3 +69,12 @@ export type TooltipState = {
   x: number;
   y: number;
 };
+
+export type SelectHintState = {
+  text: string;
+  field: Field;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
