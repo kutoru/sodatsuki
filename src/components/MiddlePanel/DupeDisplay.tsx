@@ -11,7 +11,7 @@ import clsx from "clsx";
 export const DupeDisplay = () => {
   const ankiAddress = useStore((state) => state.ankiAddress);
   const showNotification = useStore((state) => state.showNotification);
-  const editNote = useStore((state) => state.editNote);
+  const selectedNote = useStore((state) => state.selectedNote);
 
   const [dupes, setDupes] = useState<DupeNote[]>([]);
   const [currId, setCurrId] = useState<number>();
@@ -23,15 +23,15 @@ export const DupeDisplay = () => {
   };
 
   useEffect(() => {
-    if (!editNote) {
+    if (!selectedNote) {
       return;
     }
 
-    const currId = editNote.id;
+    const newId = selectedNote.id;
 
     invoke<DupeNote[]>("anki_get_dupes", {
       ankiAddress,
-      expression: editNote.fields["Expression"],
+      expression: selectedNote.fields["Expression"],
     })
       .then((dupes) => {
         if (dupes.length <= 1) {
@@ -39,12 +39,12 @@ export const DupeDisplay = () => {
         }
 
         setDupes(dupes);
-        setCurrId(currId);
+        setCurrId(newId);
       })
       .catch(handleError());
-  }, [editNote]);
+  }, [selectedNote]);
 
-  const show = !!editNote && editNote.id === currId && dupes.length > 1;
+  const show = !!selectedNote && selectedNote.id === currId && dupes.length > 1;
 
   return (
     <>
