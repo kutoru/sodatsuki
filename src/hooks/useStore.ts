@@ -154,8 +154,10 @@ export const useStore = create<Store>()(
       appendEditNoteField: (field, value) =>
         set((state) => {
           const prev = state.editNote;
-          if (!prev) {
-            return {};
+          const selectedNotePresent = !!state.selectedNote;
+
+          if (!prev || !selectedNotePresent) {
+            return { editNote: prev };
           }
 
           const prevValue = prev.fields[field];
