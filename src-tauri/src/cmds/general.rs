@@ -58,6 +58,9 @@ pub async fn video_select(app: AppHandle) -> Result<VideoSelectResult, String> {
         .ok_or("Could not convert path to str")?
         .to_string();
 
+    let scope = app.asset_protocol_scope();
+    scope.allow_file(&path).err_msg()?;
+
     let name = file_path
         .file_name()
         .ok_or("Could not get video name")?

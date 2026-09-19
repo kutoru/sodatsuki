@@ -1,5 +1,6 @@
 use base64::Engine;
 use serde_json::json;
+use tauri::{AppHandle, Manager};
 
 use crate::{
     cmds::get_unix_ms,
@@ -54,10 +55,16 @@ where
 
 #[tauri::command]
 pub async fn anki_get_initial(
+    app: AppHandle,
     http: Http<'_>,
     anki_address: String,
 ) -> Result<AnkiGetInitialResult, String> {
-    call_anki(&http, &anki_address, "get_initial").await
+    let result = call_anki::<AnkiGetInitialResult>(&http, &anki_address, "get_initial").await?;
+
+    let scope = app.asset_protocol_scope();
+    scope.allow_directory(&result.media_path, false).err_msg()?;
+
+    Ok(result)
 }
 
 #[tauri::command]
