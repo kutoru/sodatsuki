@@ -1,4 +1,7 @@
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::{
+    os::windows::process::CommandExt,
+    time::{Duration, SystemTime, UNIX_EPOCH},
+};
 
 use tauri::{AppHandle, Manager};
 use tauri_plugin_clipboard_manager::ClipboardExt;
@@ -17,6 +20,7 @@ pub fn get_unix_ms() -> u128 {
 pub fn ffmpeg(args: &[&str]) -> Result<Vec<u8>, String> {
     let output = std::process::Command::new("ffmpeg")
         .args(args)
+        .creation_flags(0x08000000)
         .output()
         .err_msg()?;
 

@@ -1,4 +1,4 @@
-use std::io::Write;
+use std::{io::Write, os::windows::process::CommandExt};
 
 use crate::{
     cmds::ffmpeg,
@@ -23,6 +23,7 @@ impl PythonManager {
             .stdin(std::process::Stdio::piped())
             .stdout(std::process::Stdio::piped())
             .stderr(std::process::Stdio::piped())
+            .creation_flags(0x08000000)
             .spawn()
             .err_msg()?;
 
