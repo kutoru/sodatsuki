@@ -5,9 +5,11 @@ import { Button } from "./Button";
 import { invoke } from "@tauri-apps/api/core";
 import { handleError } from "../utils";
 import { NotificationType } from "../types";
+import { ReplaceIcon, SearchIcon } from "lucide-react";
 
 export const SelectHint = () => {
   const showNotification = useStore((state) => state.showNotification);
+  const setEditNote = useStore((state) => state.setEditNote);
 
   const selectHintState = useStore((state) => state.selectHintState);
   const hideSelectHint = useStore((state) => state.hideSelectHint);
@@ -17,6 +19,20 @@ export const SelectHint = () => {
   const hide = () => {
     document.getSelection()?.empty();
     hideSelectHint();
+  };
+
+  const replace = () => {
+    hide();
+
+    setEditNote((prev) => {
+      if (!prev || !selectHintState) {
+        return prev;
+      }
+
+      prev.fields[selectHintState.field] = selectHintState.text;
+
+      return { ...prev };
+    });
   };
 
   const search = () => {
@@ -50,14 +66,11 @@ export const SelectHint = () => {
       "fixed",
       "flex",
       "flex-row",
-      "gap-2",
       "border-2",
-      "px-2",
-      "py-1",
       "whitespace-nowrap",
     );
 
-    div.innerHTML = `<span>Set value</span><div class='w-0.5'></div><span>Search</span>`;
+    div.innerHTML = `<div class="size-8"></div><div class="w-0.5"></div><div class="size-8"></div>`;
     const size = div.getBoundingClientRect();
     div.remove();
 
@@ -67,25 +80,25 @@ export const SelectHint = () => {
     const overWidth = centeredX + size.width - window.innerWidth;
 
     el.style.left = `${centeredX - Math.max(0, overWidth)}px`;
-    el.style.top = `${selectHintState.y - size.height - 12}px`;
+    el.style.top = `calc(${selectHintState.y - size.height}px - 0.75rem)`;
   }, [selectHintState]);
 
   return (
     <div
       ref={element}
       className={clsx(
-        "fixed flex flex-row gap-2 rounded-md border-2 border-white bg-black/75 px-2 py-1 shadow-even shadow-black transition-[opacity,left,top] select-none",
+        "fixed flex flex-row rounded-md border-2 border-white bg-black/75 shadow-even shadow-black transition-[opacity,left,top] select-none",
         !selectHintState && "pointer-events-none opacity-0",
       )}
     >
-      <Button onClick={hide} className="h-auto!">
-        Set value
+      <Button onClick={replace} className="size-8! p-1">
+        <ReplaceIcon className="size-full" />
       </Button>
 
       <div className="my-1 w-0.5 flex-none rounded-full bg-white" />
 
-      <Button onClick={search} className="h-auto!">
-        Search
+      <Button onClick={search} className="size-8! p-1">
+        <SearchIcon className="size-full" />
       </Button>
     </div>
   );
