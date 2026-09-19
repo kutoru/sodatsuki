@@ -167,3 +167,27 @@ pub async fn frame_capture(
 
     Ok(tauri::ipc::Response::new(frame))
 }
+
+#[tauri::command]
+pub async fn config_open(app: AppHandle) -> Result<(), String> {
+    if let Some(config_window) = app.get_webview_window("config") {
+        return config_window.set_focus().err_msg();
+    }
+
+    let main_window = app
+        .get_webview_window("main")
+        .ok_or("Could not get main window")?;
+
+    tauri::WebviewWindowBuilder::new(&app, "config", tauri::WebviewUrl::App("#config".into()))
+        .title("Config")
+        .minimizable(false)
+        .min_inner_size(640.0, 480.0)
+        .inner_size(640.0, 480.0)
+        .background_color(tauri::window::Color(0, 0, 0, 255))
+        .parent(&main_window)
+        .err_msg()?
+        .build()
+        .err_msg()?;
+
+    Ok(())
+}

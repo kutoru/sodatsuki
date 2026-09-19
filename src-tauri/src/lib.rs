@@ -28,6 +28,7 @@ pub fn run() {
             cmds::data_open,
             cmds::clip_capture,
             cmds::frame_capture,
+            cmds::config_open,
             cmds::init_ocr,
             cmds::init_transcribe,
             cmds::run_ocr,
