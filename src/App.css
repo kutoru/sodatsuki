@@ -2,12 +2,12 @@
 
 @font-face {
   font-family: FiraSans;
-  src: url("FiraSans-Regular.woff2");
+  src: url("/FiraSans-Regular.woff2");
 }
 
 @font-face {
   font-family: ZenKakuGothicAntique;
-  src: url("ZenKakuGothicAntique-Regular.ttf");
+  src: url("/ZenKakuGothicAntique-Regular.ttf");
 }
 
 html {
