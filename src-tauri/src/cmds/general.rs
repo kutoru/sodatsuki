@@ -69,6 +69,13 @@ pub async fn video_select(app: AppHandle) -> Result<VideoSelectResult, String> {
 }
 
 #[tauri::command]
+pub async fn search_open(app: AppHandle, query: String) -> Result<(), String> {
+    app.opener()
+        .open_url(format!("https://jisho.org/search/{}", query), None::<&str>)
+        .err_msg()
+}
+
+#[tauri::command]
 pub async fn file_open(app: AppHandle, path: String) -> Result<(), String> {
     app.opener().open_path(path, None::<&str>).err_msg()
 }
@@ -81,7 +88,7 @@ pub async fn data_open(app: AppHandle, data: Vec<u8>) -> Result<(), String> {
     let pathbuf = dir.join(name);
     let path = pathbuf
         .to_str()
-        .ok_or("Could not conver path to str".to_string())
+        .ok_or("Could not convert path to str".to_string())
         .err_msg()?;
 
     std::fs::write(path, data).err_msg()?;

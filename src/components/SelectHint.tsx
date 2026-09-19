@@ -2,8 +2,13 @@ import clsx from "clsx";
 import { useStore } from "../hooks/useStore";
 import { useEffect, useRef } from "react";
 import { Button } from "./Button";
+import { invoke } from "@tauri-apps/api/core";
+import { handleError } from "../utils";
+import { NotificationType } from "../types";
 
 export const SelectHint = () => {
+  const showNotification = useStore((state) => state.showNotification);
+
   const selectHintState = useStore((state) => state.selectHintState);
   const hideSelectHint = useStore((state) => state.hideSelectHint);
 
@@ -12,6 +17,14 @@ export const SelectHint = () => {
   const hide = () => {
     document.getSelection()?.empty();
     hideSelectHint();
+  };
+
+  const search = () => {
+    hide();
+
+    invoke("search_open", { query: selectHintState?.text })
+      .then(() => showNotification(NotificationType.Success))
+      .catch(handleError());
   };
 
   useEffect(() => {
@@ -71,7 +84,7 @@ export const SelectHint = () => {
 
       <div className="my-1 w-0.5 flex-none rounded-full bg-white" />
 
-      <Button onClick={hide} className="h-auto!">
+      <Button onClick={search} className="h-auto!">
         Search
       </Button>
     </div>

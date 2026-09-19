@@ -138,7 +138,7 @@ export const InnerNoteElement = memo(
     const timeButton = useTooltip<HTMLButtonElement>(getTooltipText);
 
     const copyExpression = () => {
-      invoke("copy_to_clipboard", { text: note.fields.Expression })
+      invoke("search_open", { query: note.fields.Expression })
         .then(() => showNotification(NotificationType.Success))
         .catch(handleError());
     };
@@ -227,7 +227,7 @@ export const InnerNoteElement = memo(
 
             <Button
               onClick={copyExpression}
-              className="shrink! overflow-hidden text-ellipsis whitespace-nowrap hover:drop-shadow-white/50"
+              className="shrink! overflow-hidden text-ellipsis whitespace-nowrap select-auto! hover:drop-shadow-white/50"
             >
               {note.fields.Expression}
             </Button>

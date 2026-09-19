@@ -22,6 +22,7 @@ pub fn run() {
             cmds::anki_get_dupes,
             cmds::copy_to_clipboard,
             cmds::video_select,
+            cmds::search_open,
             cmds::file_open,
             cmds::data_open,
             cmds::clip_capture,
