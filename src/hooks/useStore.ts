@@ -13,18 +13,11 @@ import {
   VideoFileState,
   TooltipState,
   SelectHintState,
+  VideoHandle,
+  AppConfig,
 } from "../types";
 
-type VideoHandle = {
-  duration: number;
-  getTime: () => number;
-  setTime: (ms: number) => void;
-  pause: () => void;
-  start?: number;
-  end?: number;
-};
-
-type Store = {
+export type Store = {
   anki: AnkiState;
   setAnki: (anki: AnkiState) => void;
 
@@ -56,18 +49,18 @@ type Store = {
   audioVolume: number;
   setAudioVolume: (volume: number) => void;
 
-  // TODO: make configurable
   tzOffset: number;
   autoInitOcr: boolean;
   autoInitTranscribe: boolean;
   ankiAddress: string;
   pythonPath: string;
   autoApplyDateFilter: boolean;
-
   pythonOutputTransform: {
     joinChar: string;
     replaceChars: Record<string, string>;
   };
+
+  setAppConfig: (appConfig: AppConfig) => void;
 
   layout: { left: number; right: number };
   setLayout: (layout: { left: number; right: number }) => void;
@@ -207,7 +200,6 @@ export const useStore = create<Store>()(
       ankiAddress: "http://127.0.0.1:8767",
       pythonPath: "../python-env/Scripts/python.exe",
       autoApplyDateFilter: true,
-
       pythonOutputTransform: {
         joinChar: "",
         replaceChars: {
@@ -218,6 +210,8 @@ export const useStore = create<Store>()(
           "?": "？",
         },
       },
+
+      setAppConfig: (appConfig: AppConfig) => set({ ...appConfig }),
 
       layout: { left: 20, right: 20 },
       setLayout: (layout) => set({ layout }),
@@ -355,6 +349,14 @@ export const useStore = create<Store>()(
         audioVolume: state.audioVolume,
         layout: state.layout,
         dateFilter: state.dateFilter,
+
+        tzOffset: state.tzOffset,
+        autoInitOcr: state.autoInitOcr,
+        autoInitTranscribe: state.autoInitTranscribe,
+        ankiAddress: state.ankiAddress,
+        pythonPath: state.pythonPath,
+        autoApplyDateFilter: state.autoApplyDateFilter,
+        pythonOutputTransform: state.pythonOutputTransform,
       }),
     },
   ),

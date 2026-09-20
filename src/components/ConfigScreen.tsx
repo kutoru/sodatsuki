@@ -8,14 +8,14 @@ import {
 import { useStore } from "../hooks/useStore";
 import { Button } from "./Button";
 import { Separator } from "./Separator";
-import { Window } from "@tauri-apps/api/window";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { Checkbox } from "./Checkbox";
 import { invoke } from "@tauri-apps/api/core";
 import { handleError } from "../utils";
 import { useState } from "react";
-import { ValueOrUpdater } from "../types";
+import { AppConfig } from "../types";
 
-export const Config = () => {
+export const ConfigScreen = () => {
   const tzOffsetInit = useStore((state) => state.tzOffset);
   const autoInitOcrInit = useStore((state) => state.autoInitOcr);
   const autoInitTranscribeInit = useStore((state) => state.autoInitTranscribe);
@@ -28,7 +28,7 @@ export const Config = () => {
     (state) => state.pythonOutputTransform,
   );
 
-  const configInit = {
+  const configInit: AppConfig = {
     ankiAddress: ankiAddressInit,
     autoApplyDateFilter: autoApplyDateFilterInit,
     tzOffset: tzOffsetInit,
@@ -38,69 +38,22 @@ export const Config = () => {
     pythonOutputTransform: pythonOutputTransformInit,
   };
 
-  type Config = typeof configInit;
-
   const [config, setConfig] = useState(structuredClone(configInit));
 
-  const set = <T extends keyof Config>(
-    key: T,
-    valueOrUpdater: ValueOrUpdater<Config[T]>,
-  ) => {
-    setConfig((prev) => {
-      const value =
-        typeof valueOrUpdater === "function"
-          ? valueOrUpdater(prev[key])
-          : valueOrUpdater;
-
-      return { ...prev, [key]: value };
-    });
-  };
+  const set = <T extends keyof AppConfig>(key: T, value: AppConfig[T]) =>
+    setConfig((prev) => ({ ...prev, [key]: value }));
 
   const save = () => {
     delete config.pythonOutputTransform.replaceChars[""];
     setConfig({ ...config });
 
-    const newConfig = Object.entries(config).reduce(
-      (p, [k, v]) => {
-        const key = k as keyof Config;
-
-        if (key === "pythonOutputTransform") {
-          if (config[key].joinChar !== configInit[key].joinChar) {
-            p[key] = v;
-          } else {
-            const newRepChars = Object.keys(config[key].replaceChars);
-            const initRepChars = Object.keys(configInit[key].replaceChars);
-
-            const repCharsDiffer =
-              newRepChars.length !== initRepChars.length ||
-              !!newRepChars.find((char) => {
-                return (
-                  config[key].replaceChars[char] !==
-                  configInit[key].replaceChars[char]
-                );
-              });
-
-            if (repCharsDiffer) {
-              p[key] = v;
-            }
-          }
-        } else if (config[key] !== configInit[key]) {
-          p[key] = v;
-        }
-
-        return p;
-      },
-      {} as Record<keyof Config, any>,
-    );
-
-    invoke("config_save", { config: newConfig })
+    invoke("config_save", { config })
       .then(close)
       .catch(handleError(undefined, false));
   };
 
   const close = () => {
-    const window = new Window("config");
-    window.close();
+    getCurrentWindow().close();
   };
 
   return (

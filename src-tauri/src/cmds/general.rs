@@ -3,12 +3,12 @@ use std::{
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_clipboard_manager::ClipboardExt;
 use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_opener::OpenerExt;
 
-use crate::types::{PartialConfig, ResultExt, VideoSelectResult};
+use crate::types::{AppConfig, ResultExt, VideoSelectResult};
 
 pub fn get_unix_ms() -> u128 {
     SystemTime::now()
@@ -194,10 +194,6 @@ pub async fn config_open(app: AppHandle) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub async fn config_save(app: AppHandle, config: PartialConfig) -> Result<(), String> {
-    println!("config {:#?}", config);
-
-    // notify frontend about config changes
-
-    Ok(())
+pub async fn config_save(app: AppHandle, config: AppConfig) -> Result<(), String> {
+    app.emit_to("main", "config-update", &config).err_msg()
 }

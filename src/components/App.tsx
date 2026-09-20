@@ -9,8 +9,14 @@ import { RightPanel } from "./RightPanel/RightPanel";
 import { AudioPreview } from "./AudioPreview";
 import { Tooltip } from "./Tooltip";
 import { SelectHint } from "./SelectHint";
+import { useEffect } from "react";
+import { getCurrentWebview } from "@tauri-apps/api/webview";
+import { AppConfig } from "../types";
+import { useStore } from "../hooks/useStore";
 
 export const App = () => {
+  const setAppConfig = useStore((state) => state.setAppConfig);
+
   const { leftPanel, middlePanel, rightPanel, leftResize, rightResize } =
     usePanelResize();
 
@@ -27,6 +33,19 @@ export const App = () => {
     opacity: 1,
     tileSize: "256px",
   });
+
+  useEffect(() => {
+    const unlisten = getCurrentWebview().listen<AppConfig>(
+      "config-update",
+      (event) => {
+        setAppConfig(event.payload);
+      },
+    );
+
+    return () => {
+      unlisten.then((fn) => fn());
+    };
+  }, []);
 
   return (
     <div className="flex h-dvh flex-row">

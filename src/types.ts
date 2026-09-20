@@ -1,3 +1,5 @@
+import { Store } from "./hooks/useStore";
+
 export enum Status {
   Online = "Online",
   Loading = "Loading",
@@ -78,3 +80,23 @@ export type SelectHintState = {
   width: number;
   height: number;
 };
+
+export type VideoHandle = {
+  duration: number;
+  getTime: () => number;
+  setTime: (ms: number) => void;
+  pause: () => void;
+  start?: number;
+  end?: number;
+};
+
+export type AppConfig = Pick<
+  Store,
+  | "tzOffset"
+  | "autoInitOcr"
+  | "autoInitTranscribe"
+  | "ankiAddress"
+  | "pythonPath"
+  | "autoApplyDateFilter"
+  | "pythonOutputTransform"
+>;

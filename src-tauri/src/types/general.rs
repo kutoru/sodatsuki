@@ -27,14 +27,14 @@ pub struct ApiResponse<T> {
 
 #[derive(serde::Deserialize, serde::Serialize, std::fmt::Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct PartialConfig {
-    pub anki_address: Option<String>,
-    pub auto_apply_date_filter: Option<bool>,
-    pub tz_offset: Option<i32>,
-    pub python_path: Option<String>,
-    pub auto_init_ocr: Option<bool>,
-    pub auto_init_transcribe: Option<bool>,
-    pub python_output_transform: Option<PythonOutputTransform>,
+pub struct AppConfig {
+    pub anki_address: String,
+    pub auto_apply_date_filter: bool,
+    pub tz_offset: i32,
+    pub python_path: String,
+    pub auto_init_ocr: bool,
+    pub auto_init_transcribe: bool,
+    pub python_output_transform: PythonOutputTransform,
 }
 
 #[derive(serde::Deserialize, serde::Serialize, std::fmt::Debug)]
