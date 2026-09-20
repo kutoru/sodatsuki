@@ -194,7 +194,7 @@ export const useStore = create<Store>()(
       audioVolume: 0.2,
       setAudioVolume: (volume) => set({ audioVolume: volume }),
 
-      tzOffset: 4,
+      tzOffset: 0,
       autoInitOcr: false,
       autoInitTranscribe: false,
       ankiAddress: "http://127.0.0.1:8767",
@@ -206,8 +206,6 @@ export const useStore = create<Store>()(
           " ": "　",
           ".": "。",
           ",": "、",
-          "!": "！",
-          "?": "？",
         },
       },
 

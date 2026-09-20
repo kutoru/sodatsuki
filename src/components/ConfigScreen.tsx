@@ -3,6 +3,7 @@ import {
   CircleMinusIcon,
   CirclePlusIcon,
   MoveRightIcon,
+  RotateCwIcon,
   XIcon,
 } from "lucide-react";
 import { useStore } from "../hooks/useStore";
@@ -43,6 +44,18 @@ export const ConfigScreen = () => {
   const set = <T extends keyof AppConfig>(key: T, value: AppConfig[T]) =>
     setConfig((prev) => ({ ...prev, [key]: value }));
 
+  const reset = () => {
+    const defaultState = useStore.getInitialState();
+
+    const newConfig = Object.keys(config).reduce((p, k) => {
+      const key = k as keyof AppConfig;
+      (p as any)[key] = defaultState[key];
+      return p;
+    }, {} as AppConfig);
+
+    setConfig(newConfig);
+  };
+
   const save = () => {
     delete config.pythonOutputTransform.replaceChars[""];
     setConfig({ ...config });
@@ -57,8 +70,8 @@ export const ConfigScreen = () => {
   };
 
   return (
-    <div className="flex h-dvh p-3">
-      <div className="slim-scrollbar m-auto flex size-full max-h-min max-w-3xl flex-col overflow-auto rounded-md bg-white/3 shadow-even shadow-black backdrop-blur-main">
+    <div className="flex h-dvh flex-col items-center justify-center gap-3 p-3">
+      <div className="slim-scrollbar flex size-full max-h-min max-w-3xl flex-col overflow-auto rounded-md bg-white/3 shadow-even shadow-black backdrop-blur-main">
         <label className="flex flex-row items-center justify-between p-2">
           <div className="flex-1 text-lg">Anki Address</div>
           <input
@@ -71,7 +84,6 @@ export const ConfigScreen = () => {
 
         <Separator />
 
-        {/* TODO: fix checkbox label */}
         <label className="flex flex-row items-center justify-between p-1 ps-2">
           <div className="text-lg">Auto Apply Date Filter</div>
           <Checkbox
@@ -154,11 +166,15 @@ export const ConfigScreen = () => {
                     className="w-16 rounded-md bg-black/50 p-1 shadow-even shadow-black/50 outline-0"
                     value={k}
                     onChange={(e) => {
-                      if (e.target.value.length <= 1) {
+                      const newKey = e.target.value;
+
+                      if (
+                        newKey.length <= 1 &&
+                        config.pythonOutputTransform.replaceChars[newKey] ===
+                          undefined
+                      ) {
                         delete config.pythonOutputTransform.replaceChars[k];
-                        config.pythonOutputTransform.replaceChars[
-                          e.target.value
-                        ] = v;
+                        config.pythonOutputTransform.replaceChars[newKey] = v;
                         setConfig({ ...config });
                       }
                     }}
@@ -214,20 +230,22 @@ export const ConfigScreen = () => {
             </div>
           </div>
         </div>
+      </div>
 
-        <Separator />
+      <div className="flex w-full max-w-3xl flex-row items-center rounded-md bg-white/3 shadow-even shadow-black backdrop-blur-main">
+        <Button onClick={reset} className="p-2">
+          <RotateCwIcon className="size-full" />
+        </Button>
 
         <div className="flex-1" />
 
-        <div className="flex flex-row items-center justify-end">
-          <Button onClick={save} className="p-2">
-            <CheckIcon className="size-full" />
-          </Button>
-          <Separator orientation="vertical" />
-          <Button onClick={close} className="p-2">
-            <XIcon className="size-full" />
-          </Button>
-        </div>
+        <Button onClick={save} className="p-2">
+          <CheckIcon className="size-full" />
+        </Button>
+        <Separator orientation="vertical" />
+        <Button onClick={close} className="p-2">
+          <XIcon className="size-full" />
+        </Button>
       </div>
     </div>
   );
