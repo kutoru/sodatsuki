@@ -2,9 +2,7 @@ import {
   CheckIcon,
   CircleMinusIcon,
   CirclePlusIcon,
-  MinusIcon,
   MoveRightIcon,
-  PlusIcon,
   XIcon,
 } from "lucide-react";
 import { useStore } from "../hooks/useStore";
@@ -12,19 +10,93 @@ import { Button } from "./Button";
 import { Separator } from "./Separator";
 import { Window } from "@tauri-apps/api/window";
 import { Checkbox } from "./Checkbox";
+import { invoke } from "@tauri-apps/api/core";
+import { handleError } from "../utils";
+import { useState } from "react";
+import { ValueOrUpdater } from "../types";
 
 export const Config = () => {
-  const tzOffset = useStore((state) => state.tzOffset);
-  const autoInitOcr = useStore((state) => state.autoInitOcr);
-  const autoInitTranscribe = useStore((state) => state.autoInitTranscribe);
-  const ankiAddress = useStore((state) => state.ankiAddress);
-  const pythonPath = useStore((state) => state.pythonPath);
-  const autoApplyDateFilter = useStore((state) => state.autoApplyDateFilter);
-  const pythonOutputTransform = useStore(
+  const tzOffsetInit = useStore((state) => state.tzOffset);
+  const autoInitOcrInit = useStore((state) => state.autoInitOcr);
+  const autoInitTranscribeInit = useStore((state) => state.autoInitTranscribe);
+  const ankiAddressInit = useStore((state) => state.ankiAddress);
+  const pythonPathInit = useStore((state) => state.pythonPath);
+  const autoApplyDateFilterInit = useStore(
+    (state) => state.autoApplyDateFilter,
+  );
+  const pythonOutputTransformInit = useStore(
     (state) => state.pythonOutputTransform,
   );
 
-  const save = () => {};
+  const configInit = {
+    ankiAddress: ankiAddressInit,
+    autoApplyDateFilter: autoApplyDateFilterInit,
+    tzOffset: tzOffsetInit,
+    pythonPath: pythonPathInit,
+    autoInitOcr: autoInitOcrInit,
+    autoInitTranscribe: autoInitTranscribeInit,
+    pythonOutputTransform: pythonOutputTransformInit,
+  };
+
+  type Config = typeof configInit;
+
+  const [config, setConfig] = useState(structuredClone(configInit));
+
+  const set = <T extends keyof Config>(
+    key: T,
+    valueOrUpdater: ValueOrUpdater<Config[T]>,
+  ) => {
+    setConfig((prev) => {
+      const value =
+        typeof valueOrUpdater === "function"
+          ? valueOrUpdater(prev[key])
+          : valueOrUpdater;
+
+      return { ...prev, [key]: value };
+    });
+  };
+
+  const save = () => {
+    delete config.pythonOutputTransform.replaceChars[""];
+    setConfig({ ...config });
+
+    const newConfig = Object.entries(config).reduce(
+      (p, [k, v]) => {
+        const key = k as keyof Config;
+
+        if (key === "pythonOutputTransform") {
+          if (config[key].joinChar !== configInit[key].joinChar) {
+            p[key] = v;
+          } else {
+            const newRepChars = Object.keys(config[key].replaceChars);
+            const initRepChars = Object.keys(configInit[key].replaceChars);
+
+            const repCharsDiffer =
+              newRepChars.length !== initRepChars.length ||
+              !!newRepChars.find((char) => {
+                return (
+                  config[key].replaceChars[char] !==
+                  configInit[key].replaceChars[char]
+                );
+              });
+
+            if (repCharsDiffer) {
+              p[key] = v;
+            }
+          }
+        } else if (config[key] !== configInit[key]) {
+          p[key] = v;
+        }
+
+        return p;
+      },
+      {} as Record<keyof Config, any>,
+    );
+
+    invoke("config_save", { config: newConfig })
+      .then(close)
+      .catch(handleError(undefined, false));
+  };
 
   const close = () => {
     const window = new Window("config");
@@ -33,13 +105,14 @@ export const Config = () => {
 
   return (
     <div className="flex h-dvh p-3">
-      <div className="m-auto flex size-full max-h-192 max-w-3xl flex-col rounded-md bg-white/3 shadow-even shadow-black backdrop-blur-main">
+      <div className="slim-scrollbar m-auto flex size-full max-h-min max-w-3xl flex-col overflow-auto rounded-md bg-white/3 shadow-even shadow-black backdrop-blur-main">
         <label className="flex flex-row items-center justify-between p-2">
           <div className="flex-1 text-lg">Anki Address</div>
           <input
             type="text"
-            className="flex-1 rounded-md bg-black/50 p-1 outline-0"
-            value={ankiAddress}
+            className="flex-1 rounded-md bg-black/50 p-1 shadow-even shadow-black/50 outline-0"
+            value={config.ankiAddress}
+            onChange={(e) => set("ankiAddress", e.target.value)}
           />
         </label>
 
@@ -48,7 +121,10 @@ export const Config = () => {
         {/* TODO: fix checkbox label */}
         <label className="flex flex-row items-center justify-between p-1 ps-2">
           <div className="text-lg">Auto Apply Date Filter</div>
-          <Checkbox checked={autoApplyDateFilter} />
+          <Checkbox
+            checked={config.autoApplyDateFilter}
+            onChange={(e) => set("autoApplyDateFilter", e.target.checked)}
+          />
         </label>
 
         <Separator />
@@ -57,8 +133,9 @@ export const Config = () => {
           <div className="text-lg">Timezone Offset</div>
           <input
             type="number"
-            className="w-16 rounded-md bg-black/50 p-1 outline-0"
-            value={tzOffset}
+            className="w-16 rounded-md bg-black/50 p-1 shadow-even shadow-black/50 outline-0"
+            value={config.tzOffset}
+            onChange={(e) => set("tzOffset", parseInt(e.target.value))}
           />
         </label>
 
@@ -68,8 +145,9 @@ export const Config = () => {
           <div className="flex-1 text-lg">Python Path</div>
           <input
             type="text"
-            className="flex-1 rounded-md bg-black/50 p-1 outline-0"
-            value={pythonPath}
+            className="flex-1 rounded-md bg-black/50 p-1 shadow-even shadow-black/50 outline-0"
+            value={config.pythonPath}
+            onChange={(e) => set("pythonPath", e.target.value)}
           />
         </label>
 
@@ -77,14 +155,20 @@ export const Config = () => {
 
         <label className="flex flex-row items-center justify-between p-1 ps-2">
           <div className="text-lg">Auto Initialize OCR</div>
-          <Checkbox checked={autoInitOcr} />
+          <Checkbox
+            checked={config.autoInitOcr}
+            onChange={(e) => set("autoInitOcr", e.target.checked)}
+          />
         </label>
 
         <Separator />
 
         <label className="flex flex-row items-center justify-between p-1 ps-2">
           <div className="text-lg">Auto Initialize Transcribe</div>
-          <Checkbox checked={autoInitTranscribe} />
+          <Checkbox
+            checked={config.autoInitTranscribe}
+            onChange={(e) => set("autoInitTranscribe", e.target.checked)}
+          />
         </label>
 
         <Separator />
@@ -96,42 +180,85 @@ export const Config = () => {
             <div>Join With</div>
             <input
               type="text"
-              className="w-16 rounded-md bg-black/50 p-1 outline-0"
-              value={pythonOutputTransform.joinChar}
+              className="w-16 rounded-md bg-black/50 p-1 shadow-even shadow-black/50 outline-0"
+              value={config.pythonOutputTransform.joinChar}
+              onChange={(e) => {
+                if (e.target.value.length <= 1) {
+                  config.pythonOutputTransform.joinChar = e.target.value;
+                  setConfig({ ...config });
+                }
+              }}
             />
           </label>
 
-          <div>Replace Strings</div>
-          <div className="flex flex-row flex-wrap gap-2 pt-1">
-            {Object.entries(pythonOutputTransform.replaceChars).map(
+          <div>Replace Characters</div>
+          <div className="flex flex-col gap-2 pt-2">
+            {Object.entries(config.pythonOutputTransform.replaceChars).map(
               ([k, v]) => (
-                <div className="flex flex-row items-center">
+                <div className="flex flex-row items-center gap-2">
                   <input
                     type="text"
                     className="w-16 rounded-md bg-black/50 p-1 shadow-even shadow-black/50 outline-0"
                     value={k}
+                    onChange={(e) => {
+                      if (e.target.value.length <= 1) {
+                        delete config.pythonOutputTransform.replaceChars[k];
+                        config.pythonOutputTransform.replaceChars[
+                          e.target.value
+                        ] = v;
+                        setConfig({ ...config });
+                      }
+                    }}
                   />
 
-                  <div className="h-1 w-2 bg-white" />
+                  <MoveRightIcon className="size-5" />
 
                   <input
                     type="text"
                     className="w-16 rounded-md bg-black/50 p-1 shadow-even shadow-black/50 outline-0"
                     value={v}
+                    onChange={(e) => {
+                      if (e.target.value.length <= 1) {
+                        config.pythonOutputTransform.replaceChars[k] =
+                          e.target.value;
+                        setConfig({ ...config });
+                      }
+                    }}
                   />
 
-                  <div className="h-1 w-2 bg-white" />
+                  <div className="flex-1" />
 
-                  <Button className="h-8! w-6! p-1 px-0">
-                    <CircleMinusIcon className="size-full -translate-x-px" />
+                  <Button
+                    className="size-8! p-1"
+                    onClick={() => {
+                      delete config.pythonOutputTransform.replaceChars[k];
+                      setConfig({ ...config });
+                    }}
+                  >
+                    <CircleMinusIcon className="size-full" />
                   </Button>
                 </div>
               ),
             )}
 
-            <Button className="size-8! p-1">
-              <CirclePlusIcon className="size-full" />
-            </Button>
+            <div className="flex flex-row justify-end">
+              <Button
+                className="size-8! p-1"
+                onClick={() => {
+                  if (
+                    config.pythonOutputTransform.replaceChars[""] === undefined
+                  ) {
+                    config.pythonOutputTransform.replaceChars[""] = "";
+                    setConfig({ ...config });
+                  }
+                }}
+                disabled={
+                  config.pythonOutputTransform.replaceChars[""] !== undefined
+                }
+              >
+                <CirclePlusIcon className="size-full" />
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -140,7 +267,7 @@ export const Config = () => {
         <div className="flex-1" />
 
         <div className="flex flex-row items-center justify-end">
-          <Button onClick={save} className="p-2" disabled>
+          <Button onClick={save} className="p-2">
             <CheckIcon className="size-full" />
           </Button>
           <Separator orientation="vertical" />

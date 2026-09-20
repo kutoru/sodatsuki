@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::types::PythonState;
 
 pub type Http<'a> = tauri::State<'a, reqwest::Client>;
@@ -21,6 +23,25 @@ pub struct VideoSelectResult {
 pub struct ApiResponse<T> {
     pub result: Option<T>,
     pub error: Option<String>,
+}
+
+#[derive(serde::Deserialize, serde::Serialize, std::fmt::Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct PartialConfig {
+    pub anki_address: Option<String>,
+    pub auto_apply_date_filter: Option<bool>,
+    pub tz_offset: Option<i32>,
+    pub python_path: Option<String>,
+    pub auto_init_ocr: Option<bool>,
+    pub auto_init_transcribe: Option<bool>,
+    pub python_output_transform: Option<PythonOutputTransform>,
+}
+
+#[derive(serde::Deserialize, serde::Serialize, std::fmt::Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct PythonOutputTransform {
+    pub join_char: String,
+    pub replace_chars: HashMap<String, String>,
 }
 
 pub trait ResultExt<T> {

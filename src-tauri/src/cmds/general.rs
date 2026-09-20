@@ -8,7 +8,7 @@ use tauri_plugin_clipboard_manager::ClipboardExt;
 use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_opener::OpenerExt;
 
-use crate::types::{ResultExt, VideoSelectResult};
+use crate::types::{PartialConfig, ResultExt, VideoSelectResult};
 
 pub fn get_unix_ms() -> u128 {
     SystemTime::now()
@@ -181,14 +181,23 @@ pub async fn config_open(app: AppHandle) -> Result<(), String> {
     tauri::WebviewWindowBuilder::new(&app, "config", tauri::WebviewUrl::App("#config".into()))
         .title("Config")
         .minimizable(false)
-        .min_inner_size(512.0, 512.0)
-        .inner_size(512.0, 512.0)
+        .min_inner_size(640.0, 640.0)
+        .inner_size(640.0, 640.0)
         .center()
         .background_color(tauri::window::Color(0, 0, 0, 255))
         .parent(&main_window)
         .err_msg()?
         .build()
         .err_msg()?;
+
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn config_save(app: AppHandle, config: PartialConfig) -> Result<(), String> {
+    println!("config {:#?}", config);
+
+    // notify frontend about config changes
 
     Ok(())
 }
