@@ -181,8 +181,9 @@ pub async fn config_open(app: AppHandle) -> Result<(), String> {
     tauri::WebviewWindowBuilder::new(&app, "config", tauri::WebviewUrl::App("#config".into()))
         .title("Config")
         .minimizable(false)
-        .min_inner_size(640.0, 480.0)
-        .inner_size(640.0, 480.0)
+        .min_inner_size(512.0, 512.0)
+        .inner_size(512.0, 512.0)
+        .center()
         .background_color(tauri::window::Color(0, 0, 0, 255))
         .parent(&main_window)
         .err_msg()?

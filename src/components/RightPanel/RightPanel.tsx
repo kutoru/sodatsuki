@@ -12,7 +12,6 @@ import { handleError } from "../../utils";
 type Props = {
   rightPanel: Ref<HTMLDivElement>;
   rightResize: Ref<HTMLDivElement>;
-  blurFilter: { backdropFilter: string };
 };
 
 type FieldSetters = Record<Field, (value: string) => void>;
@@ -67,7 +66,7 @@ const setSelectHint = () => {
   });
 };
 
-export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
+export const RightPanel = ({ rightPanel, rightResize }: Props) => {
   const showNotification = useStore((state) => state.showNotification);
   const setDeck = useStore((state) => state.setDeck);
   const ankiAddress = useStore((state) => state.ankiAddress);
@@ -236,8 +235,7 @@ export const RightPanel = ({ rightPanel, rightResize, blurFilter }: Props) => {
 
       <div
         ref={rightPanel}
-        className="flex flex-1 flex-col overflow-auto bg-white/3 shadow-even shadow-black"
-        style={blurFilter}
+        className="flex flex-1 flex-col overflow-auto bg-white/3 shadow-even shadow-black backdrop-blur-main"
       >
         <div className="flex flex-row items-center">
           <Button onClick={resetNote} className="p-2.5" disabled={!hasDiff}>

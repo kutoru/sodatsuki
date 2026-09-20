@@ -13,7 +13,6 @@ import { useStore } from "../../hooks/useStore";
 type Props = {
   leftPanel: Ref<HTMLDivElement>;
   leftResize: Ref<HTMLDivElement>;
-  blurFilter: { backdropFilter: string };
 };
 
 const calculateCharacterWidths = () => {
@@ -62,7 +61,7 @@ const getDigitWidth = (notesLength: number) => {
   return totalDigits * maxWidth + charWidths["&nbsp;"];
 };
 
-export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
+export const LeftPanel = ({ leftPanel, leftResize }: Props) => {
   const dateFilter = useStore((state) => state.dateFilter);
   const ankiAddress = useStore((state) => state.ankiAddress);
 
@@ -161,8 +160,7 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
     <>
       <div
         ref={leftPanel}
-        className="flex flex-1 scrollbar-thin flex-col overflow-auto bg-white/3 shadow-even shadow-black"
-        style={blurFilter}
+        className="flex flex-1 scrollbar-thin flex-col overflow-auto bg-white/3 shadow-even shadow-black backdrop-blur-main"
       >
         <div className="flex flex-row items-center">
           <div
@@ -256,7 +254,7 @@ export const LeftPanel = ({ leftPanel, leftResize, blurFilter }: Props) => {
         <div className="pointer-events-none absolute top-0 -left-3 h-full overflow-x-hidden px-3">
           <div
             className={clsx(
-              "pointer-events-auto flex h-full w-max flex-col overflow-auto bg-black/80 shadow-even shadow-black backdrop-blur-[2px] transition duration-500",
+              "pointer-events-auto flex h-full w-max flex-col overflow-auto bg-black/80 shadow-even shadow-black backdrop-blur-main transition duration-500",
               !showDecks && "-translate-x-[calc(100%+0.75rem+0.75rem)]",
             )}
           >

@@ -14,10 +14,9 @@ import { handleError } from "../../utils";
 
 type Props = {
   middlePanel: Ref<HTMLDivElement>;
-  blurFilter: { backdropFilter: string };
 };
 
-export const MiddlePanel = ({ middlePanel, blurFilter }: Props) => {
+export const MiddlePanel = ({ middlePanel }: Props) => {
   const openConfig = () => {
     invoke("config_open").catch(handleError());
   };
@@ -29,10 +28,7 @@ export const MiddlePanel = ({ middlePanel, blurFilter }: Props) => {
         <OcrMaskEditor />
       </div>
 
-      <div
-        className="flex-1 overflow-auto bg-white/3 shadow-even shadow-black"
-        style={blurFilter}
-      >
+      <div className="flex-1 overflow-auto bg-white/3 shadow-even shadow-black backdrop-blur-main">
         <VideoSelector />
         <Separator />
 

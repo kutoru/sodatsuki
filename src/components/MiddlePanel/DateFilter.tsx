@@ -63,6 +63,7 @@ export const DateFilter = () => {
         />
 
         <Checkbox
+          className="w-8 ps-0"
           onChange={(e) =>
             setDateFilter((prev) => ({
               ...prev,
@@ -118,6 +119,7 @@ export const DateFilter = () => {
         />
 
         <Checkbox
+          className="w-8 ps-0"
           onChange={(e) =>
             setDateFilter((prev) => ({
               ...prev,

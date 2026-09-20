@@ -19,6 +19,7 @@ html {
   --shadow-even: 0 0 5px 0px red;
   --drop-shadow-even: 0 0 5px red;
   --color-separator: rgba(255 255 255 / 0.15);
+  --backdrop-blur-main: 2px;
 }
 
 .slim-scrollbar::-webkit-scrollbar {

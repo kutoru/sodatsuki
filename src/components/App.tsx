@@ -28,8 +28,6 @@ export const App = () => {
     tileSize: "256px",
   });
 
-  const blurFilter = { backdropFilter: "blur(2px)" };
-
   return (
     <div className="flex h-dvh flex-row">
       <div
@@ -42,19 +40,11 @@ export const App = () => {
         style={bgNoise}
       />
 
-      <LeftPanel
-        leftPanel={leftPanel}
-        leftResize={leftResize}
-        blurFilter={blurFilter}
-      />
+      <LeftPanel leftPanel={leftPanel} leftResize={leftResize} />
 
-      <MiddlePanel middlePanel={middlePanel} blurFilter={blurFilter} />
+      <MiddlePanel middlePanel={middlePanel} />
 
-      <RightPanel
-        rightPanel={rightPanel}
-        rightResize={rightResize}
-        blurFilter={blurFilter}
-      />
+      <RightPanel rightPanel={rightPanel} rightResize={rightResize} />
 
       <Notification />
 
