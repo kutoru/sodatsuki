@@ -1,8 +1,14 @@
 import { App } from "./App";
-import { ConfigScreen } from "./ConfigScreen";
+import { ConfigScreen } from "./ConfigScreen/ConfigScreen";
 
 export const Router = () => {
   const hash = window.location.hash;
 
-  return hash === "#config" ? <ConfigScreen /> : <App />;
+  return (
+    <>
+      {!hash && <App />}
+
+      {hash === "#config" && <ConfigScreen />}
+    </>
+  );
 };
