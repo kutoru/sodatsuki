@@ -179,8 +179,8 @@ export const LeftPanel = ({ leftPanel, leftResize }: Props) => {
             Anki
           </div>
 
-          <Button onClick={loadAnki} className="p-2.5">
-            <RefreshCcwIcon className="size-full" />
+          <Button onClick={loadAnki} className="p-2.5!">
+            <RefreshCcwIcon />
           </Button>
         </div>
 
@@ -197,12 +197,11 @@ export const LeftPanel = ({ leftPanel, leftResize }: Props) => {
 
           <Button
             onClick={() => setShowDecks(!showDecks)}
-            className="p-2"
             disabled={anki.status !== Status.Online || loadingDeck}
           >
             <ChevronRightIcon
               className={clsx(
-                "size-full transition-[rotate] duration-500",
+                "transition-[rotate] duration-500",
                 showDecks && "rotate-180",
               )}
             />

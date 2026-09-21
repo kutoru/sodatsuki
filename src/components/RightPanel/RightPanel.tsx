@@ -238,8 +238,8 @@ export const RightPanel = ({ rightPanel, rightResize }: Props) => {
         className="flex flex-1 flex-col overflow-auto bg-white/3 shadow-even shadow-black backdrop-blur-main"
       >
         <div className="flex flex-row items-center">
-          <Button onClick={resetNote} className="p-2.5" disabled={!hasDiff}>
-            <RotateCwIcon className="size-full" />
+          <Button onClick={resetNote} className="p-2.5!" disabled={!hasDiff}>
+            <RotateCwIcon />
           </Button>
 
           <div
@@ -253,18 +253,14 @@ export const RightPanel = ({ rightPanel, rightResize }: Props) => {
             {hasDiff && " *"}
           </div>
 
-          <Button
-            onClick={saveNote}
-            className="p-2"
-            disabled={!hasDiff || savingNote}
-          >
-            <CheckIcon className="size-full" />
+          <Button onClick={saveNote} disabled={!hasDiff || savingNote}>
+            <CheckIcon />
           </Button>
 
           <Separator orientation="vertical" />
 
-          <Button onClick={closeNote} className="p-2" disabled={!selectedNote}>
-            <XIcon className="size-full" />
+          <Button onClick={closeNote} disabled={!selectedNote}>
+            <XIcon />
           </Button>
         </div>
 

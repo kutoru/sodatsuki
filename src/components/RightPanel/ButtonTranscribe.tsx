@@ -33,7 +33,7 @@ export const ButtonTranscribe = () => {
   return (
     <Button
       onClick={runTranscribe}
-      className="w-9 p-2 pe-1"
+      className="w-9 pe-1"
       disabled={
         !videoFile ||
         clipTime.start >= clipTime.end ||
@@ -42,7 +42,7 @@ export const ButtonTranscribe = () => {
         transcribeStatus !== Status.Online
       }
     >
-      <AudioLinesIcon className="size-full" />
+      <AudioLinesIcon />
     </Button>
   );
 };

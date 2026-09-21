@@ -91,14 +91,14 @@ export const SelectHint = () => {
         !selectHintState && "pointer-events-none opacity-0",
       )}
     >
-      <Button onClick={replace} className="size-8! p-1">
-        <ReplaceIcon className="size-full" />
+      <Button onClick={replace} className="size-8! p-1!">
+        <ReplaceIcon />
       </Button>
 
       <div className="my-1 w-0.5 flex-none rounded-full bg-white" />
 
-      <Button onClick={search} className="size-8! p-1">
-        <SearchIcon className="size-full" />
+      <Button onClick={search} className="size-8! p-1!">
+        <SearchIcon />
       </Button>
     </div>
   );

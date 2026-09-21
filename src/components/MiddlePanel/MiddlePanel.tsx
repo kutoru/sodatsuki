@@ -44,8 +44,8 @@ export const MiddlePanel = ({ middlePanel }: Props) => {
         <DupeDisplay />
       </div>
 
-      <Button onClick={openConfig} className="absolute bottom-0 left-0 p-2">
-        <SettingsIcon className="size-full" />
+      <Button onClick={openConfig} className="absolute bottom-0 left-0">
+        <SettingsIcon />
       </Button>
     </div>
   );

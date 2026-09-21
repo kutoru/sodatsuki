@@ -70,8 +70,8 @@ export const DupeDisplay = () => {
           </span>
         </a>
 
-        <Button onClick={openDupesInAnki} className="p-2">
-          <LogInIcon className="size-full rotate-180" />
+        <Button onClick={openDupesInAnki}>
+          <LogInIcon className="rotate-180" />
         </Button>
       </div>
 

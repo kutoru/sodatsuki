@@ -37,7 +37,7 @@ export const DateFilter = () => {
         )}
       >
         <Button
-          className="w-8 p-2 pe-0"
+          className="w-8 pe-0"
           onClick={() =>
             setDateFilter((prev) => ({
               ...prev,
@@ -46,7 +46,7 @@ export const DateFilter = () => {
           }
           disabled={!videoHandle?.start}
         >
-          <RotateCwIcon className="size-full" />
+          <RotateCwIcon />
         </Button>
 
         <input
@@ -83,10 +83,9 @@ export const DateFilter = () => {
             end: videoHandle?.end,
           })
         }
-        className="p-2"
         disabled={!videoHandle}
       >
-        <FunnelIcon className="size-full" />
+        <FunnelIcon />
       </Button>
 
       <div
@@ -96,13 +95,13 @@ export const DateFilter = () => {
         )}
       >
         <Button
-          className="w-8 p-2 pe-0"
+          className="w-8 pe-0"
           onClick={() =>
             setDateFilter((prev) => ({ ...prev, end: videoHandle?.end }))
           }
           disabled={!videoHandle?.end}
         >
-          <RotateCwIcon className="size-full" />
+          <RotateCwIcon />
         </Button>
 
         <input

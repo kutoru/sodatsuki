@@ -227,7 +227,7 @@ export const InnerNoteElement = memo(
 
             <Button
               onClick={copyExpression}
-              className="shrink! overflow-hidden text-ellipsis whitespace-nowrap select-auto! hover:drop-shadow-white/50"
+              className="shrink! overflow-hidden p-0! text-ellipsis whitespace-nowrap select-auto! hover:drop-shadow-white/50"
             >
               {note.fields.Expression}
             </Button>
@@ -237,7 +237,7 @@ export const InnerNoteElement = memo(
             onClick={openNoteInAnki}
             className="w-9 py-2.5 ps-2.5 pe-1.25"
           >
-            <LogInIcon className="size-full rotate-180" />
+            <LogInIcon className="rotate-180" />
           </Button>
 
           <Button
@@ -246,7 +246,7 @@ export const InnerNoteElement = memo(
             className="w-8 py-2.5 ps-1.25 pe-1.25"
             disabled={!canSetTime}
           >
-            <ClockArrowRightIcon className="size-full" />
+            <ClockArrowRightIcon />
           </Button>
 
           <Button
@@ -254,7 +254,7 @@ export const InnerNoteElement = memo(
             className="w-9 py-2.5 ps-1.25 pe-2.5"
             disabled={isActive}
           >
-            <SquareArrowRightExitIcon className="size-full" />
+            <SquareArrowRightExitIcon />
           </Button>
         </div>
       </div>

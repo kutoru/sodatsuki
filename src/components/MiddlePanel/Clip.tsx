@@ -155,10 +155,9 @@ export const Clip = () => {
 
         <Button
           onClick={() => videoHandle!.setTime(clipTime.start)}
-          className="p-2"
           disabled={!videoHandle || capturing}
         >
-          <ArrowUpFromLineIcon className="size-full" />
+          <ArrowUpFromLineIcon />
         </Button>
 
         <Button
@@ -168,10 +167,9 @@ export const Clip = () => {
               end: prev.end,
             }))
           }
-          className="p-2"
           disabled={!videoHandle || capturing}
         >
-          <ArrowDownFromLineIcon className="size-full" />
+          <ArrowDownFromLineIcon />
         </Button>
       </div>
 
@@ -214,16 +212,14 @@ export const Clip = () => {
               });
             }}
             className={clsx(
-              "p-2",
               (!pathAligns || startAligns) && "pointer-events-none opacity-0",
             )}
           >
-            <Link2Icon className="size-full" />
+            <Link2Icon />
           </Button>
 
           <Button
             onClick={captureClip}
-            className="p-2"
             disabled={clipAligns || capturing || !canCapture}
           >
             <FileVolumeIcon />
@@ -243,11 +239,10 @@ export const Clip = () => {
               });
             }}
             className={clsx(
-              "p-2",
               (!pathAligns || endAligns) && "pointer-events-none opacity-0",
             )}
           >
-            <Link2Icon className="size-full" />
+            <Link2Icon />
           </Button>
         </div>
       </div>
@@ -289,10 +284,9 @@ export const Clip = () => {
 
         <Button
           onClick={() => videoHandle!.setTime(clipTime.end)}
-          className="p-2"
           disabled={!videoHandle || capturing}
         >
-          <ArrowUpFromLineIcon className="size-full" />
+          <ArrowUpFromLineIcon />
         </Button>
 
         <Button
@@ -302,10 +296,9 @@ export const Clip = () => {
               end: videoHandle!.getTime(),
             }))
           }
-          className="p-2"
           disabled={!videoHandle || capturing}
         >
-          <ArrowDownFromLineIcon className="size-full" />
+          <ArrowDownFromLineIcon />
         </Button>
       </div>
     </div>

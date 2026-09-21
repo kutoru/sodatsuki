@@ -19,10 +19,10 @@ export const ButtonAddClip = () => {
   return (
     <Button
       onClick={addCurrentClip}
-      className="w-9 p-2 pe-1"
+      className="w-9 pe-1"
       disabled={!currentClipName || !clipAligns}
     >
-      <FileVolumeIcon className="size-full" />
+      <FileVolumeIcon />
     </Button>
   );
 };

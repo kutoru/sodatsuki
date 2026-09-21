@@ -85,8 +85,8 @@ export const PythonOutputTransformConfig = ({ config, setConfig }: Props) => {
 
                 <div className="flex-1" />
 
-                <Button className="size-8! p-1" onClick={removeReplaceEntry}>
-                  <CircleMinusIcon className="size-full" />
+                <Button className="size-8! p-1!" onClick={removeReplaceEntry}>
+                  <CircleMinusIcon />
                 </Button>
               </div>
             );
@@ -95,11 +95,11 @@ export const PythonOutputTransformConfig = ({ config, setConfig }: Props) => {
 
         <div className="flex flex-row justify-end">
           <Button
-            className="size-8! p-1"
+            className="size-8! p-1!"
             onClick={addReplaceEntry}
             disabled={!canAddReplaceEntry}
           >
-            <CirclePlusIcon className="size-full" />
+            <CirclePlusIcon />
           </Button>
         </div>
       </div>

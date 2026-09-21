@@ -45,10 +45,10 @@ export const ButtonCaptureFrame = () => {
   return (
     <Button
       onClick={captureFrame}
-      className="w-9 p-2 pe-1"
+      className="w-9 pe-1"
       disabled={!videoFile || !videoHandle || capturingFrame}
     >
-      <FileImageIcon className="size-full" />
+      <FileImageIcon />
     </Button>
   );
 };

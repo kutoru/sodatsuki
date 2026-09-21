@@ -28,8 +28,8 @@ export const VideoSelector = () => {
         {videoFile?.name || "-"}
       </div>
 
-      <Button onClick={selectFile} className="p-2">
-        <ExternalLinkIcon className="size-full" />
+      <Button onClick={selectFile}>
+        <ExternalLinkIcon />
       </Button>
     </div>
   );

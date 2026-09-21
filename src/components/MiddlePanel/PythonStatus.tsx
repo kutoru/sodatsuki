@@ -72,10 +72,10 @@ export const PythonStatus = () => {
 
         <Button
           onClick={initOcr}
-          className="p-2.5"
+          className="p-2.5!"
           disabled={ocrStatus === Status.Loading}
         >
-          <RefreshCcwIcon className="size-full" />
+          <RefreshCcwIcon />
         </Button>
       </div>
 
@@ -100,10 +100,10 @@ export const PythonStatus = () => {
 
         <Button
           onClick={initTranscribe}
-          className="p-2.5"
+          className="p-2.5!"
           disabled={transcribeStatus === Status.Loading}
         >
-          <RefreshCcwIcon className="size-full" />
+          <RefreshCcwIcon />
         </Button>
       </div>
     </div>

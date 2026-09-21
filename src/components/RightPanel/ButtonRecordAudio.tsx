@@ -102,13 +102,9 @@ export const ButtonRecordAudio = () => {
 
       <Button
         onClick={recording ? endRecording : startRecording}
-        className={clsx("w-9", recording ? "p-2.5 pe-1.25" : "p-2 pe-1")}
+        className={clsx("w-9", recording ? "p-2.5! pe-1.25" : "pe-1")}
       >
-        {recording ? (
-          <SquareIcon strokeWidth={2.5} className="size-full" />
-        ) : (
-          <MicIcon className="size-full" />
-        )}
+        {recording ? <SquareIcon strokeWidth={2.5} /> : <MicIcon />}
       </Button>
     </>
   );

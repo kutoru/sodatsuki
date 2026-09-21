@@ -223,8 +223,8 @@ export const FieldElement = memo(
           {field === "Sentence Audio" && <ButtonAddClip />}
           {field === "Image_URI" && <ButtonCaptureFrame />}
 
-          <Button onClick={toggleExpanded} className="w-9 p-2 ps-1">
-            <PencilIcon className="size-full" />
+          <Button onClick={toggleExpanded} className="w-9 ps-1">
+            <PencilIcon />
           </Button>
         </div>
 

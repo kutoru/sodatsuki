@@ -135,20 +135,20 @@ export const ConfigScreen = () => {
       </div>
 
       <div className="flex w-full max-w-3xl flex-row items-center rounded-md bg-white/3 shadow-even shadow-black backdrop-blur-main">
-        <Button onClick={reset} className="p-2">
-          <RotateCwIcon className="size-full" />
+        <Button onClick={reset}>
+          <RotateCwIcon />
         </Button>
 
         <div className="flex-1" />
 
-        <Button onClick={save} className="p-2">
-          <CheckIcon className="size-full" />
+        <Button onClick={save}>
+          <CheckIcon />
         </Button>
 
         <Separator orientation="vertical" />
 
-        <Button onClick={close} className="p-2">
-          <XIcon className="size-full" />
+        <Button onClick={close}>
+          <XIcon />
         </Button>
       </div>
     </div>

@@ -14,7 +14,7 @@ export const ButtonOcr = () => {
   return (
     <Button
       onClick={() => setEditingOcrMask(true)}
-      className="w-8 p-2 px-1"
+      className="w-8 px-1"
       disabled={
         !videoFile ||
         !videoHandle ||
@@ -23,7 +23,7 @@ export const ButtonOcr = () => {
         editingOcrMask
       }
     >
-      <ScanEyeIcon className="size-full" />
+      <ScanEyeIcon />
     </Button>
   );
 };
