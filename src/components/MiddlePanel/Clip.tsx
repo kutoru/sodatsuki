@@ -36,6 +36,8 @@ export const Clip = () => {
 
   const audioElement = useRef<HTMLAudioElement>(null);
 
+  const prevFilePath = useRef(videoFile?.path);
+
   const captureClip = () => {
     const prevMediaState = clipState?.media;
 
@@ -106,7 +108,11 @@ export const Clip = () => {
   }, [clipState]);
 
   useEffect(() => {
-    setClipTime({ start: 0, end: 0 });
+    if (!videoHandle || videoFile?.path !== prevFilePath.current) {
+      setClipTime({ start: 0, end: 0 });
+    }
+
+    prevFilePath.current = videoFile?.path;
   }, [videoHandle]);
 
   const pathAligns = !!videoFile && videoFile.path === clipState?.videoPath;

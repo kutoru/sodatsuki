@@ -28,6 +28,14 @@ export const DateFilter = () => {
   const dateFilter = useStore((state) => state.dateFilter);
   const setDateFilter = useStore((state) => state.setDateFilter);
 
+  const alignsWithVideo =
+    !!videoHandle?.start &&
+    !!videoHandle.end &&
+    dateFilter.applyStart &&
+    dateFilter.applyEnd &&
+    videoHandle.start === dateFilter.start &&
+    videoHandle.end === dateFilter.end;
+
   return (
     <div className="flex flex-row items-center justify-evenly p-2">
       <div
@@ -83,7 +91,7 @@ export const DateFilter = () => {
             end: videoHandle?.end,
           })
         }
-        disabled={!videoHandle}
+        disabled={!videoHandle || alignsWithVideo}
       >
         <FunnelIcon />
       </Button>

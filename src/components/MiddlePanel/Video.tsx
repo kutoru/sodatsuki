@@ -20,24 +20,27 @@ const getVideoStartTime = (filename: string, tzOffset: number) => {
 
 const getVideoEndTime = (
   videoStartTime: number | undefined,
-  video: HTMLVideoElement | null,
+  durationInMs: number,
 ): number | undefined => {
-  if (!videoStartTime || !video) {
+  if (!videoStartTime) {
     return undefined;
   }
 
-  return videoStartTime + video.duration * 1000;
+  return Math.floor(videoStartTime + durationInMs);
 };
 
 export const Video = () => {
   const videoFile = useStore((state) => state.videoFile);
   const tzOffset = useStore((state) => state.tzOffset);
+
+  const videoHandle = useStore((state) => state.videoHandle);
   const setVideoHandle = useStore((state) => state.setVideoHandle);
 
   const setVideoVolume = useStore((state) => state.setVideoVolume);
   const editingOcrMask = useStore((state) => state.editingOcrMask);
 
   const autoApplyDateFilter = useStore((state) => state.autoApplyDateFilter);
+  const dateFilter = useStore((state) => state.dateFilter);
   const setDateFilter = useStore((state) => state.setDateFilter);
 
   const videoElement = useRef<HTMLVideoElement>(null);
@@ -113,7 +116,7 @@ export const Video = () => {
 
     const onLoadedMetadata = () => {
       const start = getVideoStartTime(videoFile.name, tzOffset);
-      const end = getVideoEndTime(start, video);
+      const end = getVideoEndTime(start, video.duration * 1000);
 
       setVideoHandle({
         duration: video.duration * 1000,
@@ -147,6 +150,31 @@ export const Video = () => {
       setVideoHandle(undefined);
     };
   }, [videoFile]);
+
+  useEffect(() => {
+    if (!videoFile || !videoHandle) {
+      return;
+    }
+
+    const start = getVideoStartTime(videoFile.name, tzOffset);
+    const end = getVideoEndTime(start, videoHandle.duration);
+    setVideoHandle({ ...videoHandle, start, end });
+
+    const dateFilterAligned =
+      dateFilter.applyStart &&
+      dateFilter.applyEnd &&
+      dateFilter.start === videoHandle.start &&
+      dateFilter.end === videoHandle.end;
+
+    if (dateFilterAligned) {
+      setDateFilter({
+        applyStart: true,
+        applyEnd: true,
+        start,
+        end,
+      });
+    }
+  }, [tzOffset]);
 
   return (
     <video
