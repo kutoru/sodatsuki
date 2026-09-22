@@ -41,7 +41,7 @@ export const PythonOutputTransformConfig = ({ config, setConfig }: Props) => {
 
       <div className="flex flex-col gap-2 pt-2">
         {Object.entries(config.pythonOutputTransform.replaceChars).map(
-          ([key, value]) => {
+          ([key, value], i) => {
             const setReplaceKey = (newKey: string) => {
               if (
                 newKey.length <= 1 &&
@@ -66,7 +66,7 @@ export const PythonOutputTransformConfig = ({ config, setConfig }: Props) => {
             };
 
             return (
-              <div className="flex flex-row items-center gap-2">
+              <div key={i} className="flex flex-row items-center gap-2">
                 <ConfigInput
                   type="text"
                   short
