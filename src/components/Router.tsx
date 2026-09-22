@@ -1,3 +1,4 @@
+import "../main.css";
 import { App } from "./App";
 import { ConfigScreen } from "./ConfigScreen/ConfigScreen";
 

@@ -1,4 +1,3 @@
-import "../App.css";
 import { useBgLines } from "../hooks/useBgLines";
 import { usePanelResize } from "../hooks/usePanelResize";
 import { useBgNoise } from "../hooks/useBgNoise";
