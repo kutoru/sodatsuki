@@ -7,10 +7,8 @@ type Props = { config: AppConfig; setConfig: (config: AppConfig) => void };
 
 export const PythonOutputTransformConfig = ({ config, setConfig }: Props) => {
   const setJoinChar = (value: string) => {
-    if (value.length <= 1) {
-      config.pythonOutputTransform.joinChar = value;
-      setConfig({ ...config });
-    }
+    config.pythonOutputTransform.joinChar = value;
+    setConfig({ ...config });
   };
 
   const addReplaceEntry = () => {
