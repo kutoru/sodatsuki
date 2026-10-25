@@ -87,7 +87,7 @@ export const LeftPanel = ({ leftPanel, leftResize }: Props) => {
 
   const loadAnki = () => {
     setShowDecks(false);
-    setAnki({ status: Status.Loading });
+    setAnki({ ...anki, status: Status.Loading });
 
     invoke<{
       mediaPath: string;
