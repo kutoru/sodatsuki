@@ -101,7 +101,9 @@ const getFieldStatus = (field: Field, value: string): FieldStatus => {
     case "Meaning":
       return value.startsWith("<") ? FieldStatus.Warn : FieldStatus.Ok;
     case "Reading":
-      return value.startsWith("<o") ? FieldStatus.Warn : FieldStatus.Ok;
+      return value.startsWith("<o") || value === "No pitch accent data"
+        ? FieldStatus.Warn
+        : FieldStatus.Ok;
     case "Expression":
     case "Audio":
     case "Sentence":
