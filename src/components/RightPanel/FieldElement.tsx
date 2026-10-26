@@ -150,6 +150,7 @@ export const FieldElement = memo(
 
       container.scrollTo({ top: target, behavior: "smooth" });
       editor.current?.setCursor(0, undefined, { scroll: false });
+      document.getSelection()?.empty();
 
       let timeout: number | undefined;
       let prevPos = container.scrollTop;
