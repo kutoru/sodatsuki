@@ -7,6 +7,35 @@ export const ButtonFormatMeaning = () => {
   const setEditNote = useStore((state) => state.setEditNote);
   const focusCodeEditor = useStore((state) => state.focusCodeEditor);
 
+  const formatPart = (item: Element) => {
+    const child = item.children.item(0);
+    const itemHTML = item.innerHTML;
+
+    const useChild = child?.tagName === "SPAN";
+    const useItem = !useChild && itemHTML.includes("<br>");
+
+    if (useChild || useItem) {
+      return (useItem ? itemHTML : child!.innerHTML)
+        .split("<br>")
+        .map((e) =>
+          e.replace(
+            /<span style="vertical-align: text-bottom; margin-right: 0\.25em;"><a.*?<\/a><\/span>/g,
+            "",
+          ),
+        )
+        .filter(
+          (e, i) => !(i === 0) && !(e.startsWith("「") && e.endsWith("」")),
+        )
+        .join("\n<br>\n");
+    } else if (child?.tagName === "UL") {
+      return Array.from(child.children)
+        .map((e) => e.innerHTML)
+        .join(", ");
+    } else {
+      return itemHTML;
+    }
+  };
+
   const format = () => {
     const meaning = editNote!.fields["Meaning"];
 
@@ -14,36 +43,19 @@ export const ButtonFormatMeaning = () => {
     temp.innerHTML = meaning;
     const root = temp.children.item(0)!;
 
-    const parts = Array.from(root.children.item(0)!.children).map((item) => {
-      const child = item.children.item(0);
-      const itemHTML = item.innerHTML;
+    let formatted;
 
-      const useChild = child?.tagName === "SPAN";
-      const useItem = !useChild && itemHTML.includes("<br>");
-
-      if (useChild || useItem) {
-        return (useItem ? itemHTML : child!.innerHTML)
-          .split("<br>")
-          .map((e) =>
-            e.replace(
-              /<span style="vertical-align: text-bottom; margin-right: 0\.25em;"><a.*?<\/a><\/span>/g,
-              "",
-            ),
-          )
-          .filter(
-            (e, i) => !(i === 0) && !(e.startsWith("「") && e.endsWith("」")),
-          )
-          .join("\n<br>\n");
-      } else if (child?.tagName === "UL") {
-        return Array.from(child.children)
-          .map((e) => e.innerHTML)
-          .join(", ");
-      } else {
-        return itemHTML;
-      }
-    });
-
-    const formatted = parts.join("\n<br>\n");
+    if (!root.children.length) {
+      formatted = root.innerHTML;
+    } else if (
+      root.children.length === 1 &&
+      root.children.item(0)?.tagName === "SPAN"
+    ) {
+      formatted = formatPart(root.children.item(0)!);
+    } else {
+      const parts = Array.from(root.children.item(0)!.children).map(formatPart);
+      formatted = parts.join("\n<br>\n");
+    }
 
     setEditNote((prev) => {
       if (!prev) {
