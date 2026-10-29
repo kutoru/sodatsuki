@@ -25,6 +25,7 @@ export const DupeDisplay = () => {
 
   useEffect(() => {
     if (!selectedNote || anki.status !== Status.Online) {
+      setDupes([]);
       return;
     }
 
