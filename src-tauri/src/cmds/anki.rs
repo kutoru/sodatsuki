@@ -139,7 +139,6 @@ pub async fn anki_update_note(
         )
         .await?;
 
-        // TODO: implement safer replace
         for v in note.fields.values_mut() {
             *v = v.replace(&file.name, &new_name);
         }

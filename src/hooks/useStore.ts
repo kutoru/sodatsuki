@@ -122,7 +122,6 @@ export type Store = {
   playPreviewAudio: (src: string) => void;
 
   capturedMedia: Map<string, MediaState>;
-  capturedMediaCounter: number;
 
   addMedia: (blob: Blob, type: MediaState["type"]) => MediaState;
   useMedia: (name: string) => MediaState | undefined;
@@ -288,14 +287,10 @@ export const useStore = create<Store>()(
       playPreviewAudio: (src) => set({ previewAudioData: { src } }),
 
       capturedMedia: new Map(),
-      capturedMediaCounter: 0,
 
       addMedia: (blob, type) => {
-        const mediaCount = get().capturedMediaCounter + 1;
-        set({ capturedMediaCounter: mediaCount });
-
         const src = URL.createObjectURL(blob);
-        const name = `ref-${mediaCount}.${type}`;
+        const name = `ref-${Date.now()}.${type}`;
 
         const clipState: MediaState = {
           name,
