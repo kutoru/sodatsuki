@@ -29,7 +29,7 @@ export const SelectHint = () => {
         return prev;
       }
 
-      prev.fields[selectHintState.field] = selectHintState.text;
+      prev.fields[selectHintState.field] = selectHintState.text.trim();
 
       return { ...prev };
     });
