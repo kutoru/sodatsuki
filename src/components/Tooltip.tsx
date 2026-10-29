@@ -7,8 +7,18 @@ export const Tooltip = () => {
   const hideTooltip = useStore((state) => state.hideTooltip);
 
   useEffect(() => {
-    const onMouseMove = () => {
-      hideTooltip();
+    if (!tooltipState) {
+      return;
+    }
+
+    const onMouseMove = (e: MouseEvent) => {
+      const dx = e.clientX - tooltipState.x;
+      const dy = e.clientY - tooltipState.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance > 5) {
+        hideTooltip();
+      }
     };
 
     document.addEventListener("mousemove", onMouseMove);
@@ -16,7 +26,7 @@ export const Tooltip = () => {
     return () => {
       document.removeEventListener("mousemove", onMouseMove);
     };
-  }, []);
+  }, [tooltipState]);
 
   const size = !tooltipState?.text
     ? undefined
