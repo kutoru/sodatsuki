@@ -35,6 +35,7 @@ pub struct AppConfig {
     pub auto_init_ocr: bool,
     pub auto_init_transcribe: bool,
     pub python_output_transform: PythonOutputTransform,
+    pub zoom: f64,
 }
 
 #[derive(serde::Deserialize, serde::Serialize, std::fmt::Debug)]

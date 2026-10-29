@@ -12,6 +12,8 @@ import { useEffect } from "react";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { AppConfig } from "../types";
 import { useStore } from "../hooks/useStore";
+import { invoke } from "@tauri-apps/api/core";
+import { handleError } from "../utils";
 
 export const App = () => {
   const setAppConfig = useStore((state) => state.setAppConfig);
@@ -44,6 +46,11 @@ export const App = () => {
     return () => {
       unlisten.then((fn) => fn());
     };
+  }, []);
+
+  useEffect(() => {
+    const zoom = useStore.getState().zoom;
+    invoke("set_zoom", { zoom }).catch(handleError());
   }, []);
 
   return (

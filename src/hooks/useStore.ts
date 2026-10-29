@@ -65,6 +65,9 @@ export type Store = {
   layout: { left: number; right: number };
   setLayout: (layout: { left: number; right: number }) => void;
 
+  zoom: number;
+  setZoom: (zoom: number) => void;
+
   ocrStatus: Status;
   setOcrStatus: (status: Status) => void;
   transcribeStatus: Status;
@@ -214,6 +217,9 @@ export const useStore = create<Store>()(
       layout: { left: 20, right: 20 },
       setLayout: (layout) => set({ layout }),
 
+      zoom: 1.0,
+      setZoom: (zoom) => set({ zoom }),
+
       ocrStatus: Status.Offline,
       setOcrStatus: (status) => set({ ocrStatus: status }),
       transcribeStatus: Status.Offline,
@@ -346,6 +352,7 @@ export const useStore = create<Store>()(
         videoVolume: state.videoVolume,
         audioVolume: state.audioVolume,
         layout: state.layout,
+        zoom: state.zoom,
         dateFilter: state.dateFilter,
 
         tzOffset: state.tzOffset,

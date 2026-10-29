@@ -99,4 +99,5 @@ export type AppConfig = Pick<
   | "pythonPath"
   | "autoApplyDateFilter"
   | "pythonOutputTransform"
+  | "zoom"
 >;

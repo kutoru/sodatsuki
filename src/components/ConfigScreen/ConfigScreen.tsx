@@ -23,6 +23,7 @@ export const ConfigScreen = () => {
   const pythonOutputTransformInit = useStore(
     (state) => state.pythonOutputTransform,
   );
+  const zoomInit = useStore((state) => state.zoom);
 
   const configInit: AppConfig = {
     ankiAddress: ankiAddressInit,
@@ -32,6 +33,7 @@ export const ConfigScreen = () => {
     autoInitOcr: autoInitOcrInit,
     autoInitTranscribe: autoInitTranscribeInit,
     pythonOutputTransform: pythonOutputTransformInit,
+    zoom: zoomInit,
   };
 
   const [config, setConfig] = useState(structuredClone(configInit));
@@ -67,6 +69,25 @@ export const ConfigScreen = () => {
   return (
     <div className="flex h-dvh flex-col items-center justify-center gap-3 p-3">
       <div className="slim-scrollbar flex size-full max-h-min max-w-3xl flex-col overflow-auto rounded-md bg-white/3 shadow-even shadow-black backdrop-blur-main">
+        <label className="flex flex-row items-center justify-between p-2">
+          <div className="text-lg">App Scale</div>
+          <ConfigInput
+            type="number"
+            step={0.1}
+            min={0.5}
+            max={2.0}
+            short
+            value={config.zoom}
+            onChange={(e) => {
+              const zoom = parseFloat(e.target.value);
+              set("zoom", zoom);
+              invoke("set_zoom", { zoom }).catch(handleError(undefined, false));
+            }}
+          />
+        </label>
+
+        <Separator />
+
         <label className="flex flex-row items-center justify-between p-2">
           <div className="flex-1 text-lg">Anki Address</div>
           <ConfigInput
@@ -147,7 +168,13 @@ export const ConfigScreen = () => {
 
         <Separator orientation="vertical" />
 
-        <Button onClick={close}>
+        <Button
+          onClick={() => {
+            invoke("set_zoom", { zoom: zoomInit })
+              .then(close)
+              .catch(handleError(undefined, false));
+          }}
+        >
           <XIcon />
         </Button>
       </div>

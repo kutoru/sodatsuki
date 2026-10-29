@@ -9,6 +9,7 @@ import { OcrMaskEditor } from "./OcrMaskEditor";
 import { DupeDisplay } from "./DupeDisplay";
 import { Button } from "../Button";
 import { SettingsIcon } from "lucide-react";
+import { useStore } from "../../hooks/useStore";
 import { invoke } from "@tauri-apps/api/core";
 import { handleError } from "../../utils";
 
@@ -18,7 +19,8 @@ type Props = {
 
 export const MiddlePanel = ({ middlePanel }: Props) => {
   const openConfig = () => {
-    invoke("config_open").catch(handleError());
+    const zoom = useStore.getState().zoom;
+    invoke("config_open", { zoom }).catch(handleError());
   };
 
   return (

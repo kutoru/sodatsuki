@@ -169,7 +169,7 @@ pub async fn frame_capture(
 }
 
 #[tauri::command]
-pub async fn config_open(app: AppHandle) -> Result<(), String> {
+pub async fn config_open(app: AppHandle, zoom: f64) -> Result<(), String> {
     if let Some(config_window) = app.get_webview_window("config") {
         return config_window.set_focus().err_msg();
     }
@@ -188,6 +188,8 @@ pub async fn config_open(app: AppHandle) -> Result<(), String> {
         .parent(&main_window)
         .err_msg()?
         .build()
+        .err_msg()?
+        .set_zoom(zoom)
         .err_msg()?;
 
     Ok(())
@@ -196,4 +198,19 @@ pub async fn config_open(app: AppHandle) -> Result<(), String> {
 #[tauri::command]
 pub async fn config_save(app: AppHandle, config: AppConfig) -> Result<(), String> {
     app.emit_to("main", "config-update", &config).err_msg()
+}
+
+#[tauri::command]
+pub async fn set_zoom(app: AppHandle, zoom: f64) -> Result<(), String> {
+    let main_window = app
+        .get_webview_window("main")
+        .ok_or("Could not get main window")?;
+
+    main_window.set_zoom(zoom).err_msg()?;
+
+    if let Some(config_window) = app.get_webview_window("config") {
+        config_window.set_zoom(zoom).err_msg()?;
+    }
+
+    Ok(())
 }

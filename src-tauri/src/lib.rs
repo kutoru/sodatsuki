@@ -35,6 +35,7 @@ pub fn run() {
             cmds::frame_capture,
             cmds::config_open,
             cmds::config_save,
+            cmds::set_zoom,
             cmds::init_ocr,
             cmds::init_transcribe,
             cmds::run_ocr,
