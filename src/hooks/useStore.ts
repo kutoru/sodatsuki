@@ -15,6 +15,7 @@ import {
   SelectHintState,
   VideoHandle,
   AppConfig,
+  ClipProcessArgs,
 } from "../types";
 
 export type Store = {
@@ -59,6 +60,8 @@ export type Store = {
     joinChar: string;
     replaceChars: Record<string, string>;
   };
+
+  clipProcessArgs: ClipProcessArgs;
 
   setAppConfig: (appConfig: AppConfig) => void;
 
@@ -240,6 +243,18 @@ export const useStore = create<Store>()(
       currentClipName: undefined,
       setCurrentClipName: (clipName) => set({ currentClipName: clipName }),
 
+      clipProcessArgs: {
+        ac: 1,
+        ar: 44100,
+        bitrate: 64,
+        normFramelen: 50,
+        normGausssize: 15,
+        normMaxgain: 30,
+        normAltboundary: true,
+        normCompress: 15,
+        volume: -9,
+      },
+
       clipTime: { start: 0, end: 0 },
       setClipTime: (clipTimeOrUpdater) =>
         typeof clipTimeOrUpdater === "function"
@@ -349,6 +364,7 @@ export const useStore = create<Store>()(
         layout: state.layout,
         zoom: state.zoom,
         dateFilter: state.dateFilter,
+        clipProcessArgs: state.clipProcessArgs,
 
         tzOffset: state.tzOffset,
         autoInitOcr: state.autoInitOcr,

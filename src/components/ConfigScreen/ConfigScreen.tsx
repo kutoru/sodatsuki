@@ -17,6 +17,7 @@ import { AppConfig, ConfigValueUpdater } from "../../types";
 import { GeneralConfig } from "./GeneralConfig";
 import clsx from "clsx";
 import { PythonConfig } from "./PythonConfig";
+import { MediaConfig } from "./MediaConfig";
 
 enum ConfigType {
   General,
@@ -37,6 +38,7 @@ export const ConfigScreen = () => {
     (state) => state.pythonOutputTransform,
   );
   const zoomInit = useStore((state) => state.zoom);
+  const clipProcessArgsInit = useStore((state) => state.clipProcessArgs);
 
   const configInit: AppConfig = {
     ankiAddress: ankiAddressInit,
@@ -47,6 +49,7 @@ export const ConfigScreen = () => {
     autoInitTranscribe: autoInitTranscribeInit,
     pythonOutputTransform: pythonOutputTransformInit,
     zoom: zoomInit,
+    clipProcessArgs: clipProcessArgsInit,
   };
 
   const [config, setConfig] = useState(structuredClone(configInit));
@@ -118,7 +121,7 @@ export const ConfigScreen = () => {
           </div>
 
           <div className="slim-scrollbar flex flex-1 flex-col overflow-auto">
-            Media config
+            <MediaConfig config={config} set={set} />
           </div>
         </div>
       </div>

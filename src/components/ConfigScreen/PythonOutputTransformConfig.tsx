@@ -23,7 +23,7 @@ export const PythonOutputTransformConfig = ({ config, setConfig }: Props) => {
 
   return (
     <div className="flex cursor-default flex-col p-2">
-      <div className="text-lg">Python Output Transform</div>
+      <div className="text-lg">Output Transform</div>
 
       <label className="flex flex-row items-center justify-between">
         <div>Join With</div>

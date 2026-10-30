@@ -13,6 +13,8 @@ import { handleError } from "../../utils";
 import { MediaState } from "../../types";
 
 export const Clip = () => {
+  const clipProcessArgs = useStore((state) => state.clipProcessArgs);
+
   const videoFile = useStore((state) => state.videoFile);
   const videoHandle = useStore((state) => state.videoHandle);
   const setAudioVolume = useStore((state) => state.setAudioVolume);
@@ -51,7 +53,12 @@ export const Clip = () => {
 
     setCapturing(true);
 
-    invoke<ArrayBuffer>("clip_capture", { videoPath, start, end })
+    invoke<ArrayBuffer>("clip_capture", {
+      processArgs: clipProcessArgs,
+      videoPath,
+      start,
+      end,
+    })
       .then((arrayBuffer) => {
         const blob = new Blob([arrayBuffer]);
         const mediaState = addMedia(blob, "mp3");

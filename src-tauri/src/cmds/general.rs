@@ -8,7 +8,7 @@ use tauri_plugin_clipboard_manager::ClipboardExt;
 use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_opener::OpenerExt;
 
-use crate::types::{AppConfig, ResultExt, VideoSelectResult};
+use crate::types::{AppConfig, ClipProcessArgs, ResultExt, VideoSelectResult};
 
 pub fn get_unix_ms() -> u128 {
     SystemTime::now()
@@ -115,10 +115,21 @@ pub async fn data_open(app: AppHandle, data: Vec<u8>) -> Result<(), String> {
 
 #[tauri::command]
 pub async fn clip_capture(
+    process_args: ClipProcessArgs,
     video_path: String,
     start: f64,
     end: f64,
 ) -> Result<tauri::ipc::Response, String> {
+    let filters = format!(
+        "dynaudnorm=f={}:g={}:b={}:m={}:s={},volume={}dB",
+        process_args.norm_framelen,
+        process_args.norm_gausssize,
+        process_args.norm_altboundary,
+        process_args.norm_maxgain,
+        process_args.norm_compress,
+        process_args.volume,
+    );
+
     let clip = ffmpeg(&[
         "-ss",
         &format!("{}ms", start),
@@ -127,13 +138,13 @@ pub async fn clip_capture(
         "-i",
         &video_path,
         "-ac",
-        "1",
+        &process_args.ac.to_string(),
         "-ar",
-        "44100",
+        &process_args.ar.to_string(),
         "-b:a",
-        "64k",
+        &format!("{}k", process_args.bitrate),
         "-af",
-        "dynaudnorm=f=50:g=15:b=true:m=30:s=15,volume=-9dB",
+        &filters,
         "-acodec",
         "libmp3lame",
         "-f",

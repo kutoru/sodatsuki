@@ -36,6 +36,7 @@ pub struct AppConfig {
     pub auto_init_transcribe: bool,
     pub python_output_transform: PythonOutputTransform,
     pub zoom: f64,
+    pub clip_process_args: ClipProcessArgs,
 }
 
 #[derive(serde::Deserialize, serde::Serialize, std::fmt::Debug)]
@@ -53,4 +54,18 @@ impl<T, U: std::fmt::Debug> ResultExt<T> for Result<T, U> {
     fn err_msg(self) -> Result<T, String> {
         self.map_err(|err| format!("{:?}", err))
     }
+}
+
+#[derive(serde::Deserialize, serde::Serialize, std::fmt::Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct ClipProcessArgs {
+    pub ac: u32,
+    pub ar: u32,
+    pub bitrate: u32,
+    pub norm_framelen: u32,
+    pub norm_gausssize: u32,
+    pub norm_maxgain: f64,
+    pub norm_altboundary: bool,
+    pub norm_compress: f64,
+    pub volume: f64,
 }

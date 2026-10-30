@@ -13,8 +13,12 @@ type Props = {
 export const PythonConfig = ({ config, setConfig, set }: Props) => {
   return (
     <>
+      <div className="p-2 text-2xl">Python</div>
+
+      <Separator />
+
       <label className="flex flex-row items-center justify-between p-2">
-        <div className="flex-1 text-lg">Python Path</div>
+        <div className="flex-1 text-lg">Interpreter Path</div>
         <ConfigInput
           type="text"
           value={config.pythonPath}

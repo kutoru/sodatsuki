@@ -100,9 +100,22 @@ export type AppConfig = Pick<
   | "autoApplyDateFilter"
   | "pythonOutputTransform"
   | "zoom"
+  | "clipProcessArgs"
 >;
 
 export type ConfigValueUpdater = <T extends keyof AppConfig>(
   key: T,
   value: AppConfig[T],
 ) => void;
+
+export type ClipProcessArgs = {
+  ac: number;
+  ar: number;
+  bitrate: number;
+  normFramelen: number;
+  normGausssize: number;
+  normMaxgain: number;
+  normAltboundary: boolean;
+  normCompress: number;
+  volume: number;
+};
