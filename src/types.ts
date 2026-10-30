@@ -101,3 +101,8 @@ export type AppConfig = Pick<
   | "pythonOutputTransform"
   | "zoom"
 >;
+
+export type ConfigValueUpdater = <T extends keyof AppConfig>(
+  key: T,
+  value: AppConfig[T],
+) => void;

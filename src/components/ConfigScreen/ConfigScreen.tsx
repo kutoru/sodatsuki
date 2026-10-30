@@ -1,15 +1,28 @@
-import { CheckIcon, RotateCwIcon, XIcon } from "lucide-react";
+import {
+  CheckIcon,
+  FileImageIcon,
+  RotateCwIcon,
+  SettingsIcon,
+  SquareCodeIcon,
+  XIcon,
+} from "lucide-react";
 import { useStore } from "../../hooks/useStore";
 import { Button } from "../Button";
 import { Separator } from "../Separator";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { Checkbox } from "../Checkbox";
 import { invoke } from "@tauri-apps/api/core";
 import { handleError } from "../../utils";
 import { useState } from "react";
-import { AppConfig } from "../../types";
-import { ConfigInput } from "./ConfigInput";
-import { PythonOutputTransformConfig } from "./PythonOutputTransformConfig";
+import { AppConfig, ConfigValueUpdater } from "../../types";
+import { GeneralConfig } from "./GeneralConfig";
+import clsx from "clsx";
+import { PythonConfig } from "./PythonConfig";
+
+enum ConfigType {
+  General,
+  Python,
+  Media,
+}
 
 export const ConfigScreen = () => {
   const tzOffsetInit = useStore((state) => state.tzOffset);
@@ -38,7 +51,9 @@ export const ConfigScreen = () => {
 
   const [config, setConfig] = useState(structuredClone(configInit));
 
-  const set = <T extends keyof AppConfig>(key: T, value: AppConfig[T]) =>
+  const [selectedConfig, setSelectedConfig] = useState(ConfigType.General);
+
+  const set: ConfigValueUpdater = (key, value) =>
     setConfig((prev) => ({ ...prev, [key]: value }));
 
   const reset = () => {
@@ -68,91 +83,44 @@ export const ConfigScreen = () => {
 
   return (
     <div className="flex h-dvh flex-col items-center justify-center gap-3 p-3">
-      <div className="slim-scrollbar flex size-full max-h-min max-w-3xl flex-col overflow-auto rounded-md bg-white/3 shadow-even shadow-black backdrop-blur-main">
-        <label className="flex flex-row items-center justify-between p-2">
-          <div className="text-lg">App Scale</div>
-          <ConfigInput
-            type="number"
-            step={0.1}
-            min={0.5}
-            max={2.0}
-            short
-            value={config.zoom}
-            onChange={(e) => {
-              const zoom = parseFloat(e.target.value);
-              set("zoom", zoom);
-              invoke("set_zoom", { zoom }).catch(handleError(undefined, false));
-            }}
-          />
-        </label>
+      <div className="flex w-full max-w-3xl flex-row items-center justify-center rounded-md bg-white/3 shadow-even shadow-black backdrop-blur-main">
+        <Button onClick={() => setSelectedConfig(ConfigType.General)}>
+          <SettingsIcon />
+        </Button>
 
-        <Separator />
+        <Separator orientation="vertical" />
 
-        <label className="flex flex-row items-center justify-between p-2">
-          <div className="flex-1 text-lg">Anki Address</div>
-          <ConfigInput
-            type="text"
-            value={config.ankiAddress}
-            onChange={(e) => set("ankiAddress", e.target.value)}
-          />
-        </label>
+        <Button onClick={() => setSelectedConfig(ConfigType.Python)}>
+          <SquareCodeIcon />
+        </Button>
 
-        <Separator />
+        <Separator orientation="vertical" />
 
-        <label className="flex flex-row items-center justify-between p-1 ps-2">
-          <div className="text-lg">Auto Apply Date Filter</div>
-          <Checkbox
-            checked={config.autoApplyDateFilter}
-            onChange={(e) => set("autoApplyDateFilter", e.target.checked)}
-          />
-        </label>
+        <Button onClick={() => setSelectedConfig(ConfigType.Media)}>
+          <FileImageIcon />
+        </Button>
+      </div>
 
-        <Separator />
+      <div className="flex size-full max-w-3xl overflow-hidden rounded-md bg-white/3 shadow-even shadow-black backdrop-blur-main">
+        <div
+          className={clsx(
+            "flex min-w-[300%] flex-row transition-transform duration-500",
+            selectedConfig === ConfigType.Python && "-translate-x-1/3",
+            selectedConfig === ConfigType.Media && "-translate-x-2/3",
+          )}
+        >
+          <div className="slim-scrollbar flex flex-1 flex-col overflow-auto">
+            <GeneralConfig config={config} set={set} />
+          </div>
 
-        <label className="flex flex-row items-center justify-between p-2">
-          <div className="text-lg">Timezone Offset</div>
-          <ConfigInput
-            type="number"
-            short
-            value={config.tzOffset}
-            onChange={(e) => set("tzOffset", parseInt(e.target.value))}
-          />
-        </label>
+          <div className="slim-scrollbar flex flex-1 flex-col overflow-auto">
+            <PythonConfig config={config} setConfig={setConfig} set={set} />
+          </div>
 
-        <Separator />
-
-        <label className="flex flex-row items-center justify-between p-2">
-          <div className="flex-1 text-lg">Python Path</div>
-          <ConfigInput
-            type="text"
-            value={config.pythonPath}
-            onChange={(e) => set("pythonPath", e.target.value)}
-          />
-        </label>
-
-        <Separator />
-
-        <label className="flex flex-row items-center justify-between p-1 ps-2">
-          <div className="text-lg">Auto Initialize OCR</div>
-          <Checkbox
-            checked={config.autoInitOcr}
-            onChange={(e) => set("autoInitOcr", e.target.checked)}
-          />
-        </label>
-
-        <Separator />
-
-        <label className="flex flex-row items-center justify-between p-1 ps-2">
-          <div className="text-lg">Auto Initialize Transcribe</div>
-          <Checkbox
-            checked={config.autoInitTranscribe}
-            onChange={(e) => set("autoInitTranscribe", e.target.checked)}
-          />
-        </label>
-
-        <Separator />
-
-        <PythonOutputTransformConfig config={config} setConfig={setConfig} />
+          <div className="slim-scrollbar flex flex-1 flex-col overflow-auto">
+            Media config
+          </div>
+        </div>
       </div>
 
       <div className="flex w-full max-w-3xl flex-row items-center rounded-md bg-white/3 shadow-even shadow-black backdrop-blur-main">
