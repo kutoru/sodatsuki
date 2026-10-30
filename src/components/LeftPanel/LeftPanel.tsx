@@ -76,6 +76,7 @@ export const LeftPanel = ({ leftPanel, leftResize }: Props) => {
 
   const selectedNote = useStore((state) => state.selectedNote);
   const setSelectedNote = useStore((state) => state.setSelectedNote);
+  const setEditNote = useStore((state) => state.setEditNote);
 
   const [loadingDeck, setLoadingDeck] = useState(false);
   const [showDecks, setShowDecks] = useState(false);
@@ -136,8 +137,23 @@ export const LeftPanel = ({ leftPanel, leftResize }: Props) => {
     }
 
     const updatedNote = deck.notes.find((v) => v.id === selectedNote.id);
+
     if (updatedNote) {
       setSelectedNote(updatedNote);
+
+      setEditNote((prev) => {
+        if (prev?.id === updatedNote.id) {
+          return {
+            ...prev,
+            fields: {
+              ...prev.fields,
+              Expression: updatedNote.fields.Expression,
+            },
+          };
+        }
+
+        return prev;
+      });
     }
   }, [deck]);
 
