@@ -4,6 +4,7 @@ import { Separator } from "../Separator";
 import { Checkbox } from "../Checkbox";
 import { handleError } from "../../utils";
 import { invoke } from "@tauri-apps/api/core";
+import { useEffect } from "react";
 
 type Props = {
   config: AppConfig;
@@ -11,6 +12,12 @@ type Props = {
 };
 
 export const GeneralConfig = ({ config, set }: Props) => {
+  useEffect(() => {
+    invoke("set_zoom", { zoom: config.zoom }).catch(
+      handleError(undefined, false),
+    );
+  }, [config.zoom]);
+
   return (
     <>
       <div className="p-2 text-2xl">General</div>
@@ -26,11 +33,7 @@ export const GeneralConfig = ({ config, set }: Props) => {
           max={2.0}
           short
           value={config.zoom}
-          onChange={(e) => {
-            const zoom = parseFloat(e.target.value);
-            set("zoom", zoom);
-            invoke("set_zoom", { zoom }).catch(handleError(undefined, false));
-          }}
+          onChange={(e) => set("zoom", parseFloat(e.target.value))}
         />
       </label>
 
