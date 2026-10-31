@@ -39,6 +39,7 @@ export const ConfigScreen = () => {
   );
   const zoomInit = useStore((state) => state.zoom);
   const clipProcessArgsInit = useStore((state) => state.clipProcessArgs);
+  const frameProcessArgsInit = useStore((state) => state.frameProcessArgs);
 
   const configInit: AppConfig = {
     ankiAddress: ankiAddressInit,
@@ -50,6 +51,7 @@ export const ConfigScreen = () => {
     pythonOutputTransform: pythonOutputTransformInit,
     zoom: zoomInit,
     clipProcessArgs: clipProcessArgsInit,
+    frameProcessArgs: frameProcessArgsInit,
   };
 
   const [config, setConfig] = useState(structuredClone(configInit));

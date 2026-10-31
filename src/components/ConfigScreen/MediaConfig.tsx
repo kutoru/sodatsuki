@@ -10,6 +10,7 @@ type Props = {
 
 export const MediaConfig = ({ config, set }: Props) => {
   const clipArgs = config.clipProcessArgs;
+  const frameArgs = config.frameProcessArgs;
 
   const setClipArg = <T extends keyof ClipProcessArgs>(
     key: T,
@@ -20,9 +21,44 @@ export const MediaConfig = ({ config, set }: Props) => {
       [key]: value,
     });
 
+  const setFrameArg = <T extends keyof typeof frameArgs>(
+    key: T,
+    value: (typeof frameArgs)[T],
+  ) =>
+    set("frameProcessArgs", {
+      ...frameArgs,
+      [key]: value,
+    });
+
   return (
     <>
       <div className="p-2 text-2xl">Frame Processing</div>
+
+      <Separator />
+
+      <label className="flex flex-row items-center justify-between p-2">
+        <div className="flex-1 text-lg">Scale</div>
+        <ConfigInput
+          type="text"
+          value={frameArgs.scaleFilter}
+          onChange={(e) => setFrameArg("scaleFilter", e.target.value)}
+        />
+      </label>
+
+      <Separator />
+
+      <label className="flex flex-row items-center justify-between p-2">
+        <div className="flex-1 text-lg">Quality</div>
+        <ConfigInput
+          type="number"
+          step={1}
+          min={1}
+          max={31}
+          short
+          value={frameArgs.qscale}
+          onChange={(e) => setFrameArg("qscale", parseInt(e.target.value))}
+        />
+      </label>
 
       <Separator />
 

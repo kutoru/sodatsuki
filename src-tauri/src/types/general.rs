@@ -37,6 +37,7 @@ pub struct AppConfig {
     pub python_output_transform: PythonOutputTransform,
     pub zoom: f64,
     pub clip_process_args: ClipProcessArgs,
+    pub frame_process_args: FrameProcessArgs,
 }
 
 #[derive(serde::Deserialize, serde::Serialize, std::fmt::Debug)]
@@ -68,4 +69,11 @@ pub struct ClipProcessArgs {
     pub norm_altboundary: bool,
     pub norm_compress: f64,
     pub volume: f64,
+}
+
+#[derive(serde::Deserialize, serde::Serialize, std::fmt::Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct FrameProcessArgs {
+    pub scale_filter: String,
+    pub qscale: u32,
 }

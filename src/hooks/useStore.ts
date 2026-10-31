@@ -16,6 +16,7 @@ import {
   VideoHandle,
   AppConfig,
   ClipProcessArgs,
+  FrameProcessArgs,
 } from "../types";
 
 export type Store = {
@@ -62,6 +63,7 @@ export type Store = {
   };
 
   clipProcessArgs: ClipProcessArgs;
+  frameProcessArgs: FrameProcessArgs;
 
   setAppConfig: (appConfig: AppConfig) => void;
 
@@ -254,6 +256,10 @@ export const useStore = create<Store>()(
         normCompress: 15,
         volume: -9,
       },
+      frameProcessArgs: {
+        scaleFilter: "-1:720",
+        qscale: 4,
+      },
 
       clipTime: { start: 0, end: 0 },
       setClipTime: (clipTimeOrUpdater) =>
@@ -365,6 +371,7 @@ export const useStore = create<Store>()(
         zoom: state.zoom,
         dateFilter: state.dateFilter,
         clipProcessArgs: state.clipProcessArgs,
+        frameProcessArgs: state.frameProcessArgs,
 
         tzOffset: state.tzOffset,
         autoInitOcr: state.autoInitOcr,

@@ -6,6 +6,8 @@ import { useState } from "react";
 import { handleError } from "../../utils";
 
 export const ButtonCaptureFrame = () => {
+  const frameProcessArgs = useStore((state) => state.frameProcessArgs);
+
   const videoHandle = useStore((state) => state.videoHandle);
   const videoFile = useStore((state) => state.videoFile);
   const appendEditNoteField = useStore((state) => state.appendEditNoteField);
@@ -26,6 +28,7 @@ export const ButtonCaptureFrame = () => {
     const timestamp = videoHandle.getTime();
 
     invoke<ArrayBuffer>("frame_capture", {
+      processArgs: frameProcessArgs,
       videoPath,
       timestamp,
     })

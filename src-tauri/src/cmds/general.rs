@@ -8,7 +8,7 @@ use tauri_plugin_clipboard_manager::ClipboardExt;
 use tauri_plugin_dialog::DialogExt;
 use tauri_plugin_opener::OpenerExt;
 
-use crate::types::{AppConfig, ClipProcessArgs, ResultExt, VideoSelectResult};
+use crate::types::{AppConfig, ClipProcessArgs, FrameProcessArgs, ResultExt, VideoSelectResult};
 
 pub fn get_unix_ms() -> u128 {
     SystemTime::now()
@@ -157,20 +157,23 @@ pub async fn clip_capture(
 
 #[tauri::command]
 pub async fn frame_capture(
+    process_args: FrameProcessArgs,
     video_path: String,
     timestamp: f64,
 ) -> Result<tauri::ipc::Response, String> {
+    let filters = format!("scale={}", process_args.scale_filter,);
+
     let frame = ffmpeg(&[
         "-ss",
         &format!("{}ms", timestamp),
         "-i",
         &video_path,
         "-vf",
-        "scale=-1:720",
+        &filters,
         "-frames:v",
         "1",
         "-q:v",
-        "4",
+        &process_args.qscale.to_string(),
         "-f",
         "image2pipe",
         "-",

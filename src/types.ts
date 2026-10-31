@@ -101,6 +101,7 @@ export type AppConfig = Pick<
   | "pythonOutputTransform"
   | "zoom"
   | "clipProcessArgs"
+  | "frameProcessArgs"
 >;
 
 export type ConfigValueUpdater = <T extends keyof AppConfig>(
@@ -118,4 +119,9 @@ export type ClipProcessArgs = {
   normAltboundary: boolean;
   normCompress: number;
   volume: number;
+};
+
+export type FrameProcessArgs = {
+  scaleFilter: string;
+  qscale: number;
 };
