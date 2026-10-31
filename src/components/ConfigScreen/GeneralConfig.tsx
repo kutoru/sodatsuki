@@ -1,4 +1,4 @@
-import { AppConfig, ConfigValueUpdater } from "../../types";
+import { AppGeneralConfig, ConfigValueUpdater } from "../../types";
 import { ConfigInput } from "./ConfigInput";
 import { Separator } from "../Separator";
 import { Checkbox } from "../Checkbox";
@@ -7,7 +7,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { useEffect } from "react";
 
 type Props = {
-  config: AppConfig;
+  config: AppGeneralConfig;
   set: ConfigValueUpdater;
 };
 

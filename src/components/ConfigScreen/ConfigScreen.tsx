@@ -13,7 +13,13 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { invoke } from "@tauri-apps/api/core";
 import { handleError } from "../../utils";
 import { useState } from "react";
-import { AppConfig, ConfigValueUpdater } from "../../types";
+import {
+  AppConfig,
+  AppGeneralConfig,
+  AppMediaConfig,
+  AppPythonConfig,
+  ConfigValueUpdater,
+} from "../../types";
 import { GeneralConfig } from "./GeneralConfig";
 import clsx from "clsx";
 import { PythonConfig } from "./PythonConfig";
@@ -64,11 +70,40 @@ export const ConfigScreen = () => {
   const reset = () => {
     const defaultState = useStore.getInitialState();
 
-    const newConfig = Object.keys(config).reduce((p, k) => {
-      const key = k as keyof AppConfig;
-      (p as any)[key] = defaultState[key];
-      return p;
-    }, {} as AppConfig);
+    const getDefaultStateForType = () => {
+      switch (selectedConfig) {
+        case ConfigType.General:
+          const general: AppGeneralConfig = {
+            zoom: defaultState.zoom,
+            ankiAddress: defaultState.ankiAddress,
+            autoApplyDateFilter: defaultState.autoApplyDateFilter,
+            tzOffset: defaultState.tzOffset,
+          };
+
+          return general;
+        case ConfigType.Python:
+          const python: AppPythonConfig = {
+            pythonPath: defaultState.pythonPath,
+            autoInitOcr: defaultState.autoInitOcr,
+            autoInitTranscribe: defaultState.autoInitTranscribe,
+            pythonOutputTransform: defaultState.pythonOutputTransform,
+          };
+
+          return python;
+        case ConfigType.Media:
+          const media: AppMediaConfig = {
+            frameProcessArgs: defaultState.frameProcessArgs,
+            clipProcessArgs: defaultState.clipProcessArgs,
+          };
+
+          return media;
+      }
+    };
+
+    const newConfig = {
+      ...config,
+      ...getDefaultStateForType(),
+    };
 
     setConfig(newConfig);
   };
@@ -119,7 +154,7 @@ export const ConfigScreen = () => {
           </div>
 
           <div className="slim-scrollbar flex flex-1 flex-col overflow-auto">
-            <PythonConfig config={config} setConfig={setConfig} set={set} />
+            <PythonConfig config={config} set={set} />
           </div>
 
           <div className="slim-scrollbar flex flex-1 flex-col overflow-auto">

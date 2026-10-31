@@ -1,10 +1,14 @@
-import { AppConfig, ClipProcessArgs, ConfigValueUpdater } from "../../types";
+import {
+  AppMediaConfig,
+  ClipProcessArgs,
+  ConfigValueUpdater,
+} from "../../types";
 import { ConfigInput } from "./ConfigInput";
 import { Separator } from "../Separator";
 import { Checkbox } from "../Checkbox";
 
 type Props = {
-  config: AppConfig;
+  config: AppMediaConfig;
   set: ConfigValueUpdater;
 };
 

@@ -1,16 +1,15 @@
-import { AppConfig, ConfigValueUpdater } from "../../types";
+import { AppPythonConfig, ConfigValueUpdater } from "../../types";
 import { ConfigInput } from "./ConfigInput";
 import { Separator } from "../Separator";
 import { Checkbox } from "../Checkbox";
 import { PythonOutputTransformConfig } from "./PythonOutputTransformConfig";
 
 type Props = {
-  config: AppConfig;
-  setConfig: (config: AppConfig) => void;
+  config: AppPythonConfig;
   set: ConfigValueUpdater;
 };
 
-export const PythonConfig = ({ config, setConfig, set }: Props) => {
+export const PythonConfig = ({ config, set }: Props) => {
   return (
     <>
       <div className="p-2 text-2xl">Python</div>
@@ -48,7 +47,10 @@ export const PythonConfig = ({ config, setConfig, set }: Props) => {
 
       <Separator />
 
-      <PythonOutputTransformConfig config={config} setConfig={setConfig} />
+      <PythonOutputTransformConfig
+        transform={structuredClone(config.pythonOutputTransform)}
+        setTransform={(transform) => set("pythonOutputTransform", transform)}
+      />
     </>
   );
 };

@@ -90,19 +90,22 @@ export type VideoHandle = {
   end?: number;
 };
 
-export type AppConfig = Pick<
+export type AppGeneralConfig = Pick<
   Store,
-  | "tzOffset"
-  | "autoInitOcr"
-  | "autoInitTranscribe"
-  | "ankiAddress"
-  | "pythonPath"
-  | "autoApplyDateFilter"
-  | "pythonOutputTransform"
-  | "zoom"
-  | "clipProcessArgs"
-  | "frameProcessArgs"
+  "tzOffset" | "ankiAddress" | "autoApplyDateFilter" | "zoom"
 >;
+
+export type AppPythonConfig = Pick<
+  Store,
+  "autoInitOcr" | "autoInitTranscribe" | "pythonPath" | "pythonOutputTransform"
+>;
+
+export type AppMediaConfig = Pick<
+  Store,
+  "clipProcessArgs" | "frameProcessArgs"
+>;
+
+export type AppConfig = AppGeneralConfig & AppPythonConfig & AppMediaConfig;
 
 export type ConfigValueUpdater = <T extends keyof AppConfig>(
   key: T,
